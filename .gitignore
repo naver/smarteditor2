@@ -1,0 +1,7 @@
+**/.*
+**/_*
+node_modules
+bower_components
+build
+release
+target
