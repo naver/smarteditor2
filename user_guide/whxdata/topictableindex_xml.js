@@ -1,0 +1,1 @@
+gXMLBuffer="<?xml version=\"1.0\" encoding=\"UTF-8\"?><cki><ck fm=\"webhelp_SmartEditor_Basic_2.0_developers_guide-ko-1\" to=\"webhelp_SmartEditor_Basic_2.0_developers_guide-ko-49\" num=\"44\"/><ck fm=\"webhelp_SmartEditor_Basic_2.0_developers_guide-ko-5\" to=\"webhelp_SmartEditor_Basic_2.0_developers_guide-ko-9\" num=\"7\"/></cki>";

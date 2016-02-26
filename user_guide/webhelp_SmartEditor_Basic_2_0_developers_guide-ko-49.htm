@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0014)about:internet -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <meta name="generator" content="Adobe RoboHelp 10" />
+<meta name="OriginalFile" content="webhelp_SmartEditor_Basic_2.0_developers_guide-ko.docx" />
+<title>webhelp_SmartEditor_Basic_2.0_developers_guide-ko-49</title>
+<link rel="stylesheet" href="default.css" type="text/css" />
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="whmsg.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" src="whver.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whlang.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js" charset="utf-8"></script>
+
+</head>
+<body><script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.gbWhTopic)
+{
+	var strUrl = document.location.href;
+	var bc = 0;
+	var n = strUrl.toLowerCase().indexOf("bc-");
+	if(n != -1)
+	{
+		document.location.href = strUrl.substring(0, n);
+		bc = strUrl.substring(n+3);
+	}
+
+	if (window.addTocInfo)
+	{
+	addTocInfo("부록. jindo.FileUploader\n요청 수행 과정");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(0);
+
+	
+	document.write("<p style=\"text-align:left\"> ");
+AddMasterBreadcrumbs("index.htm", "", "&gt;", "홈", "webhelp_SmartEditor_Basic_2_0_developers_guide-ko-1.htm");
+document.write("<a href=\"webhelp_SmartEditor_Basic_2_0_developers_guide-ko-46.htm\">부록. jindo.FileUploader<\/a> &gt; 요청 수행 과정<\/p>");
+
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+
+onLoadHandler = function()
+{
+  if (window.setRelStartPage)
+	{
+	setTimeout("setRelStartPage('index.htm');", 1)
+
+    setTimeout("UpdateBreadCrumbsMarker();", 1);
+	}
+}
+
+if (window.addEventListener){  
+	window.addEventListener('load', onLoadHandler, false);   
+} else if (window.attachEvent){  
+	window.attachEvent('onload', onLoadHandler);  
+}
+
+function onSetStartPage()
+{
+  autoSync(1);
+  sendSyncInfo();
+  sendAveInfoOut();
+}
+//-->
+//]]></script>
+<script type="text/javascript" src="./ehlpdhtm.js" language="JavaScript1.2"></script>
+
+<h2>요청 수행 과정</h2>
+<p class="nNormal">jindo.FileUploader가 요청을 수행하는 과정은 다음과 같다.</p>
+<ol><li class="nListNumd1">요청을 받으면 Form 내부에 보이지 않는 IFRAME을 생성한다. 생성된 IFRAME은 지정된 URL로 업로드할 파일을 전송하며, 콜백 페이지 주소(callback)와 콜백 함수의 이름(callback_func)을 서버에 전달한다.
+<p class="nNormal_d1">예: FileUpload.php?callback=callback.html&amp;callback_func=tmpFrame_84101_func</p></li>
+<li class="nListNumd1">파일을 전송받은 서버에서는 파일과 콜백 함수의 이름을 콜백 페이지 주소로 리다이렉트한다. 파일 전송에 실패하면 쿼리 스트링으로 errstr=error를 추가한다. 콜백 함수에 추가로 전달할 정보가 있으면 쿼리 스트링으로 추가한다.</li>
+<li class="nListNumd1">콜백 페이지 주소로 리다이렉트된 IFRAME은 부모 요소의 FileUploader 객체에 콜백 함수를 실행시키고 자신을 제거한다.</li></ol>
+<p class="nNormal">서버 측 FileUploader.php 파일의 예는 다음과 같다.</p>
+<p class="nCode">//기본 리다이렉트</p>
+<p class="nCode">$url = $_REQUEST["callback"] .'?callback_func='. $_REQUEST["callback_func"];</p>
+<p class="nCode">&#160;</p>
+<p class="nCode">if (is_uploaded_file($_FILES['Filedata']['tmp_name'])) { //성공 시 파일 사이즈와 URL 전송</p>
+<p class="nCode">&#160;&#160;&#160; $tmp_name = $_FILES['Filedata']['tmp_name'];</p>
+<p class="nCode">&#160;&#160;&#160; $name = $_FILES['Filedata']['name'];</p>
+<p class="nCode">&#160;&#160;&#160; $new_path = "upload/".urlencode($name);</p>
+<p class="nCode">&#160;&#160;&#160; @move_uploaded_file($tmp_name, $new_path);</p>
+<p class="nCode">&#160;&#160;&#160; $url .= "&amp;size=". $_FILES['Filedata']['size'];</p>
+<p class="nCode">&#160;&#160;&#160; $url .= "&amp;url=http://test.naver.com/components/upload/".urlencode(urlencode($name));</p>
+<p class="nCode">} else { //실패시 errstr=error 전송</p>
+<p class="nCode">&#160;&#160;&#160; $url .= '&amp;errstr=error';</p>
+<p class="nCode">}</p>
+<p class="nCode">&#160;</p>
+<p class="nCode">header('Location: '. $url);</p>
+<p class="nNormal">콜백 페이지 HTML 파일의 내용의 예는 다음과 같다.</p>
+<p class="nCode">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"&gt;</p>
+<p class="nCode">&lt;html lang="ko"&gt;</p>
+<p class="nCode">&lt;head&gt;</p>
+<p class="nCode">&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;</p>
+<p class="nCode">&lt;title&gt;FileUploader Callback&lt;/title&gt;</p>
+<p class="nCode">&lt;/head&gt;</p>
+<p class="nCode">&lt;body&gt;</p>
+<p class="nCode">&lt;script type="text/javascript"&gt;</p>
+<p class="nCode">&#160;&#160;&#160; // document.domain 설정</p>
+<p class="nCode">&#160;&#160;&#160; document.domain = "nhncorp.com";</p>
+<p class="nCode">&#160;&#160;&#160; // execute callback script</p>
+<p class="nCode">&#160;&#160;&#160; var sUrl = document.location.search.substr(1);</p>
+<p class="nCode">&#160;&#160;&#160; if (sUrl != "blank") {</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160; var oParameter = {}; // query array</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160; sUrl.replace(/([^=]+)=([^&amp;]*)(&amp;|$)/g, function(){</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; oParameter[arguments[1]] = arguments[2];</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; return "";</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160; });</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160; if ((oParameter.errstr || '').length) { // on error</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; (parent.jindo.FileUploader._oCallback[oParameter.callback_func+'_error'])(oParameter);</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160; } else {</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; (parent.jindo.FileUploader._oCallback[oParameter.callback_func+'_success'])(oParameter);</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160; }</p>
+<p class="nCode">&#160;&#160;&#160; }</p>
+<p class="nCode">&lt;/script&gt;</p>
+<p class="nCode">&lt;/body&gt;</p>
+<script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+
+
+highlightSearch();
+//-->
+//]]></script>
+</body>
+</html>

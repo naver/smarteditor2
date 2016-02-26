@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0014)about:internet -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <meta name="generator" content="Adobe RoboHelp 10" />
+<meta name="OriginalFile" content="webhelp_SmartEditor_Basic_2.0_developers_guide-ko.docx" />
+<title>webhelp_SmartEditor_Basic_2.0_developers_guide-ko-31</title>
+<link rel="stylesheet" href="default.css" type="text/css" />
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="whmsg.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" src="whver.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whlang.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js" charset="utf-8"></script>
+
+</head>
+<body><script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.gbWhTopic)
+{
+	var strUrl = document.location.href;
+	var bc = 0;
+	var n = strUrl.toLowerCase().indexOf("bc-");
+	if(n != -1)
+	{
+		document.location.href = strUrl.substring(0, n);
+		bc = strUrl.substring(n+3);
+	}
+
+	if (window.addTocInfo)
+	{
+	addTocInfo("기능추가및변경하기\n기본 기능 삭제");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(0);
+
+	
+	document.write("<p style=\"text-align:left\"> ");
+AddMasterBreadcrumbs("index.htm", "", "&gt;", "홈", "webhelp_SmartEditor_Basic_2_0_developers_guide-ko-1.htm");
+document.write("<a href=\"webhelp_SmartEditor_Basic_2_0_developers_guide-ko-29.htm\">기능추가및변경하기<\/a> &gt; 기본 기능 삭제<\/p>");
+
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+
+onLoadHandler = function()
+{
+  if (window.setRelStartPage)
+	{
+	setTimeout("setRelStartPage('index.htm');", 1)
+
+    setTimeout("UpdateBreadCrumbsMarker();", 1);
+	}
+}
+
+if (window.addEventListener){  
+	window.addEventListener('load', onLoadHandler, false);   
+} else if (window.attachEvent){  
+	window.attachEvent('onload', onLoadHandler);  
+}
+
+function onSetStartPage()
+{
+  autoSync(1);
+  sendSyncInfo();
+  sendAveInfoOut();
+}
+//-->
+//]]></script>
+<script type="text/javascript" src="./ehlpdhtm.js" language="JavaScript1.2"></script>
+
+<h2>기본 기능 삭제</h2>
+<p class="nNormal">SmartEditor Basic 2.0에서는 사용하지 않는 기능을 삭제하여 코드를 간소화할 수 있다. 여기에서는 툴바에 기본으로 추가되어 있는 인용구 스타일, 하이퍼링크, 특수 기호, 표, 찾기/바꾸기 기능을 삭제하는 예제를 작성한다.</p>
+<h4>SE2BasicCreator.js 파일 수정</h4>
+<p class="nNormal">제거된 기능을 에디터에서 찾지 않도록 삭제할 기능이 등록된 부분을 제거해야 한다. /js/SE2BasicCreator.js 파일에서 다음과 같이 삭제할 기능이 명시된 줄을 삭제한다.</p>
+<p class="nCode">oEditor.registerPlugin(new nhn.husky.SE2M_Quote(elAppContainer));&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; // 인용구 스타일</p>
+<p class="nCode">oEditor.registerPlugin(new nhn.husky.SE2M_Hyperlink(elAppContainer));&#160;&#160; // 하이퍼링크</p>
+<p class="nCode">oEditor.registerPlugin(new nhn.husky.SE2M_SCharacter(elAppContainer));&#160; // 특수 문자</p>
+<p class="nCode">oEditor.registerPlugin(new nhn.husky.SE2M_FindReplacePlugin(elAppContainer));//찾기/바꾸기</p>
+<p class="nCode">oEditor.registerPlugin(new nhn.husky.SE2M_TableCreator(elAppContainer));&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; // 테이블 생성</p>
+<p class="nCode">oEditor.registerPlugin(new nhn.husky.SE2M_TableEditor(elAppContainer));&#160; // 테이블 편집</p>
+<p class="nCode">oEditor.registerPlugin(new nhn.husky.SE2M_TableBlockStyler(elAppContainer));// 테이블 스타일</p>
+<h4>SmartEditor2Skin.html 파일 수정</h4>
+<p class="nNormal">SmartEditor2Skin.html 파일에서 사용하지 않는 버튼에 해당하는 마크업을 지운다. 각각의 기능들은 다음 예처럼 li 태그로 구성되어 있다. li 태그 내부의 태그도 모두 삭제한다.</p>
+<p class="nCode">&lt;li class="husky_seditor_ui_quote"&gt;</p>
+<p class="nCode">&#160;&#160;&#160; &lt;button type="button" title="인용구" class="se2_blockquote"&gt;&lt;span&gt;인용구&lt;/span&gt;&lt;/button&gt;</p>
+<p class="nCode">&#160;&#160;&#160; &lt;!-- 인용구 --&gt;</p>
+<p class="nCode">&#160;&#160;&#160; &lt;div class="se2_layer husky_seditor_blockquote_layer" …&gt;</p>
+<p class="nCode">&#160;&#160;&#160;&#160;&#160;&#160;&#160; …</p>
+<p class="nCode">&#160;&#160;&#160; &lt;/div&gt;</p>
+<p class="nCode">&#160;&#160;&#160; &lt;!-- //인용구 --&gt;</p>
+<p class="nCode">&lt;/li&gt;</p>
+<p class="nNormal">같은 방법으로 하이퍼링크, 특수 기호, 표, 찾기/바꾸기 기능의 마크업을 모두 삭제하면 &lt;ul class="extra"&gt;...&lt;/ul&gt; 안의 모든 기능이 삭제되므로 ul 태그를 남길 필요가 없다. 따라서 ul 태그까지 삭제한다.</p>
+<script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+
+
+highlightSearch();
+//-->
+//]]></script>
+</body>
+</html>

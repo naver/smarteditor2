@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0014)about:internet -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <meta name="generator" content="Adobe RoboHelp 10" />
+<meta name="OriginalFile" content="webhelp_SmartEditor_Basic_2.0_developers_guide-ko.docx" />
+<title>webhelp_SmartEditor_Basic_2.0_developers_guide-ko-50</title>
+<link rel="stylesheet" href="default.css" type="text/css" />
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="whmsg.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" src="whver.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whlang.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js" charset="utf-8"></script>
+
+</head>
+<body><script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.gbWhTopic)
+{
+	var strUrl = document.location.href;
+	var bc = 0;
+	var n = strUrl.toLowerCase().indexOf("bc-");
+	if(n != -1)
+	{
+		document.location.href = strUrl.substring(0, n);
+		bc = strUrl.substring(n+3);
+	}
+
+	if (window.addTocInfo)
+	{
+	addTocInfo("부록. jindo.FileUploader\n커스텀 이벤트");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(0);
+
+	
+	document.write("<p style=\"text-align:left\"> ");
+AddMasterBreadcrumbs("index.htm", "", "&gt;", "홈", "webhelp_SmartEditor_Basic_2_0_developers_guide-ko-1.htm");
+document.write("<a href=\"webhelp_SmartEditor_Basic_2_0_developers_guide-ko-46.htm\">부록. jindo.FileUploader<\/a> &gt; 커스텀 이벤트<\/p>");
+
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+
+onLoadHandler = function()
+{
+  if (window.setRelStartPage)
+	{
+	setTimeout("setRelStartPage('index.htm');", 1)
+
+    setTimeout("UpdateBreadCrumbsMarker();", 1);
+	}
+}
+
+if (window.addEventListener){  
+	window.addEventListener('load', onLoadHandler, false);   
+} else if (window.attachEvent){  
+	window.attachEvent('onload', onLoadHandler);  
+}
+
+function onSetStartPage()
+{
+  autoSync(1);
+  sendSyncInfo();
+  sendAveInfoOut();
+}
+//-->
+//]]></script>
+<script type="text/javascript" src="./ehlpdhtm.js" language="JavaScript1.2"></script>
+
+<h2>커스텀 이벤트</h2>
+<p class="nNormal">jindo.FileUploader의 커스텀 이벤트는 다음과 같다.</p>
+<h4>sUploadURL</h4>
+<p class="nNormal">파일 선택 완료를 의미한다. sUploadURL 객체의 속성은 다음과 같다.</p>
+<table border="1" cellspacing="0" cellpadding="0">
+<tr>
+<td width="129" valign="top">
+<p class="nTblHeader">이름</p>
+</td>
+<td width="85" valign="top">
+<p class="nTblHeader">타입</p>
+</td>
+<td width="376" valign="top">
+<p class="nTblHeader">설명</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">sType</p>
+</td>
+<td width="85" valign="top">
+<p class="nTblNormal">String</p>
+</td>
+<td width="376" valign="top">
+<p class="nTblNormal">커스텀 이벤트 이름</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">sValue</p>
+</td>
+<td width="85" valign="top">
+<p class="nTblNormal">String</p>
+</td>
+<td width="376" valign="top">
+<p class="nTblNormal">선택된 file input의 값</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">bAllowed</p>
+</td>
+<td width="85" valign="top">
+<p class="nTblNormal">Boolean</p>
+</td>
+<td width="376" valign="top">
+<p class="nTblNormal">선택된 파일의 형식이 허용되는지 여부(값이 false이면 sMsgNotAllowedExt에 지정된 메시지를 경고 창에 표시)</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">sMsgNotAllowedExt</p>
+</td>
+<td width="85" valign="top">
+<p class="nTblNormal">String</p>
+</td>
+<td width="376" valign="top">
+<p class="nTblNormal">선택된 파일의 허용되지 않는 경우 표시할 경고 메시지</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">stop</p>
+</td>
+<td width="85" valign="top">
+<p class="nTblNormal">Function</p>
+</td>
+<td width="376" valign="top">
+<p class="nTblNormal">호출되면 bAllowed 값과 상관 없이 모든 동작을 수행하지 않는다.</p>
+</td>
+</tr>
+</table>
+<h4>onload</h4>
+<p class="nNormal">업로드가 성공했음을 의미한다. 커스텀 이벤트 핸들링 예제는 다음과 같다</p>
+<p class="nCode">oComponent.attach("success", function(oCustomEvent) { ... });</p>
+<p class="nNormal">onload 객체의 속성은 다음과 같다.</p>
+<table border="1" cellspacing="0" cellpadding="0">
+<tr>
+<td width="129" valign="top">
+<p class="nTblHeader">이름</p>
+</td>
+<td width="84" valign="top">
+<p class="nTblHeader">타입</p>
+</td>
+<td width="367" valign="top">
+<p class="nTblHeader">설명</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">sType</p>
+</td>
+<td width="84" valign="top">
+<p class="nTblNormal">String</p>
+</td>
+<td width="367" valign="top">
+<p class="nTblNormal">커스텀 이벤트 이름</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">htResult</p>
+</td>
+<td width="84" valign="top">
+<p class="nTblNormal">HashTable</p>
+</td>
+<td width="367" valign="top">
+<p class="nTblNormal">서버에서 전달해주는 결과 객체. 서버 설정에 따라 유동적으로 선택할 수 있다.</p>
+</td>
+</tr>
+</table>
+<h4>onerror</h4>
+<p class="nNormal">업로드가 실패했음을 의미한다. 커스텀 이벤트 핸들링 예제는 다음과 같다</p>
+<p class="nCode">oComponent.attach("error", function(oCustomEvent) { ... });</p>
+<p class="nNormal">onerror 객체의 속성은 다음과 같다.</p>
+<table border="1" cellspacing="0" cellpadding="0">
+<tr>
+<td width="129" valign="top">
+<p class="nTblHeader">이름</p>
+</td>
+<td width="84" valign="top">
+<p class="nTblHeader">타입</p>
+</td>
+<td width="367" valign="top">
+<p class="nTblHeader">설명</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">sType</p>
+</td>
+<td width="84" valign="top">
+<p class="nTblNormal">String</p>
+</td>
+<td width="367" valign="top">
+<p class="nTblNormal">커스텀 이벤트 이름</p>
+</td>
+</tr>
+<tr>
+<td width="129" valign="top">
+<p class="nTblNormal">htResult</p>
+</td>
+<td width="84" valign="top">
+<p class="nTblNormal">HashTable</p>
+</td>
+<td width="367" valign="top">
+<p class="nTblNormal">서버에서 전달해주는 결과 객체. 에러 발생 시 오류 메시지 문자열 값을 갖는errstr 속성을 반드시 포함하도록 서버 응답을 설정해야 한다.</p>
+</td>
+</tr>
+</table>
+<script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+
+
+highlightSearch();
+//-->
+//]]></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+gXMLBuffer ="<?xml version='1.0' encoding='utf-8' ?>  <project homepage=\"webhelp_SmartEditor_Basic_2_0_developers_guide-ko-1.htm\" langid=\"1042\" datapath=\"whxdata\" toc=\"whtoc.xml\" fts=\"whfts.xml\" brs=\"whbrs.xml\" >  </project>";

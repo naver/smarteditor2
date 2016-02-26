@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0014)about:internet -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <meta name="generator" content="Adobe RoboHelp 10" />
+<meta name="OriginalFile" content="webhelp_SmartEditor_Basic_2.0_developers_guide-ko.docx" />
+<title>webhelp_SmartEditor_Basic_2.0_developers_guide-ko-21</title>
+<link rel="stylesheet" href="default.css" type="text/css" />
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="whmsg.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" src="whver.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whlang.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js" charset="utf-8"></script>
+
+</head>
+<body><script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.gbWhTopic)
+{
+	var strUrl = document.location.href;
+	var bc = 0;
+	var n = strUrl.toLowerCase().indexOf("bc-");
+	if(n != -1)
+	{
+		document.location.href = strUrl.substring(0, n);
+		bc = strUrl.substring(n+3);
+	}
+
+	if (window.addTocInfo)
+	{
+	addTocInfo("소개\n제공 기능 상세\n찾기와 바꾸기");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(0);
+
+	
+	document.write("<p style=\"text-align:left\"> ");
+AddMasterBreadcrumbs("index.htm", "", "&gt;", "홈", "webhelp_SmartEditor_Basic_2_0_developers_guide-ko-1.htm");
+document.write("<a href=\"webhelp_SmartEditor_Basic_2_0_developers_guide-ko-2.htm\">소개<\/a> &gt; <a href=\"webhelp_SmartEditor_Basic_2_0_developers_guide-ko-5.htm\">제공 기능 상세<\/a> &gt; 찾기와 바꾸기<\/p>");
+
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+
+onLoadHandler = function()
+{
+  if (window.setRelStartPage)
+	{
+	setTimeout("setRelStartPage('index.htm');", 1)
+
+    setTimeout("UpdateBreadCrumbsMarker();", 1);
+	}
+}
+
+if (window.addEventListener){  
+	window.addEventListener('load', onLoadHandler, false);   
+} else if (window.attachEvent){  
+	window.attachEvent('onload', onLoadHandler);  
+}
+
+function onSetStartPage()
+{
+  autoSync(1);
+  sendSyncInfo();
+  sendAveInfoOut();
+}
+//-->
+//]]></script>
+<script type="text/javascript" src="./ehlpdhtm.js" language="JavaScript1.2"></script>
+
+<h3>찾기와 바꾸기</h3>
+<p class="nNormal">작성한 글에서 특정 단어 혹은 문장을 찾거나, 찾은 단어나 문장을 다른 단어나 문장으로 바꿀 수 있다.</p>
+<p class="nNormal"><img border="0" width="543" height="185" src="webhelp_SmartEditor_Basic_2.0_developers_guide-ko.files/image054.jpg" alt="find_replace.png" /></p>
+<p class="Caption">그림 27 찾기/바꾸기 레이어</p>
+<p class="nNormal">찾기/바꾸기 레이어는 드래그 앤드 드롭으로 에디터 화면 내에서 위치를 자유롭게 옮길 수 있는 플로팅 레이어이다. 다음 그림은 글에서 '스마트에디터'라는 단어를 찾은 예이다.</p>
+<p class="nNormal"><img border="0" width="559" height="203" src="webhelp_SmartEditor_Basic_2.0_developers_guide-ko.files/image056.jpg" alt="find_example.png" /></p>
+<p class="Caption">그림 28 단어 찾기 예</p>
+<p class="nNormal">다음 그림은 <span class="nUI">바꾸기</span> 탭의 <span class="nUI">모두바꾸기</span>를 클릭하여 '스마트에디터'를 모두 'SmartEditor'로 바꾼 예이다.</p>
+<p class="nNormal"><img border="0" width="563" height="230" src="webhelp_SmartEditor_Basic_2.0_developers_guide-ko.files/image058.jpg" alt="replace_example.png" /></p>
+<p class="Caption">그림 29 단어를 찾아 모두 바꾸기 예</p>
+<p class="nNormal">찾기와 바꾸기 기능은 단축키로 이용할 수도 있다. 단축키는 다음과 같다.</p>
+<table border="1" cellspacing="0" cellpadding="0" width="569">
+<caption>표 6 찾기와 바꾸기의 단축키</caption>
+<tr>
+<td width="276" valign="top">
+<p class="nTblHeader">기능</p>
+</td>
+<td width="293" valign="top">
+<p class="nTblHeader">단축키</p>
+</td>
+</tr>
+<tr>
+<td width="276" valign="top">
+<p class="nTblNormal">찾기</p>
+</td>
+<td width="293" valign="top">
+<p class="nTblNormal">Ctrl+F</p>
+</td>
+</tr>
+<tr>
+<td width="276" valign="top">
+<p class="nTblNormal">바꾸기</p>
+</td>
+<td width="293" valign="top">
+<p class="nTblNormal">Ctrl+H</p>
+</td>
+</tr>
+</table>
+<script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+
+
+highlightSearch();
+//-->
+//]]></script>
+</body>
+</html>

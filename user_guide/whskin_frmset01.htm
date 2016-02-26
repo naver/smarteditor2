@@ -1,0 +1,208 @@
+
+<html><!-- saved from url=(0014)about:internet -->
+
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+
+<script type="text/javascript" language="javascript" src="whver.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" src="whutils.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" src="whmsg.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" >
+<!--
+if (!window.gbWhVer||!window.gbWhUtil||!window.gbWhMsg)
+	document.location.reload();
+//-->
+</script>
+
+<script type="text/javascript" src="whutils.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" src="whproxy.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript">
+<!--
+if (!window.gbWhProxy)
+	document.location.reload();
+//-->
+</script>
+
+<script language="javascript">
+<!--
+var gsPane="";
+  var gnType=3;
+  var strDefaultTopic = "about:blank";
+
+  var oMsgPane = new whMessage(WH_MSG_GETPANETYPE, null, null);
+  request(oMsgPane, onGetPaneType);
+
+  function onGetPaneType(oMsg)
+  {
+    if(oMsg && oMsg.oParam)
+    {
+      gsPane = oMsg.oParam.sPaneURL;
+	    gnType = oMsg.oParam.nType;
+      
+	    var oParam = new Object();
+	    oParam.sTopic = "";
+	    var oMsg1 = new whMessage(WH_MSG_GETDEFAULTTOPIC, null, oParam);
+	    request(oMsg1, onGetDefaultTopic);
+    }
+  }
+  
+  function onGetDefaultTopic(oMsg)
+  {
+    if(oMsg && oMsg.oParam)
+    {
+      if(oMsg.oParam.sTopic != "")
+      {
+		    strDefaultTopic =  oMsg.oParam.sTopic;
+        var strHTML = "";
+        if (gnType == 4)
+        {
+	        //no navipane at all
+	        strHTML += "<frameset border=\"0\" cols=\"100%,*\">";
+	        strHTML += "<frame src=\"" + strDefaultTopic + "\" name=\"bsscright\" framespacing=\"0\" frameborder=\"0\" border=\"0\" scrolling=\"auto\">";
+	        strHTML += "<frame src=\"whskin_blank.htm\" noresize>";
+	        strHTML += "</frameset>";
+        }
+        else
+	        strHTML += "<frameset cols=\"220,*\" hostof=\"parent:minibar_navpane|topic!startpage:no\" frameborder=\"1\" id=\"whPfset\"> <frame src=\"whskin_frmset010.htm\" id=\"minibar_navpane\" frameborder=\"0\" border=\"0\" scrolling=\"auto\" marginheight=\"0\" marginwidth=\"0\"></frame> <frame src=\""+strDefaultTopic+"\" id=\"topic\" frameborder=\"1\" border=\"1\" scrolling=\"auto\" title=\"Topic\" name=\"bsscright\"></frame></frameset>";
+        if(isChromeLocal())
+        {	
+		      var obj = document.getElementsByTagName('body')[0];
+		      if(obj.parentNode)
+			      obj.parentNode.removeChild(obj);
+		      else
+			      obj.outerHTML="";
+		      document.documentElement.innerHTML += strHTML;
+	      }
+        else
+          document.write(strHTML);
+      }
+    }
+  }// handle show pane, hide pane and query pane status message.
+registerListener2(WH_MSG_RESIZEPANE);
+registerListener2(WH_MSG_SHOWPANE);
+registerListener2(WH_MSG_HIDEPANE);
+registerListener2(WH_MSG_ISPANEVISIBLE);
+
+function window_unload()
+{
+	unregisterListener2(WH_MSG_RESIZEPANE);
+	unregisterListener2(WH_MSG_SHOWPANE);
+	unregisterListener2(WH_MSG_HIDEPANE);
+	unregisterListener2(WH_MSG_ISPANEVISIBLE);
+}
+
+window.onunload=window_unload;
+
+var gbShow=false;
+var gstrFrameLastSetting="";
+function onReceiveNotification(oMsg)
+{
+	var oMsgout = null;
+	var nMsgId = oMsg.msgId;
+	var oFrameset = null;
+	if (nMsgId == WH_MSG_SHOWPANE)
+	{
+		if (!gbShow)
+		{
+			oFrameset = getElement("whPfset");
+			if (oFrameset)
+			{
+				if (gstrFrameLastSetting)
+					oFrameset.cols= gstrFrameLastSetting;
+				else
+ 					oFrameset.cols= "220,*";
+			}
+			gbShow=true;
+			oMsgout = new whMessage(WH_MSG_PANESTATUE, "visible", null);
+			notify(oMsgout);
+		}
+		return false;
+	}
+	else if (nMsgId == WH_MSG_HIDEPANE)
+	{
+		oFrameset = getElement("whPfset");
+		if (oFrameset)
+		{
+			gstrFrameLastSetting=oFrameset.cols; 
+			var oWnd=frames[0];
+			if (oWnd && oWnd.document && oWnd.document.body)
+			{
+				var nPos=0;
+				if ("cols"=="cols")
+					nPos=oWnd.document.body.offsetWidth;
+				else
+					nPos=oWnd.document.body.offsetHeight;
+				if(0==0)
+					gstrFrameLastSetting=nPos+",*";
+				else
+					gstrFrameLastSetting="*,"+nPos;
+			}
+	 		oFrameset.cols = "0,*";
+		}
+		gbShow=false;
+		oMsgout = new whMessage(WH_MSG_PANESTATUE, "invisible", null);
+		notify(oMsgout);
+		return false;
+	}
+	else if (nMsgId == WH_MSG_RESIZEPANE)
+	{
+		if (!gbShow)
+		{
+			gbShow=true;
+			oMsgout = new whMessage(WH_MSG_PANESTATUE, "visible", null);
+			notify(oMsgout);
+		}
+		return false;
+	}
+	return true;
+}
+
+function onReceiveRequest(oMsg)
+{
+  if(oMsg)
+  {
+    if (oMsg.msgId == WH_MSG_ISPANEVISIBLE)
+	  {
+		  oMsg.oParam.bVisible = isNavPaneVisible();
+      reply(oMsg);
+		  return false;
+	  }
+  }
+  return true;
+}
+
+function isNavPaneVisible()
+{
+	var bVisible = false;
+	var sSplit = getElement("whPfset").cols;
+	var nSplit = sSplit.indexOf(",");
+	if (nSplit != -1)
+	{
+		var sPart1 = sSplit.substring(0, nSplit);
+		var sPart2 = sSplit.substring(nSplit + 1);
+		if ("minibar_navpane" == "navpane")
+		{
+			var sTemp = sPart1;
+			sPart1 = sPart2;
+			sPart2 = sTemp;
+		}
+
+		if (sPart2 != "*")
+		{
+			var n = parseInt(sPart2);
+			if (n>0)
+				bVisible = true;
+		}
+		else
+		{
+			if (sPart1 != "100%")
+				bVisible = true;
+		}
+	}
+	return bVisible;
+}
+//-->
+</script>
+
+</html>

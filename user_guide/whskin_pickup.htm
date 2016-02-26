@@ -1,0 +1,250 @@
+<html><!-- saved from url=(0014)about:internet -->
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>항목 선택&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</title>
+<script  src="whver.js" charset="utf-8"></script>
+<script  src="whutils.js" charset="utf-8"></script>
+<script language="javascript">
+<!--
+var gsBgColor = "#c0c0c0";
+var gsBgImage = "";
+var gsListBgColor = "white";
+var gsListBgImage = "";
+var gsMargin="0pt";
+var gsIndent="0pt";
+var gSelectedItem = -1;
+
+
+var goFont=null;
+var goHoverFont=null;
+var goTableFont=null;
+var gsABgColor="#cccccc";
+
+function setListBackground(sBgImage)
+{
+	if (sBgImage != null && sBgImage.length > 0)
+		gsListBgImage = sBgImage;
+}
+
+function setListBackgroundcolor(sBgColor)
+{
+	if (sBgColor != null && sBgColor.length > 0)
+		gsListBgColor = sBgColor;
+}
+
+function setBackground(sBgImage)
+{
+	if (sBgImage != null && sBgImage.length > 0)
+		gsBgImage = sBgImage;
+}
+
+function setBackgroundcolor(sBgColor)
+{
+	if (sBgColor != null && sBgColor.length > 0)
+		gsBgColor = sBgColor;
+}
+
+function setActiveBgColor(sBgColor)
+{
+	gsABgColor=sBgColor;
+}
+
+function setFont(sType, sFontName,sFontSize,sFontColor,sFontStyle,sFontWeight,sFontDecoration)
+{
+	var vFont=new whFont(sFontName,sFontSize,sFontColor,sFontStyle,sFontWeight,sFontDecoration);
+	if (sType == "Normal")
+		goFont=vFont;
+	if (sType == "Hover")
+		goHoverFont=vFont;
+	else if (sType == "Table")
+		goTableFont=vFont;
+}
+
+function fnOnload()
+{
+	if( window.dialogArguments != null )
+		fnLoadOptions( window.dialogArguments );
+	var items = getElementsByTag(document, "a");
+	if (items.length > 0)
+		items[0].focus();
+}
+
+var gaOpts = new Array();
+
+function selectOption(index)
+{
+	if(gbNav6)
+	{
+		var oDivCon=getElement("divlist");
+		var eA = oDivCon.getElementsByTagName("a");
+		for(var i=0; i<eA.length; i++)
+		{
+			if(i == index)
+				eA[i].setAttribute('style', "background-color:" + gsABgColor);
+			else
+				eA[i].setAttribute('style', "");
+		}
+	}
+	gSelectedItem = index;
+}
+
+function displayOption(index)
+{
+	if (index < gaOpts.length)
+	{
+		returnValue = new Object();
+		returnValue.m_url = gaOpts[index];
+	}
+	else
+		returnValue = null;
+
+	window.close();
+}
+
+function fnLoadOptions( cList )
+{
+	var sHTML = "<dl>";
+	for( var i=0;i <cList.length; i++)
+	{
+		sHTML += "<dt><nobr><a href=\"javascript:void(0);\" onclick=\"return false;\" onfocus=\"selectOption(";
+		sHTML += gaOpts.length + ");return false;\" ondblclick=\"displayOption(" + gaOpts.length;
+		sHTML += ");return false;\">"+ _textToHtml(cList[i].m_sName) + "</a></nobr></dt>";
+		gaOpts[gaOpts.length] = cList[i].m_sURL;
+	}
+	sHTML += "</dl>";
+	var oDivCon=getElement("divlist");
+	if(oDivCon)
+		oDivCon.innerHTML=sHTML;
+	return true;
+}
+
+function fnOK()
+{
+	displayOption(gSelectedItem);
+}
+
+function fnCancel()
+{
+	returnValue = null;		window.close();
+}
+
+function fnOnKeypress()
+{
+	switch( event.keyCode )
+	{
+	case 13:	// enter key
+		fnOK();
+		break;
+	case 27:	// escape key
+		fnCancel();
+		break;
+	}
+}
+
+function writeStyle(bMiniBar)
+{
+	var sStyle="";
+	sStyle+="<style type='text/css'>\n";
+	sStyle+="<!--\n";
+	sStyle+="body.clsbody\n";
+	sStyle+="{\n";
+ 	sStyle+="margin: 4px;\n";
+ 	sStyle+=getFontStyle(goTableFont);
+ 	sStyle+="background-attachment: fixed;\n";
+	sStyle+="};\n";
+	sStyle+="P.clsNDXTD\n";
+	sStyle+="{\n";
+ 	sStyle+="margin:0;\n";
+ 	sStyle+=getFontStyle(goTableFont);
+	sStyle+="};\n";
+	sStyle+="div.clslist\n";
+	sStyle+="{\n";
+	if (gsListBgImage)
+ 		sStyle+="background-image:url("+gsListBgImage+");\n";
+	else if (gsListBgColor)
+ 		sStyle+="background-color:"+gsListBgColor+";\n";
+ 	sStyle+=getFontStyle(goFont);
+	sStyle+="};\n";
+	sStyle+="BUTTON.clsNDXButton\n";
+	sStyle+="{\n";
+ 	sStyle+=getFontStyle(goTableFont);
+ 	sStyle+="background-color: transparent;\n";
+	sStyle+="};\n";
+	sStyle+="dl {"+getFontStyle(goFont)+"margin-left:"+gsIndent+";margin-top:"+gsMargin+";}\n";
+	sStyle+="a:link {"+getFontStyle(goFont)+"}\n";
+	sStyle+="a:visited {"+getFontStyle(goFont)+"}\n";
+	sStyle+="a:hover {"+getFontStyle(goHoverFont)+"}\n";
+	sStyle+="a:active {background-color:"+gsABgColor+";}\n";
+	sStyle+="</style>\n";
+	document.write(sStyle);
+}
+
+function window_OnLoad()
+{
+	if(document.body)
+	{
+		if(gsBgImage&&gsBgImage.length>0)
+		{
+			document.body.background=gsBgImage;
+		}
+		if(gsBgColor&&gsBgColor.length>0)
+		{
+			document.body.bgColor=gsBgColor;
+		}
+	}
+	fnOnload();
+	window_onResize();
+}
+
+function window_onResize()
+{
+	var oDiv = getElement("divlist");
+	var oTitle = getElement("p_title");
+	var oButton = getElement("tb_button");
+	if (oDiv && oTitle && oButton)
+	{
+		if(gbIE4)
+			oDiv.style.height = document.body.offsetHeight - oTitle.offsetHeight - oButton.offsetHeight - 8;
+		
+		else if(gbNav6)
+		{
+			//4px(top margin of body) + 4px(bottom margin of body) + 3*2px(border of div) + 3*2px(margin of div) = 16
+			oDiv.style.height = document.body.clientHeight - oTitle.offsetHeight - oButton.offsetHeight - 24;
+		}
+	}
+}
+goTableFont=new whFont("Verdana","8pt","#000000","normal","normal","none");
+goFont=new whFont("Verdana","8pt","#000000","normal","normal","none");
+goHoverFont=new whFont("Verdana","8pt","#666666","normal","normal","none");
+
+
+setBackgroundcolor("White");
+
+setFont("Table", "맑은 고딕","9pt","Black","Normal","Normal","none");
+setListBackgroundcolor("White");
+
+setFont("Normal", "맑은 고딕","9pt","#262324","Normal","Normal","none");
+setFont("Hover", "맑은 고딕","9pt","#009BC9","Normal","Normal","underline");
+setActiveBgColor("#C8C9CE");
+
+window.onload=window_OnLoad;
+window.onresize = window_onResize;
+writeStyle();
+//-->
+</script>
+</head>
+
+<body class="clsbody" scroll="no" onkeypress="fnOnKeypress()">
+<p id="p_title" class="clsNDXTD"><nobr>항목을 선택한 다음 [표시]를 클릭하십시오</nobr></p>
+<div id="divlist" class="clslist" style="margin:2px;position: relative;overflow:auto;width:98%;border-style:inset;border-width:2">
+</div>
+<table id="tb_button" width="100%">
+  <tr>
+    <td width="100%" align="center"><button class="clsNDXButton" name="btnOK" onclick="fnOK()">표시</button>&#32;&#32;&#32;<button class="clsNDXButton" name="btnCancel" onclick="fnCancel()">취소</button></td>
+  </tr>
+</table>
+
+</body>
+
+</html>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0014)about:internet -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <meta name="generator" content="Adobe RoboHelp 10" />
+<meta name="OriginalFile" content="webhelp_SmartEditor_Basic_2.0_developers_guide-ko.docx" />
+<title>webhelp_SmartEditor_Basic_2.0_developers_guide-ko-41</title>
+<link rel="stylesheet" href="default.css" type="text/css" />
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="whmsg.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" src="whver.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whlang.js" charset="utf-8"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js" charset="utf-8"></script>
+
+</head>
+<body><script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.gbWhTopic)
+{
+	var strUrl = document.location.href;
+	var bc = 0;
+	var n = strUrl.toLowerCase().indexOf("bc-");
+	if(n != -1)
+	{
+		document.location.href = strUrl.substring(0, n);
+		bc = strUrl.substring(n+3);
+	}
+
+	if (window.addTocInfo)
+	{
+	addTocInfo("사진퀵업로더\n설치하기\n사진 플러그인 추가");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(0);
+
+	
+	document.write("<p style=\"text-align:left\"> ");
+AddMasterBreadcrumbs("index.htm", "", "&gt;", "홈", "webhelp_SmartEditor_Basic_2_0_developers_guide-ko-1.htm");
+document.write("<a href=\"webhelp_SmartEditor_Basic_2_0_developers_guide-ko-37.htm\">사진퀵업로더<\/a> &gt; <a href=\"webhelp_SmartEditor_Basic_2_0_developers_guide-ko-40.htm\">설치하기<\/a> &gt; 사진 플러그인 추가<\/p>");
+
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+
+onLoadHandler = function()
+{
+  if (window.setRelStartPage)
+	{
+	setTimeout("setRelStartPage('index.htm');", 1)
+
+    setTimeout("UpdateBreadCrumbsMarker();", 1);
+	}
+}
+
+if (window.addEventListener){  
+	window.addEventListener('load', onLoadHandler, false);   
+} else if (window.attachEvent){  
+	window.attachEvent('onload', onLoadHandler);  
+}
+
+function onSetStartPage()
+{
+  autoSync(1);
+  sendSyncInfo();
+  sendAveInfoOut();
+}
+//-->
+//]]></script>
+<script type="text/javascript" src="./ehlpdhtm.js" language="JavaScript1.2"></script>
+
+<h3>사진 플러그인 추가</h3>
+<ol><li class="nListNumd1">js 폴더의 SE2BasicCreator.js 파일에 다음과 같이 플러그인을 추가한다.
+<p class="nCode_d2">oEditor.registerPlugin(new nhn.husky.SE2M_AttachQuickPhoto(elAppContainer)); // 사진</p></li>
+<li class="nListNumd1">SmartEditor2Skin.html 파일에 다음과 같이 JavaScript 파일을 선언한다.
+<p class="nCode_d2">&lt;script type="text/javascript" src="./quick_photo_uploader/plugin/hp_SE2M_AttachQuickPhoto.js" charset="utf-8"&gt; &lt;/script&gt;</p></li>
+<li class="nListNumd1">hp_SE2M_AttachQuickPhoto.js 파일에서 makePopupURL() 함수를 수정한다. sPopupUrl에는 사진 퀵 업로더 팝업 HTML 파일의 경로를 입력한다.
+<p class="nCode_d2">/**</p>
+<p class="nCode_d2">&#160;* 서비스별로 팝업에&#160; parameter를 추가하여 URL을 생성하는 함수</p>
+<p class="nCode_d2">&#160;*/</p>
+<p class="nCode_d2">&#160;&#160;&#160; makePopupURL : function(){</p>
+<p class="nCode_d2">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="nCodeHighlight">var sPopupUrl = "./popup/attach_photo/photo_uploader.html";</span></p>
+<p class="nCode_d2">&#160;&#160;&#160;&#160;&#160;&#160;&#160; return sPopupUrl;</p>
+<p class="nCode_d2">&#160;&#160;&#160; },</p></li></ol>
+<script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+
+
+highlightSearch();
+//-->
+//]]></script>
+</body>
+</html>
