@@ -16,7 +16,7 @@ nhn.husky.EZCreator = new (function(){
 			var fCreator = htOptions.fCreator;
 			var fOnAppLoad = htOptions.fOnAppLoad;
 			var bUseBlocker = htOptions.bUseBlocker;
-			var htParams = htOptions.htParams;
+			var htParams = htOptions.htParams || null;
 		}else{
 			// for backward compatibility only
 			var oAppRef = arguments[0];
@@ -27,8 +27,7 @@ nhn.husky.EZCreator = new (function(){
 			var bUseBlocker = arguments[5];
 			var htParams = arguments[6];
 		}
-		if(fOnAppLoad && htParams) htParams["fOnAppLoad"] = fOnAppLoad;
-		
+
 		if(bUseBlocker) nhn.husky.EZCreator.showBlocker();
 
 		var attachEvent = function(elNode, sEvent, fHandler){ 
@@ -93,8 +92,8 @@ nhn.husky.EZCreator = new (function(){
 			if(!oAppRef.getById) oAppRef.getById = {};
 			
 			if(elPlaceHolder.id) oAppRef.getById[elPlaceHolder.id] = oApp;
-			
-			oApp.run({});
+
+			oApp.run({fnOnAppReady:fOnAppLoad}); 
 			
 //			top.document.title += ", "+((new Date())-window.STime);
 			nhn.husky.EZCreator.hideBlocker();

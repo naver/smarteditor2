@@ -44,6 +44,10 @@ nhn.husky.DialogLayerManager = jindo.$Class({
 		this.aOpenedLayers = [];
 	},
 	
+	$BEFORE_MSG_APP_READY : function() {
+		this.oNavigator = jindo.$Agent().navigator();
+	},
+	
 	//@lazyload_js SHOW_DIALOG_LAYER,TOGGLE_DIALOG_LAYER:N_DraggableLayer.js[
 	$ON_SHOW_DIALOG_LAYER : function(elLayer, htOptions){
 		elLayer = jindo.$(elLayer);
@@ -92,6 +96,10 @@ nhn.husky.DialogLayerManager = jindo.$Class({
 
 		if(elLayer){elLayer.style.display = "none";}
 		this.aOpenedLayers = jindo.$A(this.aOpenedLayers).refuse(elLayer).$value();
+		
+		if(!!this.oNavigator.msafari){
+			this.oApp.getWYSIWYGWindow().focus();
+		}
 	},
 
 	$ON_TOGGLE_DIALOG_LAYER : function(elLayer, htOptions){

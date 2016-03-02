@@ -96,7 +96,7 @@ nhn.husky.SE2M_ImgSizeRatioKeeper = jindo.$Class({
 				var nEditorWidth = welWysiwygBody.width();
 				if(width > nEditorWidth){
 					bPossible = false;
-					alert("이미지 크기를 에디터 가로폭("+nEditorWidth+"px)보다 크게 조절하실 수 없습니다.");
+					alert(this.oApp.$MSG("SE2M_ImgSizeRatioKeeper.exceedMaxWidth").replace("#EditorWidth#", nEditorWidth));
 				}
 			}
 		}

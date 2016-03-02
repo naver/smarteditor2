@@ -68,6 +68,7 @@
  * RESIZE_EDITING_AREA_BY
  *
  * 편집 영역 사이즈를 늘리거나 줄인다. 변경 전후에 MSG_EDITIING_AREA_RESIZE_STARTED/MSG_EDITING_AREA_RESIZE_ENED를 발생 시켜 줘야 된다.
+ * 변경치를 입력하면 원래 사이즈에서 변경하여 px로 적용하며, width가 %로 설정된 경우에는 폭 변경치가 입력되어도 적용되지 않는다.
  *
  * ipWidthChange number 폭 변경치
  * ipHeightChange number 높이 변경치
@@ -109,33 +110,64 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		this.nMinWidth = parseInt((oDimension.nMinWidth || 60), 10);
 		this.nMinHeight = parseInt((oDimension.nMinHeight || 60), 10);
 		
-		var oEditorInitSize = this._getInitialSize(oDimension);
+		var oWidth = this._getSize([oDimension.nWidth, oDimension.width, this.elEditingAreaContainer.offsetWidth], this.nMinWidth);
+		var oHeight = this._getSize([oDimension.nHeight, oDimension.height, this.elEditingAreaContainer.offsetHeight], this.nMinHeight);
 
-		this.elEditingAreaContainer.style.width = oEditorInitSize.nWidth + "px";
-		this.elEditingAreaContainer.style.height = oEditorInitSize.nHeight + "px";
+		this.elEditingAreaContainer.style.width = oWidth.nSize + oWidth.sUnit;
+		this.elEditingAreaContainer.style.height = oHeight.nSize + oHeight.sUnit;
 		
-		elAppContainer.style.width = (oEditorInitSize.nWidth + 2) + "px";
+		if(oWidth.sUnit === "px"){
+			elAppContainer.style.width = (oWidth.nSize + 2) + "px";	
+		}else if(oWidth.sUnit === "%"){
+			elAppContainer.style.minWidth = this.nMinWidth + "px";
+		}
 	},
 	
-	_getInitialSize : function(oDimension){
-		var nEditingAreaWidth, nEditingAreaHeight;
+	_getSize : function(aSize, nMin){
+		var i, nLen, aRxResult, nSize, sUnit, sDefaultUnit = "px";
 		
-		nEditingAreaWidth = parseInt(oDimension.nWidth, 10);
-		nEditingAreaWidth = !!nEditingAreaWidth ? nEditingAreaWidth : parseInt(oDimension.width, 10);
-		nEditingAreaWidth = !!nEditingAreaWidth ? nEditingAreaWidth : parseInt(this.elEditingAreaContainer.offsetWidth, 10);
+		nMin = parseInt(nMin, 10);
 		
-		nEditingAreaHeight = parseInt(oDimension.nHeight, 10);
-		nEditingAreaHeight = !!nEditingAreaHeight ? nEditingAreaHeight : parseInt(oDimension.height, 10);
-		nEditingAreaHeight = !!nEditingAreaHeight ? nEditingAreaHeight : parseInt(this.elEditingAreaContainer.offsetHeight, 10);
-		
-		if(!nEditingAreaWidth || nEditingAreaWidth < this.nMinWidth){
-			nEditingAreaWidth = this.nMinWidth;
+		for(i=0, nLen=aSize.length; i<nLen; i++){
+			if(!aSize[i]){
+				continue;
+			}
+			
+			if(!isNaN(aSize[i])){
+				nSize = parseInt(aSize[i], 10);
+				sUnit = sDefaultUnit;
+				break;
+			}
+			
+			aRxResult = /([0-9]+)(.*)/i.exec(aSize[i]);
+						
+			if(!aRxResult || aRxResult.length < 2 || aRxResult[1] <= 0){
+				continue;
+			}
+			
+			nSize = parseInt(aRxResult[1], 10);
+			sUnit = aRxResult[2];
+						
+			if(!sUnit){
+				sUnit = sDefaultUnit;
+			}
+			
+			if(nSize < nMin && sUnit === sDefaultUnit){
+				nSize = nMin;
+			}
+			
+			break;
 		}
-		if(!nEditingAreaHeight || nEditingAreaHeight < this.nMinHeight){
-			nEditingAreaHeight = this.nMinHeight;
+				
+		if(!sUnit){
+			sUnit = sDefaultUnit;
 		}
 		
-		return {nWidth : nEditingAreaWidth, nHeight : nEditingAreaHeight};
+		if(isNaN(nSize) || (nSize < nMin && sUnit === sDefaultUnit)){
+			nSize = nMin;
+		}
+		
+		return {nSize : nSize, sUnit : sUnit};
 	},
 
 	_assignHTMLElements : function(elAppContainer){
@@ -145,6 +177,8 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	},
 
 	$BEFORE_MSG_APP_READY : function(msg){
+		this.oNavigator = jindo.$Agent().navigator();
+		
 		this.oApp.exec("ADD_APP_PROPERTY", ["elEditingAreaContainer", this.elEditingAreaContainer]);
 		this.oApp.exec("ADD_APP_PROPERTY", ["welEditingAreaContainer", jindo.$Element(this.elEditingAreaContainer)]);
 		this.oApp.exec("ADD_APP_PROPERTY", ["getEditingAreaHeight", jindo.$Fn(this.getEditingAreaHeight, this).bind()]);
@@ -160,7 +194,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	$ON_MSG_APP_READY : function(){
 		this.htOptions =  this.oApp.htOptions[this.name] || {};
 		this.sDefaultEditingMode = this.htOptions["sDefaultEditingMode"] || this.sDefaultEditingMode;
-
+		this.iframeWindow = this.oApp.getWYSIWYGWindow();
 		this.oApp.exec("REGISTER_CONVERTERS", []);
 		this.oApp.exec("CHANGE_EDITING_MODE", [this.sDefaultEditingMode, true]);
 		this.oApp.exec("LOAD_CONTENTS_FIELD", [false]);
@@ -243,6 +277,13 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 			return;
 		}
 
+		// [SMARTEDITORSUS-599] ipad 대응 이슈.
+		// ios5에서는 this.iframe.contentWindow focus가 없어서 생긴 이슈. 
+		// document가 아닌 window에 focus() 주어야만 본문에 focus가 가고 입력이됨.
+		if(!!this.oNavigator.msafari && !!this.iframeWindow && !this.iframeWindow.document.hasFocus()){
+			this.iframeWindow.focus();
+		}
+		
 		this.oActivePlugin.focus();
 	},
 	
@@ -296,34 +337,59 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	},
 	
 	$ON_RESIZE_EDITING_AREA: function(ipNewWidth, ipNewHeight){
-		var iNewWidth = parseInt(ipNewWidth, 10);
-		var iNewHeight = parseInt(ipNewHeight, 10);
-
-		if(iNewWidth < this.nMinWidth){
-			iNewWidth = this.nMinWidth;
+		if(ipNewWidth !== null && typeof ipNewWidth !== "undefined"){
+			this._resizeWidth(ipNewWidth, "px");	
 		}
-		if(iNewHeight < this.nMinHeight){
-			iNewHeight = this.nMinHeight;
-		}
-	
-		if(ipNewWidth){		
-			this.elEditingAreaContainer.style.width = iNewWidth+"px";			
-		}
-		if(ipNewHeight){
-			this.elEditingAreaContainer.style.height = iNewHeight+"px";
+		if(ipNewHeight !== null && typeof ipNewHeight !== "undefined"){
+			this._resizeHeight(ipNewHeight, "px");
 		}
 		
 		this._fitElementInEditingArea(this.elResizingBoard);
 		this._setEditingAreaDimension();
 	},
+	
+	_resizeWidth : function(ipNewWidth, sUnit){
+		var iNewWidth = parseInt(ipNewWidth, 10);
+		
+		if(iNewWidth < this.nMinWidth){
+			iNewWidth = this.nMinWidth;
+		}
+		
+		if(ipNewWidth){		
+			this.elEditingAreaContainer.style.width = iNewWidth + sUnit;			
+		}
+	},
+	
+	_resizeHeight : function(ipNewHeight, sUnit){
+		var iNewHeight = parseInt(ipNewHeight, 10);
+		
+		if(iNewHeight < this.nMinHeight){
+			iNewHeight = this.nMinHeight;
+		}
 
+		if(ipNewHeight){
+			this.elEditingAreaContainer.style.height = iNewHeight + sUnit;
+		}
+	},
+	
 	$ON_RESIZE_EDITING_AREA_BY : function(ipWidthChange, ipHeightChange){
 		var iWidthChange = parseInt(ipWidthChange, 10);
 		var iHeightChange = parseInt(ipHeightChange, 10);
-
-		var iWidth = this.elEditingAreaContainer.style.width?parseInt(this.elEditingAreaContainer.style.width, 10)+iWidthChange:null;
-		var iHeight = this.elEditingAreaContainer.style.height?this.iStartingHeight+iHeightChange:null;
-
+		var iWidth;
+		var iHeight;
+		
+		if(ipWidthChange !== 0 && this.elEditingAreaContainer.style.width.indexOf("%") === -1){
+			iWidth = this.elEditingAreaContainer.style.width?parseInt(this.elEditingAreaContainer.style.width, 10)+iWidthChange:null;
+		}
+		
+		if(iHeightChange !== 0){
+			iHeight = this.elEditingAreaContainer.style.height?this.iStartingHeight+iHeightChange:null;
+		}
+		
+		if(!ipWidthChange && !iHeightChange){
+			return;
+		}
+				
 		this.oApp.exec("RESIZE_EDITING_AREA", [iWidth, iHeight]);
 	},
 	

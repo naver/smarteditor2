@@ -48,6 +48,21 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		this.oApp.exec("REGISTER_UI_EVENT", ["indent", "click", "EXECCOMMAND", ["indent", false, false]]);
 
 //		this.oApp.exec("REGISTER_UI_EVENT", ["styleRemover", "click", "EXECCOMMAND", ["RemoveFormat", false, false]]);
+
+		this.oNavigator = jindo.$Agent().navigator();
+		
+		if(!this.oNavigator.safari && !this.oNavigator.chrome){
+			this._getDocumentBR = function(){};
+			this._fixDocumentBR	= function(){};
+		}
+		
+		if(!this.oNavigator.ie){
+			this._fixCorruptedBlockQuote = function(){};
+		}
+		
+		if(!this.oNavigator.firefox){
+			this._extendBlock = function(){};
+		}
 	},
 
 	$ON_INDENT : function(){
@@ -59,24 +74,19 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	},
 	
 	$BEFORE_EXECCOMMAND : function(sCommand, bUserInterface, vValue, htOptions){
-		var elTmp, oSelection, i, iLen, oNavigator;
+		var elTmp, oSelection;
 		
 		//본문에 전혀 클릭이 한번도 안 일어난 상태에서 크롬과 IE에서 EXECCOMMAND가 정상적으로 안 먹히는 현상. 
-		this.oApp.exec("FOCUS");		
+		this.oApp.exec("FOCUS");
 		this._bOnlyCursorChanged = false;		
 		oSelection = this.oApp.getSelection();
-		oNavigator = jindo.$Agent().navigator();
 				
-		if(oNavigator.safari || oNavigator.chrome){
-			// http://bts.nhncorp.com/nhnbts/browse/COM-715
-			// [SE2.0] <Safari> 요약글 삽입 > 더보기 영역에서 기호매기기, 번호매기기 설정할때마다 요약글 박스가 아래로 이동됨
-			if(sCommand.match(/^insertorderedlist|insertunorderedlist$/i)){
-				this.aBRs = this.oApp.getWYSIWYGDocument().getElementsByTagName("BR");
-				this.aBeforeBRs = [];
-				for(i=0, iLen=this.aBRs.length; i<iLen; i++){
-					this.aBeforeBRs[i] = this.aBRs[i];
-				}
-			}
+		if(/^insertorderedlist|insertunorderedlist$/i.test(sCommand)){
+			this._getDocumentBR();
+		}
+		
+		if(/^justify*/i.test(sCommand)){
+			this._removeSpanAlign();
 		}
 		
 		if(sCommand.match(/^bold|underline|italic|strikethrough|superscript|subscript$/i)){
@@ -86,7 +96,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 				this._bOnlyCursorChanged = true;
 
 				//[SMARTEDITORSUS-228] 글꼴 효과를 미리 지정 한 후에 텍스트 입력 시, 색상 변경은 적용되나 굵게 기울임 밑줄 취소선 등의 효과는 적용안됨
-				if( oNavigator.ie ){
+				if( this.oNavigator.ie ){
 					if(oSelection.startContainer.tagName == "BODY" && oSelection.startOffset === 0){
 						elTmp = this.oApp.getWYSIWYGDocument().createElement("SPAN");					
 						elTmp.innerHTML = unescape("%uFEFF");
@@ -102,7 +112,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			htOptions["bDontAddUndoHistory"] = true;
 		}
 		if((!htOptions || !htOptions["bDontAddUndoHistory"]) && !this._bOnlyCursorChanged){
-			if(sCommand.match(/justifyleft|justifycenter|justifyright|justifyfull/)){
+			if(/^justify*/i.test(sCommand)){
 				this.oUndoOption = {sSaveTarget:"BODY"};
 			}else if(sCommand === "insertorderedlist" || sCommand === "insertunorderedlist"){
 				this.oUndoOption = {bMustBlockContainer:true};
@@ -110,7 +120,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			
 			this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", [sCommand, this.oUndoOption]);
 		}
-		if(oNavigator.ie){
+		if(this.oNavigator.ie){
 			if(this.oApp.getWYSIWYGDocument().selection.type === "Control"){
 				oSelection = this.oApp.getSelection();
 				oSelection.select();
@@ -169,12 +179,8 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			case "justifycenter":
 			case "justifyright":
 			case "justifyfull":
-				var oSelectionClone = null;
-				
-				if(jindo.$Agent().navigator().firefox){
-					oSelectionClone = this._extendBlock();
-				}
-				
+				var oSelectionClone = this._extendBlock();	// FF
+
 				this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
 				
 				if(!!oSelectionClone){
@@ -184,7 +190,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 				break;
 				
 			default:
-				//if(jindo.$Agent().navigator().firefox){
+				//if(this.oNavigator.firefox){
 					//this.oEditingArea.execCommand("styleWithCSS", bUserInterface, false);
 				//}
 				this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
@@ -195,22 +201,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	},
 
 	$AFTER_EXECCOMMAND : function(sCommand, bUserInterface, vValue, htOptions){
-		if(jindo.$Agent().navigator().safari || jindo.$Agent().navigator().chrome){
-			if(sCommand.match(/^insertorderedlist|insertunorderedlist$/i)){
-				// this.aBRs gets updated automatically when the document is updated
-				if(this.aBeforeBRs.length != this.aBRs.length){
-					var waBeforeBRs = jindo.$A(this.aBeforeBRs);
-					
-					for(var i=0, iLen = this.aBRs.length; i<iLen; i++){
-						if(waBeforeBRs.indexOf(this.aBRs[i])<0){
-							this.aBRs[i].parentNode.removeChild(this.aBRs[i]);
-						}
-					}
-				}
-			}
-		}
-		
-		if(jindo.$Agent().navigator().ie){
+		if(this.oNavigator.ie){
 			if(this.elP1 && this.elP1.parentNode){
 				this.elP1.parentNode.removeChild(this.elP1);
 			}
@@ -218,37 +209,123 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			if(this.elP2 && this.elP2.parentNode){
 				this.elP2.parentNode.removeChild(this.elP2);
 			}
-
-			if(sCommand === "insertorderedlist"){
-				this._fixCorruptedBlockQuote("OL");
-			}else{
-				if(sCommand === "insertunorderedlist"){
-					this._fixCorruptedBlockQuote("UL");
-				}
-			}
-
-			//
-			if(sCommand.match(/justifyleft|justifycenter|justifyright|justifyfull/)){
-				var oSelection = this.oApp.getSelection();
-				var aNodes = oSelection.getNodes();
-				for(var i=0, nLen=aNodes.length; i<nLen; i++){
-					var elNode = aNodes[i];
-					if(elNode.tagName && elNode.tagName === "TABLE"){
-						elNode.removeAttribute("align");
-					}
-				}
-			}
+		}
+		
+		if(/^insertorderedlist|insertunorderedlist$/i.test(sCommand)){
+			this._fixDocumentBR();	// Chrome/Safari
+			this._fixCorruptedBlockQuote(sCommand === "insertorderedlist" ? "OL" : "UL");	// IE
+		}
+		
+		if((/^justify*/i.test(sCommand))){
+			this._fixAlign(sCommand === "justifyfull" ? "justify" : sCommand.substring(7));
 		}
 
 		if(sCommand == "indent" || sCommand == "outdent"){
 			if(!htOptions){htOptions = {};}
 			htOptions["bDontAddUndoHistory"] = true;
 		}
+		
 		if((!htOptions || !htOptions["bDontAddUndoHistory"]) && !this._bOnlyCursorChanged){
 			this.oApp.exec("RECORD_UNDO_AFTER_ACTION", [sCommand, this.oUndoOption]);
 		}
 
 		this.oApp.exec("CHECK_STYLE_CHANGE", []);
+	},
+	
+	_removeSpanAlign : function(){
+		var oSelection = this.oApp.getSelection(),
+			aNodes = oSelection.getNodes(),
+			elNode = null;
+			
+		for(var i=0, nLen=aNodes.length; i<nLen; i++){
+			elNode = aNodes[i];
+			
+			// [SMARTEDITORSUS-704] SPAN에서 적용된 Align을 제거
+			if(elNode.tagName && elNode.tagName === "SPAN"){
+				elNode.style.textAlign = "";
+				elNode.removeAttribute("align");
+			}
+		}
+	},
+	
+	_fixAlign : function(sAlign){
+		var oSelection = this.oApp.getSelection(),
+			aNodes = oSelection.getNodes(),
+			elNode = null;
+			
+		var removeTableAlign = !this.oNavigator.ie ? function(){} : function(elNode){
+			if(elNode.tagName && elNode.tagName === "TABLE"){
+				elNode.removeAttribute("align");
+				
+				return true;
+			}
+			
+			return false;
+		};
+			
+		if(aNodes.length === 1 && aNodes[0].nodeType === 3){ // [SMARTEDITORSUS-704] 텍스트노드 하나만 선택된 경우
+			elNode = aNodes[0].parentNode;
+			
+			while(elNode && elNode.tagName){
+				if((elNode.tagName === "P" || elNode.tagName === "DIV") && elNode.align !== elNode.style.textAlign){
+					elNode.style.textAlign = sAlign;
+					elNode.setAttribute("align", sAlign);
+					
+					break;
+				}
+				
+				elNode = elNode.parentNode;
+			}
+			
+			return;
+		}
+		
+		for(var i=0, nLen=aNodes.length; i<nLen; i++){
+			elNode = aNodes[i];
+			
+			if(elNode.nodeType !== 1){
+				continue;
+			}
+			
+			if(removeTableAlign(elNode)){	// IE
+				continue;
+			}
+			
+			// [SMARTEDITORSUS-704] align 속성과 text-align 속성의 값을 맞춰줌
+			if((elNode.tagName === "P" || elNode.tagName === "DIV") && elNode.align !== elNode.style.textAlign){
+				elNode.style.textAlign = sAlign;
+				elNode.setAttribute("align", sAlign);
+			}
+		}
+	},
+	
+	_getDocumentBR : function(){
+		// [COM-715] <Chrome/Safari> 요약글 삽입 > 더보기 영역에서 기호매기기, 번호매기기 설정할때마다 요약글 박스가 아래로 이동됨
+		// ExecCommand를 처리하기 전에 현재의 BR을 저장
+		
+		this.aBRs = this.oApp.getWYSIWYGDocument().getElementsByTagName("BR");
+		this.aBeforeBRs = [];
+		
+		for(i=0, iLen=this.aBRs.length; i<iLen; i++){
+			this.aBeforeBRs[i] = this.aBRs[i];
+		}
+	},
+	
+	_fixDocumentBR : function(){
+		// [COM-715] ExecCommand가 처리된 후에 업데이트된 BR을 처리 전에 저장한 BR과 비교하여 생성된 BR을 제거
+		
+		if(this.aBeforeBRs.length === this.aBRs.length){	// this.aBRs gets updated automatically when the document is updated
+			return;
+		}
+		
+		var waBeforeBRs = jindo.$A(this.aBeforeBRs),
+			i, iLen = this.aBRs.length;
+		
+		for(i=iLen-1; i>=0; i--){
+			if(waBeforeBRs.indexOf(this.aBRs[i])<0){
+				this.aBRs[i].parentNode.removeChild(this.aBRs[i]);
+			}
+		}
 	},
 	
 	_setBlockExecCommand : function(sCommand, bUserInterface, vValue){
@@ -262,7 +339,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			this.oSelection.selectNodeContents(aNodes[j]);
 			this.oSelection.select();
 			
-			if(jindo.$Agent().navigator().firefox){
+			if(this.oNavigator.firefox){
 				this.oEditingArea.execCommand("styleWithCSS", bUserInterface, false); //styleWithCSS는 ff전용임.
 			}
 			
@@ -461,6 +538,8 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	//
 	// It can also happen when the cursor is located at bogus positions like 
 	// * below blockquote when the blockquote is the last element in the document
+	// 
+	// [IE] 인용구 안에서 글머리 기호를 적용했을 때, 인용구 밖에 적용된 번호매기기/글머리 기호가 인용구 안으로 빨려 들어가는 문제 처리
 	_fixCorruptedBlockQuote : function(sTagName){
 		var aNodes = this.oApp.getWYSIWYGDocument().getElementsByTagName(sTagName);
 		var elCorruptedBlockQuote;
@@ -516,7 +595,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	}, 
 	
 	_extendBlock : function(){
-		// [SMARTEDITORSUS-663] [FF] lock단위로 확장하여 Range를 새로 지정해주는것이 원래 스펙이므로
+		// [SMARTEDITORSUS-663] [FF] block단위로 확장하여 Range를 새로 지정해주는것이 원래 스펙이므로
 		// 해결을 위해서는 현재 선택된 부분을 Block으로 extend하여 execCommand API가 처리될 수 있도록 함
 
 		var oSelection = this.oApp.getSelection(),

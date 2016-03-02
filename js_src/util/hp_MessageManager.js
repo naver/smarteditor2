@@ -7,9 +7,23 @@ nhn.husky.MessageManager = jindo.$Class({
 	name : "MessageManager",
 
 	oMessageMap : null,
-
-	$init : function(oMessageMap){
-		this.oMessageMap = oMessageMap;
+	sLocale : "ko_KR",
+	
+	$init : function(oMessageMap, sLocale){
+		switch(sLocale) {
+			case "ja_JP" :
+				this.oMessageMap = oMessageMap_ja_JP;
+				break;
+			case "en_US" :
+				this.oMessageMap = oMessageMap_en_US;
+				break;
+			case "zh_CN" :
+				this.oMessageMap = oMessageMap_zh_CN;
+				break;
+			default :  // Korean
+				this.oMessageMap = oMessageMap;
+				break;
+		}
 	},
 
 	$BEFORE_MSG_APP_READY : function(){
@@ -18,7 +32,6 @@ nhn.husky.MessageManager = jindo.$Class({
 
 	getMessage : function(sMsg){
 		if(this.oMessageMap[sMsg]){return unescape(this.oMessageMap[sMsg]);}
-		
 		return sMsg;
 	}
 });

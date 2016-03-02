@@ -297,7 +297,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 				this.oApp.exec("RECORD_UNDO_AFTER_ACTION", ["HYPERLINK", {sSaveTarget:(this.bModify ? "A" : null)}]);
 			}, this).bind(), 17);			
 		}else{
-			alert(this.oApp.$MSG("URL을 정확히 입력해 주세요."));
+			alert(this.oApp.$MSG("SE_Hyperlink.invalidURL"));
 			this.oLinkInput.focus();
 		}
 	},

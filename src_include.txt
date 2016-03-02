@@ -1,4 +1,4 @@
-자바스크립트 소스를 직접 수정하고자 할 경우는 SmartEditor2Skin.html 소스를 아래의 과정으로 수정한 후 자바스크립트 소스를 수정합니다.
+﻿자바스크립트 소스를 직접 수정하고자 할 경우는 SmartEditor2Skin.html 소스를 아래의 과정으로 수정한 후 자바스크립트 소스를 수정합니다.
 
 1) SmartEditor2Skin.html 소스에서 아래의 부분을 삭제합니다.
 <script src='js/loader-min.js' charset='utf-8'></script>
@@ -48,7 +48,7 @@
 <script type="text/javascript" src="./js_src/util/hp_SE2M_Utils.js"></script>
 <script type="text/javascript" src="./js_src/util/hp_SE2M_ImgSizeRatioKeeper.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js_src/service/hp_SE2B_CSSLoader.js" charset="utf-8"></script>
-<script type="text/javascript" src="./js_src/service/husky_SE2B_Lang_KR.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/service/husky_SE2B_Lang_ko_KR.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js_src/service/hp_SE2B_Customize_ToolBar.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js_src/service/hp_SE_OuterIFrameControl.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js_src/service/hp_SE_ToolbarToggler.js" charset="utf-8"></script>

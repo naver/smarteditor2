@@ -308,11 +308,10 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 
 		elHtml = elLowerNode.innerHTML;
 		
-		if(elHtml !== "" && elHtml.replace(unescape("%uFEFF"), '') !== ""){
-			return;
+		if(elHtml === "" || elHtml.replace(unescape("%uFEFF"), '') === ""){
+			elLowerNode.innerHTML = unescape("%uFEFF");
 		}
-
-		elLowerNode.innerHTML = unescape("%uFEFF");			
+					
 		elParent = nhn.husky.SE2M_Utils.findAncestorByTagName("P", elLowerNode);
 		
 		oSelection.selectNodeContents(elLowerNode);
@@ -322,9 +321,9 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		this._addSpace(elParent.previousSibling);	// 상단 P 노드에 공백문자 추가
 		this._addSpace(elParent);					// 하단 P 노드에 공백문자 추가
 
-		oSelection.moveToBookmark(sBM);
+		oSelection.moveToBookmark(sBM);		
 		oSelection.selectNodeContents(elLowerNode);
-		oSelection.collapseToEnd();
+		oSelection.collapseToStart();		
 		oSelection.select();
 
 		oSelection.removeStringBookmark(sBM);

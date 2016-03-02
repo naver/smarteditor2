@@ -24,9 +24,9 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 
 	var htDimension = {
 		nMinHeight:205,
-		nMinWidth:570,
-		nHeight:parseInt(elIRField.style.height||elIRField.offsetHeight, 10),
-		nWidth : parseInt(elIRField.style.width||elIRField.offsetWidth, 10)
+		nMinWidth:parseInt(elIRField.style.minWidth, 10)||570,
+		nHeight:elIRField.style.height||elIRField.offsetHeight,
+		nWidth:elIRField.style.width||elIRField.offsetWidth
 	};
 	oEditor.registerPlugin(new nhn.husky.SE_EditingAreaManager("WYSIWYG", oIRTextarea, htDimension,  htParams.fOnBeforeUnload, elAppContainer));
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_WYSIWYG(oWYSIWYGIFrame));			// Tab Editor 모드

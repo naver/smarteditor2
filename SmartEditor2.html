@@ -8,6 +8,7 @@
 <body>
 <form action="sample.php" method="post">
 	<textarea name="ir1" id="ir1" rows="10" cols="100" style="width:766px; height:412px; display:none;"></textarea>
+	<!--textarea name="ir1" id="ir1" rows="10" cols="100" style="width:100%; height:412px; min-width:610px; display:none;"></textarea-->
 	<p>
 		<input type="button" onclick="pasteHTML();" value="본문에 내용 넣기" />
 		<input type="button" onclick="showHTML();" value="본문 내용 가져오기" />
@@ -27,6 +28,10 @@ nhn.husky.EZCreator.createInIFrame({
 			//alert("아싸!");	
 		}
 	}, //boolean
+	fOnAppLoad : function(){
+		//예제 코드
+		//oEditors.getById["ir1"].exec("PASTE_HTML", ["로딩이 완료된 후에 본문에 삽입되는 text입니다."]);
+	},
 	fCreator: "createSEditor2"
 });
 

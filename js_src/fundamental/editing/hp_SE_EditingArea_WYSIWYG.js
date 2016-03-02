@@ -604,16 +604,22 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	},
 
 	setIR : function(sIR){		
-		var sContent;
+		var sContent, oNavigator = jindo.$Agent().navigator();
+		
 		if(this.oApp.applyConverter){
 			sContent = this.oApp.applyConverter("IR_TO_"+this.sMode, sIR, this.oApp.getWYSIWYGDocument());
 		}else{
 			sContent = sIR;
 		}
+		
+		if(oNavigator.ie && oNavigator.nativeVersion >= 9 && document.documentMode >= 9){
+			// [SMARTEDITORSUS-704] \r\n이 있는 경우 IE9 표준모드에서 정렬 시 브라우저가 <p>를 추가하는 문제
+			sContent = sContent.replace(/[\r\n]/g,"");
+		}
 
 		this.iframe.contentWindow.document.body.innerHTML = sContent;
 		
-		if(!jindo.$Agent().navigator().ie){
+		if(!oNavigator.ie){
 			if((this.iframe.contentWindow.document.body.innerHTML).replace(/[\r\n\t\s]*/,"") == ""){
 				this.iframe.contentWindow.document.body.innerHTML = "<br>";
 			}

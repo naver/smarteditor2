@@ -112,10 +112,16 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 	
 	//$LOCAL_BEFORE_FIRST : function(){
 	_initFontName : function(){
-		this.elSeparator.style.display = "none";
-		this.elNanumgothic.style.display = "none";
-		this.elNanummyeongjo.style.display = "none";
+		this._addNanumFont();
+		
+		this.addAllFonts();
 
+		this.oApp.registerBrowserEvent(this.oDropdownLayer, "mouseover", "EVENT_FONTNAME_LAYER_MOUSEOVER", []);
+		this.oApp.registerBrowserEvent(this.oDropdownLayer, "click", "EVENT_FONTNAME_LAYER_CLICKED", []);
+	},
+	
+	_addNanumFont : function(){
+		var bUseSeparator = false;
 		var nanum_gothic = unescape("%uB098%uB214%uACE0%uB515");
 		var nanum_myungjo = unescape("%uB098%uB214%uBA85%uC870");
 		
@@ -124,19 +130,27 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 			nanum_myungjo = "NanumMyeongjo";
 		}
 		
-		if(IsInstalledFont(nanum_gothic)){
-			this.elSeparator.style.display = "block";
-			this.elNanumgothic.style.display = "block";
-		}
-		if(IsInstalledFont(nanum_myungjo)){
-			this.elSeparator.style.display = "block";
-			this.elNanummyeongjo.style.display = "block";
+		if(!!this.elNanumgothic){
+			if(IsInstalledFont(nanum_gothic)){
+				bUseSeparator = true;
+				this.elNanumgothic.style.display = "block";
+			}else{
+				this.elNanumgothic.style.display = "none";
+			}
 		}
 		
-		this.addAllFonts();
-
-		this.oApp.registerBrowserEvent(this.oDropdownLayer, "mouseover", "EVENT_FONTNAME_LAYER_MOUSEOVER", []);
-		this.oApp.registerBrowserEvent(this.oDropdownLayer, "click", "EVENT_FONTNAME_LAYER_CLICKED", []);
+		if(!!this.elNanummyeongjo){
+			if(IsInstalledFont(nanum_myungjo)){
+				bUseSeparator = true;
+				this.elNanummyeongjo.style.display = "block";
+			}else{
+				this.elNanummyeongjo.style.display = "none";
+			}
+		}
+		
+		if(!!this.elSeparator){
+			this.elSeparator.style.display = bUseSeparator ? "block" : "none";
+		}
 	},
 	
 	_attachIEEvent : function(){
@@ -444,7 +458,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		
 		this.htFamilyName2DisplayName[sFontFamily] = fontName;
 
-		sSampleText = sSampleText || "가나다라";
+		sSampleText = sSampleText || this.oApp.$MSG('SE2M_FontNameWithLayerUI.sSampleText');
 		this._addFontToMenu(sDisplayName, sFontFamily, sSampleText);
 		
 		if(!fontType){

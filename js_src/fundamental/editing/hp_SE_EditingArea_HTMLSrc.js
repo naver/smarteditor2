@@ -13,6 +13,7 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 	},
 
 	$BEFORE_MSG_APP_READY : function() {
+		this.oNavigator = jindo.$Agent().navigator();
 		this.oApp.exec("REGISTER_EDITING_AREA", [this]);
 	},
 
@@ -28,6 +29,11 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 		if (sMode == this.sMode) {					
 			var o = new TextRange(this.elEditingArea);
 			o.setSelection(0, 0);
+			
+			//모바일 textarea에서는 직접 클릭을해야만 키보드가 먹히기 때문에 우선은 커서가 안보이게 해서 사용자가 직접 클릭을 유도.
+			if(!!this.oNavigator.msafari){
+				this.elEditingArea.blur();
+			}
 		}
 	},
 	

@@ -442,7 +442,7 @@ nhn.husky.SE2M_Quote = jindo.$Class({
 		nQuoteCount = this._getQuoteCount(oFormattingNode);
 		
 		if(nQuoteCount > 14){
-			alert("인용구는 15개 이상 입력할 수 없습니다.");
+			alert(this.oApp.$MSG("SE2M_Quote.exceedMaxCount"));
 			
 			this.oApp.exec("HIDE_ACTIVE_LAYER", []);
 			

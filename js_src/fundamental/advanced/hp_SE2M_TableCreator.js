@@ -25,13 +25,14 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 	nMaxBorderWidth : 10,
 	
 	rxLastDigits : null,
-
+	sReEditGuideMsg_table : null,
+	
 	// 테두리 스타일 목록
 	// 표 스타일 스타일 목록
-
 	oSelection : null,
 	
 	$ON_MSG_APP_READY : function(){
+		this.sReEditGuideMsg_table = this.oApp.$MSG(nhn.husky.SE2M_Configuration.SE2M_ReEditAction.aReEditGuideMsg[3]);
 		this.oApp.exec("REGISTER_UI_EVENT", ["table", "click", "TOGGLE_TABLE_LAYER"]);
 	},
 	
@@ -427,7 +428,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		this.oApp.exec("RECORD_UNDO_AFTER_ACTION", ["INSERT TABLE", {sSaveTarget:"BODY"}]);
 		
 		this.oApp.exec("HIDE_ACTIVE_LAYER", []);
-		this.oApp.exec('MSG_DISPLAY_REEDIT_MESSAGE_SHOW', [this.name, nhn.husky.SE2M_Configuration.SE2M_ReEditAction.aReEditGuideMsg[3]]);
+		this.oApp.exec('MSG_DISPLAY_REEDIT_MESSAGE_SHOW', [this.name, this.sReEditGuideMsg_table]);
 	},
 	
 	/**

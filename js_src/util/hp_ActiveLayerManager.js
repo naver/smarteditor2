@@ -34,7 +34,11 @@
 nhn.husky.ActiveLayerManager = jindo.$Class({
 	name : "ActiveLayerManager",
 	oCurrentLayer : null,
-
+	
+	$BEFORE_MSG_APP_READY : function() {
+		this.oNavigator = jindo.$Agent().navigator();
+	},
+	
 	$ON_TOGGLE_ACTIVE_LAYER : function(oLayer, sOnOpenCmd, aOnOpenParam, sOnCloseCmd, aOnCloseParam){
 		if(oLayer == this.oCurrentLayer){
 			this.oApp.exec("HIDE_ACTIVE_LAYER", []);
@@ -67,6 +71,10 @@ nhn.husky.ActiveLayerManager = jindo.$Class({
 		this.oCurrentLayer = null;
 		if(this.sOnCloseCmd){
 			this.oApp.exec(this.sOnCloseCmd, this.aOnCloseParam);
+		}
+
+		if(!!this.oNavigator.msafari){
+			this.oApp.getWYSIWYGWindow().focus();
 		}
 	},
 	
