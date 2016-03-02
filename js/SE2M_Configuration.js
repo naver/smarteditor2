@@ -6,21 +6,6 @@ nhn.husky = nhn.husky || {};
 nhn.husky.SE2M_Configuration = nhn.husky.SE2M_Configuration || {};
 
 /**
- * 스마트에디터2에서 접근하는 JS, IMG 디렉토리
- */
-nhn.husky.SE2M_Configuration.Editor = {
-	sJsBaseURL : './js_src',
-	sImageBaseURL : './img/'
-};
-
-/**
- * JS LazyLoad를 위한 경로
- */
-nhn.husky.SE2M_Configuration.LazyLoad = {
-	sJsBaseURI : "js_lazyload"
-};
-
-/**
  * CSS LazyLoad를 위한 경로
  */
 nhn.husky.SE2M_Configuration.SE2B_CSSLoader = {
@@ -31,22 +16,11 @@ nhn.husky.SE2M_Configuration.SE2B_CSSLoader = {
  * 편집영역 설정
  */
 nhn.husky.SE2M_Configuration.SE_EditingAreaManager = {
-	sCSSBaseURI : "css",
+	sCSSBaseURI : "css",					// smart_editor2_inputarea.html 파일의 상대경로
 	sBlankPageURL : "smart_editor2_inputarea.html",
 	sBlankPageURL_EmulateIE7 : "smart_editor2_inputarea_ie8.html",
 	aAddtionalEmulateIE7 : [] // IE8 default 사용, IE9 ~ 선택적 사용
 };
-
-/**
- * 스마트에디터2에서 사용하는 도메인 정보
- * http://wiki.nhncorp.com/pages/viewpage.action?pageId=74253685
- */
-nhn.husky.SE2M_Configuration.LinkageDomain = {
-	sCommonAPI : 'http://api.se2.naver.com',
-	sCommonStatic : 'http://static.se2.naver.com',
-	sCommonImage : 'http://images.se2.naver.com'
-};
-
 
 /**
  * [웹접근성]
@@ -68,4 +42,11 @@ nhn.husky.SE2M_Configuration.SE2M_Accessibility = {
  */
 nhn.husky.SE2M_Configuration.SE2M_Hyperlink = {
 	bAutolink : true	// 자동링크기능 사용여부(기본값:true)
+};
+
+nhn.husky.SE2M_Configuration.Quote = {
+	sImageBaseURL : 'http://static.se2.naver.com/static/img'
+};
+nhn.husky.SE2M_Configuration.SE2M_ColorPalette = {
+	bAddRecentColorFromDefault : false
 };
