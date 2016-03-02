@@ -1,4 +1,4 @@
-/**    * SmartEditor2 NHN_Library:SE2.3.0.O9656:SmartEditor2.0-OpenSource    * @version 9656    */    var nSE2Version = 9656;if(typeof window.nhn=='undefined') window.nhn = {};
+/**    * SmartEditor2 NHN_Library:SE2.3.1.O9858:SmartEditor2.0-OpenSource    * @version 9858    */    var nSE2Version = 9858;if(typeof window.nhn=='undefined') window.nhn = {};
 
 /**
  * @fileOverview This file contains a function that takes care of various operations related to find and replace
@@ -3724,11 +3724,12 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 	// 0: unknown
 	// 1: all enabled
 	// 2: all disabled
-	nUIStatus : 1,
+	nUIStatus : 1,   
 	
 	sUIClassPrefix : "husky_seditor_ui_",
 
 	aUICmdMap : null,
+	elFirstToolbarItem : null,
 
 	_assignHTMLElements : function(oAppContainer){
 		oAppContainer = jindo.$(oAppContainer) || document;
@@ -3752,8 +3753,23 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 				this.htWrappedUIList[sUIName] = jindo.$Element(this.htUIList[sUIName]);
 			}
 		}
+ 
+		if (jindo.$$.getSingle("DIV.se2_icon_tool") != null) {
+			this.elFirstToolbarItem = jindo.$$.getSingle("DIV.se2_icon_tool UL.se2_itool1>li>button");
+		}
 	},
 
+	$LOCAL_BEFORE_FIRST : function(sMsg) {
+		var aToolItems = jindo.$$(">ul>li[class*=" + this.sUIClassPrefix + "]>button", this.elTextTool);
+		var nItemLength = aToolItems.length;
+		 
+		this.elFirstToolbarItem = this.elFirstToolbarItem || aToolItems[0];
+		this.elLastToolbarItem = aToolItems[nItemLength-1];
+
+		this.oApp.registerBrowserEvent(this.toolbarArea, "keydown", "NAVIGATE_TOOLBAR", []);
+	},
+ 
+	
 	$init : function(oAppContainer){
 		this.htUIList = {};
 		this.htWrappedUIList = {};
@@ -3783,6 +3799,33 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 		this.oApp.exec("REGISTER_HOTKEY", ["esc", "FOCUS_EDITING_AREA", [], elTool]);  
 	},
 	
+
+	$ON_NAVIGATE_TOOLBAR : function(weEvent) {
+
+		var TAB_KEY_CODE = 9;
+		//이벤트가 발생한 엘리먼트가 마지막 아이템이고 TAB 키가 눌려졌다면   
+		if ((weEvent.element == this.elLastToolbarItem) && (weEvent.key().keyCode == TAB_KEY_CODE) ) {
+			
+
+			if (weEvent.key().shift) {
+				//do nothing
+			} else {
+				this.elFirstToolbarItem.focus();
+				weEvent.stopDefault();
+			}
+		}
+
+
+		//이벤트가 발생한 엘리먼트가 첫번째 아이템이고 TAB 키가 눌려졌다면 		
+		if (weEvent.element == this.elFirstToolbarItem && (weEvent.key().keyCode == TAB_KEY_CODE)) {
+			if (weEvent.key().shift) {
+				weEvent.stopDefault();
+				this.elLastToolbarItem.focus();
+			}
+		}	
+	},   
+
+
 	//포커스가 툴바에 있는 상태에서 단축키를 누르면 에디팅 영역으로 다시 포커스가 가도록 하는 함수. (웹접근성)  
 	$ON_FOCUS_EDITING_AREA : function() {
 		this.oApp.exec("FOCUS");
@@ -4527,6 +4570,8 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		this.oApp.exec("REGISTER_CONVERTERS", []);
 		this.oApp.exec("CHANGE_EDITING_MODE", [this.sDefaultEditingMode, true]);
 		this.oApp.exec("LOAD_CONTENTS_FIELD", [false]);
+		
+		//[SMARTEDITORSUS-1327] IE 7/8에서 ALT+0으로 팝업 띄우고 esc클릭시 팝업창 닫히게 하려면 아래 부분 꼭 필요함. 
 		this.oApp.exec("REGISTER_HOTKEY", ["esc", "CLOSE_LAYER_POPUP", [], document]); 
 		
 		if(!!this.fOnBeforeUnload){
@@ -7832,8 +7877,24 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
                 return;
         } else {
                 this.oApp.exec("REGISTER_HOTKEY", ["alt+0", "OPEN_HELP_POPUP", []]);  
-                this.oApp.exec("REGISTER_HOTKEY", ["esc", "CLOSE_HELP_POPUP", []]);  
+                
+                //[SMARTEDITORSUS-1327] IE 7/8에서 ALT+0으로 팝업 띄우고 esc클릭시 팝업창 닫히게 하려면 아래 부분 꼭 필요함. (target은 document가 되어야 함!)
+                this.oApp.exec("REGISTER_HOTKEY", ["esc", "CLOSE_HELP_POPUP", [], document]);  
         }   
+
+		//[SMARTEDITORSUS-1353]
+		if (!!this.htAccessOption.sTitleElementId) {
+			var targetElement = jindo.$Element(document.getElementById(this.htAccessOption.sTitleElementId));
+			this.oApp.registerBrowserEvent(targetElement, "keydown", "MOVE_TO_EDITAREA", []);
+		}
+	},
+
+	$ON_MOVE_TO_EDITAREA : function(weEvent) {
+		var TAB_KEY_CODE = 9;
+		if (weEvent.key().keyCode == TAB_KEY_CODE) {
+			if(weEvent.key().shift) {return;}
+			this.oApp.delayedExec("FOCUS", [], 0);
+		}
 	},
 	
 	$LOCAL_BEFORE_FIRST : function(sMsg){
@@ -7861,7 +7922,19 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 		if (!!this.htAccessOption.sNextElementId) {
 			var sNextElementId = this.htAccessOption.sNextElementId;
 			if (document.getElementById(sNextElementId)) {
-				document.getElementById(sNextElementId).focus();
+
+				//[SMARTEDITORSUS-1360] 
+				/*
+				if(jindo.$Agent().navigator().ie && jindo.$Agent().navigator().version == 7) {
+		            window.focus();
+		            document.getElementById(sNextElementId).focus();
+				} else {
+					document.getElementById(sNextElementId).focus();
+				}
+				*/
+				
+				window.focus();
+	            document.getElementById(sNextElementId).focus();
 			} 
 		}
 	},
@@ -7871,7 +7944,12 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 		if (!!this.htAccessOption.sBeforeElementId) {
 			var sBeforeElementId = this.htAccessOption.sBeforeElementId;
 			if (document.getElementById(sBeforeElementId)) {
-				document.getElementById(sBeforeElementId).focus();
+				if(jindo.$Agent().navigator().ie && jindo.$Agent().navigator().version == 7) {
+		            window.focus();
+		            document.getElementById(sBeforeElementId).focus();
+				} else {
+					document.getElementById(sBeforeElementId).focus();
+				}
 			} 
 		}
 	},
@@ -7891,7 +7969,11 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
         this.oApp.exec("SHOW_EDITING_AREA_COVER");
         this.oApp.exec("SELECT_UI", ["se2_accessibility"]);
 
-        this.elHelpPopupLayer.style.top = this.nDefaultTop+"px";
+        
+        //아래 코드 없어야 블로그에서도 동일한 위치에 팝업 뜸..
+        //this.elHelpPopupLayer.style.top = this.nDefaultTop+"px";
+        
+        
         this.nCalcX = this.htTopLeftCorner.x + this.oApp.getEditingAreaWidth() - this.nLayerWidth;
         this.nCalcY = this.htTopLeftCorner.y;
 
@@ -7905,6 +7987,7 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 	
         // offset (nTop:Numeric,  nLeft:Numeric)
         this.welHelpPopupLayer.offset(this.nCalcY , (this.nCalcX)/2);
+       
 
         //[SMARTEDITORSUS-1327] IE에서 포커스 이슈로 IE에 대해서만 window.focus실행함. 
         if(jindo.$Agent().navigator().ie) {
@@ -7917,7 +8000,7 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 				self.oCloseButton2.focus();
 			}catch(e){
 			}
-		},500);
+		},200);
 	},
 	
 	$ON_CLOSE_HELP_POPUP : function() {
@@ -7928,7 +8011,6 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 		
 		this.oApp.exec("FOCUS");
 	}
-	
 });
 //}
 //{
@@ -8586,7 +8668,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		}
 		
 		if(/^insertorderedlist|insertunorderedlist$/i.test(sCommand)){
-			this._fixDocumentBR();	// Chrome/Safari
+			// this._fixDocumentBR();	// Chrome/Safari
 			this._fixCorruptedBlockQuote(sCommand === "insertorderedlist" ? "OL" : "UL");	// IE
 		}
 		
@@ -11660,12 +11742,15 @@ nhn.husky.SE2M_Quote = jindo.$Class({
 //		var sBookmarkID = oSelection.placeStringBookmark();
 
 		// [SMARTEDITORSUS-430] 문자를 입력하고 Enter 후 인용구를 적용할 때 위의 문자들이 인용구 안에 들어가는 문제
+		// [SMARTEDITORSUS-1323] 사진 첨부 후 인용구 적용 시 첨부한 사진이 삭제되는 현상
 		if(oSelection.startContainer === oSelection.endContainer && 
 			oSelection.startContainer.nodeType === 1 &&
-			oSelection.startContainer.tagName === "P" &&
-			nhn.husky.SE2M_Utils.isBlankNode(oSelection.startContainer)){
-						
-			oLineInfo = oSelection.getLineInfo(true);
+			oSelection.startContainer.tagName === "P"){
+				if(nhn.husky.SE2M_Utils.isBlankNode(oSelection.startContainer) || nhn.husky.SE2M_Utils.isFirstChildOfNode("IMG", oSelection.startContainer.tagName, oSelection.startContainer)){
+					oLineInfo = oSelection.getLineInfo(true);
+				}else{
+					oLineInfo = oSelection.getLineInfo(false);
+				}
 		}else{
 			oLineInfo = oSelection.getLineInfo(false);
 		}
@@ -13225,15 +13310,12 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		var elTarget;
 
 		this.sEmptyTDSrc = "";
-		if(this.oApp.oNavigator.ie){
-			this.sEmptyTDSrc = "<p>&nbsp;</p>";
+		if(this.oApp.oNavigator.firefox){
+			this.sEmptyTDSrc = "<p><br/></p>";
 		}else{
-			if(this.oApp.oNavigator.firefox){
-				this.sEmptyTDSrc = "<p><br/></p>";
-			}else{
-				this.sEmptyTDSrc = "<p>&nbsp;</p>";
-			}
+			this.sEmptyTDSrc = "<p>&nbsp;</p>";
 		}
+		
 		elTarget = this.oApp.getWYSIWYGDocument();
 /*
 		jindo.$Fn(this._mousedown_WYSIWYGDoc, this).attach(elTarget, "mousedown");
@@ -14271,6 +14353,7 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 				var elCell = allCells[n][i];
 
 				var welCell = jindo.$Element(elCell);
+				
 				var nPaddingLeft = this.parseIntOr0(welCell.css("paddingLeft"));
 				var nPaddingRight = this.parseIntOr0(welCell.css("paddingRight"));
 				var nPaddingTop = this.parseIntOr0(welCell.css("paddingTop"));
@@ -14282,16 +14365,18 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 				var nBorderBottom = this.parseBorder(welCell.css("borderBottomWidth"), welCell.css("borderBottomStyle"));
 				
 				var nOffsetWidth, nOffsetHeight;
-				if(this.oApp.oNavigator["firefox"]){
-					// Firefox
-					nOffsetWidth = elCell.offsetWidth - (nPaddingLeft + nPaddingRight + nBorderLeft + nBorderRight) + "px";
-					nOffsetHeight = elCell.offsetHeight + "px";
+				var htBrowser = jindo.$Agent().navigator();
+			
+				if(htBrowser.ie && htBrowser.nativeVersion >= 9){
+					// IE9, IE10
+					nOffsetWidth = elCell.offsetWidth + "px";
+					nOffsetHeight = elCell.offsetHeight - (nBorderTop + nBorderBottom) + "px";
 				}else{
-					// IE, Chrome
+					// Firefox, Chrome, IE7, IE8
 					nOffsetWidth = elCell.offsetWidth - (nPaddingLeft + nPaddingRight + nBorderLeft + nBorderRight) + "px";
 					nOffsetHeight = elCell.offsetHeight - (nPaddingTop + nPaddingBottom + nBorderTop + nBorderBottom) + "px";
 				}
-	
+				
 				aAllCellsWithSizeInfo[numCells++] = [elCell, 
 													nOffsetWidth,
 													nOffsetHeight
@@ -14305,7 +14390,7 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 
 			aCellInfo[0].style.width = aCellInfo[1];
 			aCellInfo[0].style.height = aCellInfo[2];
-
+			
 //			jindo.$Element(aCellInfo[0]).css("width", aCellInfo[1]);
 //			jindo.$Element(aCellInfo[0]).css("height", aCellInfo[2]);
 		}
@@ -17579,7 +17664,7 @@ getFilteredHashTable({
 			}
 		}).$value();
 	},
-		
+	
 	isBlankNode : function(elNode){
 		var isBlankTextNode = this.isBlankTextNode;
 		
@@ -17603,6 +17688,10 @@ getFilteredHashTable({
 			return false;
 		};
 		var bEmptyP = function(elNode){
+			if(elNode.tagName == "IMG"){
+				return false;
+			}
+			
 			if(bEmptyContent(elNode)){
 				return true;
 			}
@@ -17614,8 +17703,14 @@ getFilteredHashTable({
 						elTmp.parentNode.removeChild(elTmp);
 					}
 				}
-				if(elNode.childNodes.length == 1 && bEmptyContent(elNode.firstChild)){
-					return true;
+				
+				if(elNode.childNodes.length == 1){
+					if(elNode.firstChild.tagName == "IMG"){
+						return false;
+					}
+					if(bEmptyContent(elNode.firstChild)){
+						return true;
+					}
 				}
 			}
 			
@@ -17646,6 +17741,18 @@ getFilteredHashTable({
 			if(sText == "") {
 				return true;
 			}
+		}
+		
+		return false;
+	},
+	
+	isFirstChildOfNode : function(sTagName, sParentTagName, elNode){
+		if(!elNode){
+			return false;
+		}
+		
+		if(elNode.tagName == sParentTagName && elNode.firstChild.tagName == sTagName){
+			return true;
 		}
 		
 		return false;
