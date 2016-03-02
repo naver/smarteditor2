@@ -1818,11 +1818,18 @@ nhn.BrowserSelection = function(win){
 
 	this.init(win);
 
-	var oAgentInfo = jindo.$Agent().navigator();
+	// [SMARTEDITORSUS-888] IE9 이후로 document.createRange 를 지원
+/*	var oAgentInfo = jindo.$Agent().navigator();
 	if(oAgentInfo.ie){
 		nhn.BrowserSelectionImpl_IE.apply(this);
 	}else{
 		nhn.BrowserSelectionImpl_FF.apply(this);
+	}*/
+
+	if(!!this._document.createRange){
+		nhn.BrowserSelectionImpl_FF.apply(this);
+	}else{
+		nhn.BrowserSelectionImpl_IE.apply(this);
 	}
 	
 	this.selectRange = function(oRng){

@@ -58,6 +58,10 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		
 		if(!this.oNavigator.ie){
 			this._fixCorruptedBlockQuote = function(){};
+			
+			if(!this.oNavigator.chrome){
+				this._insertBlankLine = function(){};
+			}
 		}
 		
 		if(!this.oNavigator.firefox){
@@ -124,11 +128,11 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			if(this.oApp.getWYSIWYGDocument().selection.type === "Control"){
 				oSelection = this.oApp.getSelection();
 				oSelection.select();
-			} 
-			
-			if(sCommand == "insertorderedlist" || sCommand == "insertunorderedlist"){
-				this._insertBlankLine();
 			}
+		}
+		
+		if(sCommand == "insertorderedlist" || sCommand == "insertunorderedlist"){
+			this._insertBlankLine();
 		}
 	},
 
@@ -201,14 +205,12 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	},
 
 	$AFTER_EXECCOMMAND : function(sCommand, bUserInterface, vValue, htOptions){
-		if(this.oNavigator.ie){
-			if(this.elP1 && this.elP1.parentNode){
-				this.elP1.parentNode.removeChild(this.elP1);
-			}
+		if(this.elP1 && this.elP1.parentNode){
+			this.elP1.parentNode.removeChild(this.elP1);
+		}
 
-			if(this.elP2 && this.elP2.parentNode){
-				this.elP2.parentNode.removeChild(this.elP2);
-			}
+		if(this.elP2 && this.elP2.parentNode){
+			this.elP2.parentNode.removeChild(this.elP2);
 		}
 		
 		if(/^insertorderedlist|insertunorderedlist$/i.test(sCommand)){
@@ -308,13 +310,15 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	},
 	
 	_getDocumentBR : function(){
+		var i, nLen;
+		
 		// [COM-715] <Chrome/Safari> 요약글 삽입 > 더보기 영역에서 기호매기기, 번호매기기 설정할때마다 요약글 박스가 아래로 이동됨
 		// ExecCommand를 처리하기 전에 현재의 BR을 저장
 		
 		this.aBRs = this.oApp.getWYSIWYGDocument().getElementsByTagName("BR");
 		this.aBeforeBRs = [];
 		
-		for(i=0, iLen=this.aBRs.length; i<iLen; i++){
+		for(i=0, nLen=this.aBRs.length; i<nLen; i++){
 			this.aBeforeBRs[i] = this.aBRs[i];
 		}
 	},
@@ -362,7 +366,9 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	},
 	
 	_indentMargin : function(elDiv){
-		var elTmp = elDiv;
+		var elTmp = elDiv,
+			aAppend, i, nLen, elInsertTarget, elDeleteTarget, nCurMarginLeft;
+		
 		while(elTmp){
 			if(elTmp.tagName && elTmp.tagName === "LI"){
 				elDiv = elTmp;
@@ -405,14 +411,16 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 				//	</OL>
 				//</OL>
 				if(elDiv.nextSibling && elDiv.nextSibling.tagName && elDiv.nextSibling.tagName === elDiv.parentNode.tagName){
-					var aAppend = [elDiv];
-					for(var i=0, nLen=elDiv.nextSibling.childNodes.length; i<nLen; i++){
+					aAppend = [elDiv];
+					
+					for(i=0, nLen=elDiv.nextSibling.childNodes.length; i<nLen; i++){
 						aAppend.push(elDiv.nextSibling.childNodes[i]);
 					}
 					
-					var elInsertTarget = elDiv.previousSibling;
-					var elDeleteTarget = elDiv.nextSibling;
-					for(var i=0, nLen=aAppend.length; i<nLen; i++){
+					elInsertTarget = elDiv.previousSibling;
+					elDeleteTarget = elDiv.nextSibling;
+					
+					for(i=0, nLen=aAppend.length; i<nLen; i++){
 						elInsertTarget.insertBefore(aAppend[i], null);
 					}
 					
@@ -436,12 +444,13 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 				return;
 			}
 			
-			var elTmp = elDiv.parentNode.cloneNode(false);
+			elTmp = elDiv.parentNode.cloneNode(false);
 			elDiv.parentNode.insertBefore(elTmp, elDiv);
 			elTmp.appendChild(elDiv);
 			return;
 		}
-		var nCurMarginLeft = parseInt(elDiv.style.marginLeft);
+		nCurMarginLeft = parseInt(elDiv.style.marginLeft, 10);
+		
 		if(!nCurMarginLeft){
 			nCurMarginLeft = 0;
 		}
@@ -451,7 +460,9 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	},
 	
 	_outdentMargin : function(elDiv){
-		var elTmp = elDiv;
+		var elTmp = elDiv,
+			elParentNode, elInsertBefore, elNewParent, elInsertParent, oDoc, nCurMarginLeft;
+		
 		while(elTmp){
 			if(elTmp.tagName && elTmp.tagName === "LI"){
 				elDiv = elTmp;
@@ -461,19 +472,20 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		}
 		
 		if(elDiv.tagName === "LI"){
-			var elParentNode = elDiv.parentNode;
-			
-			var elInsertBefore = elDiv.parentNode;
+			elParentNode = elDiv.parentNode;
+			elInsertBefore = elDiv.parentNode;
 			
 			// LI를 적절 위치로 이동.
 			// 위에 다른 li/ol/ul가 있는가?
 			if(elDiv.previousSibling && elDiv.previousSibling.tagName && elDiv.previousSibling.tagName.match(/LI|UL|OL/)){
 				// 위아래로 sibling li/ol/ul가 있다면 ol/ul를 2개로 나누어야됨
 				if(elDiv.nextSibling && elDiv.nextSibling.tagName && elDiv.nextSibling.tagName.match(/LI|UL|OL/)){
-					var elNewParent = elParentNode.cloneNode(false);
+					elNewParent = elParentNode.cloneNode(false);
+					
 					while(elDiv.nextSibling){
 						elNewParent.insertBefore(elDiv.nextSibling, null);
 					}
+					
 					elParentNode.parentNode.insertBefore(elNewParent, elParentNode.nextSibling);
 					elInsertBefore = elNewParent;
 				// 현재 LI가 마지막 LI라면 부모 OL/UL 하단에 삽입
@@ -490,11 +502,11 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 
 			// OL이나 UL 위로까지 내어쓰기가 된 상태라면 LI를 벗겨냄
 			if(!elDiv.parentNode.tagName.match(/OL|UL/)){
-				var elInsertParent = elDiv.parentNode;
+				elInsertParent = elDiv.parentNode;
 				elInsertBefore = elDiv;
 
 				// 내용물을 P로 감싸기
-				var oDoc = this.oApp.getWYSIWYGDocument();
+				oDoc = this.oApp.getWYSIWYGDocument();
 				elInsertParent = oDoc.createElement("P");
 				elInsertBefore = null;
 				
@@ -507,17 +519,25 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			}
 			return;
 		}
-		var nCurMarginLeft = parseInt(elDiv.style.marginLeft);
-		if(!nCurMarginLeft) nCurMarginLeft = 0;
+		nCurMarginLeft = parseInt(elDiv.style.marginLeft, 10);
+		
+		if(!nCurMarginLeft){
+			nCurMarginLeft = 0;
+		}
 
 		nCurMarginLeft -= this.nIndentSpacing;
-		if(nCurMarginLeft < 0) nCurMarginLeft = 0;
+		
+		if(nCurMarginLeft < 0){
+			nCurMarginLeft = 0;
+		}
+		
 		elDiv.style.marginLeft = nCurMarginLeft+"px";
 	},
 	
 	// Fix IE's execcommand bug
 	// When insertorderedlist/insertunorderedlist is executed on a blockquote, the blockquote will "suck in" directly neighboring OL, UL's if there's any.
 	// To prevent this, insert empty P tags right before and after the blockquote and remove them after the execution.
+	// [SMARTEDITORSUS-793] Chrome 에서 동일한 이슈 발생, Chrome 은 빈 P 태그로는 처리되지 않으 &nbsp; 추가
 	_insertBlankLine : function(){
 		var oSelection = this.oApp.getSelection();
 		var elNode = oSelection.commonAncestorContainer;
@@ -526,10 +546,10 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 
 		while(elNode){
 			if(elNode.tagName == "BLOCKQUOTE"){
-				this.elP1 = this.oApp.getWYSIWYGDocument().createElement("P");
+				this.elP1 = jindo.$("<p>&nbsp;</p>", this.oApp.getWYSIWYGDocument());
 				elNode.parentNode.insertBefore(this.elP1, elNode);
 
-				this.elP2 = this.oApp.getWYSIWYGDocument().createElement("P");
+				this.elP2 = jindo.$("<p>&nbsp;</p>", this.oApp.getWYSIWYGDocument());
 				elNode.parentNode.insertBefore(this.elP2, elNode.nextSibling);
 				
 				break;
@@ -549,10 +569,11 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	// 
 	// [IE] 인용구 안에서 글머리 기호를 적용했을 때, 인용구 밖에 적용된 번호매기기/글머리 기호가 인용구 안으로 빨려 들어가는 문제 처리
 	_fixCorruptedBlockQuote : function(sTagName){
-		var aNodes = this.oApp.getWYSIWYGDocument().getElementsByTagName(sTagName);
-		var elCorruptedBlockQuote;
+		var aNodes = this.oApp.getWYSIWYGDocument().getElementsByTagName(sTagName),
+			elCorruptedBlockQuote, elTmpParent, elNewNode, aLists,
+			i, nLen, nPos, el, oSelection;
 		
-		for(var i=0, nLen=aNodes.length; i<nLen; i++){
+		for(i=0, nLen=aNodes.length; i<nLen; i++){
 			if(aNodes[i].firstChild && aNodes[i].firstChild.tagName == sTagName){
 				elCorruptedBlockQuote = aNodes[i];
 				break;
@@ -561,21 +582,22 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		
 		if(!elCorruptedBlockQuote){return;}
 
-		var elTmpParent = elCorruptedBlockQuote.parentNode;
+		elTmpParent = elCorruptedBlockQuote.parentNode;
 
 		// (1) changing outerHTML will cause loss of the reference to the node, so remember the idx position here
-		var nPos = this._getPosIdx(elCorruptedBlockQuote);
-		var el = this.oApp.getWYSIWYGDocument().createElement("DIV");
+		nPos = this._getPosIdx(elCorruptedBlockQuote);
+		el = this.oApp.getWYSIWYGDocument().createElement("DIV");
 		el.innerHTML = elCorruptedBlockQuote.outerHTML.replace("<"+sTagName, "<BLOCKQUOTE");
 		elCorruptedBlockQuote.parentNode.insertBefore(el.firstChild, elCorruptedBlockQuote);
 		elCorruptedBlockQuote.parentNode.removeChild(elCorruptedBlockQuote);
 
 		// (2) and retrieve the new node here
-		var elNewNode = elTmpParent.childNodes[nPos];
+		elNewNode = elTmpParent.childNodes[nPos];
 
 		// garbage <OL></OL> or <UL></UL> will be left over after setting the outerHTML, so remove it here.
-		var aLists = elNewNode.getElementsByTagName(sTagName);
-		for(var i=0, nLen=aLists.length; i<nLen; i++){
+		aLists = elNewNode.getElementsByTagName(sTagName);
+		
+		for(i=0, nLen=aLists.length; i<nLen; i++){
 			if(aLists[i].childNodes.length<1){
 				aLists[i].parentNode.removeChild(aLists[i]);
 			}

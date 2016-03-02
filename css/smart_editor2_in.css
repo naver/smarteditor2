@@ -1,7 +1,7 @@
 @charset "utf-8";
 /* NHN Web Standardization Team (http://html.nhndesign.com/) HHJ 090226 */
 
-body,.se2_inputarea,.se2_inputarea th,.se2_inputarea td{margin:0;padding:0;font-family:'돋움',Dotum,AppleGothic,Sans-serif;font-size:12px;line-height:1.5;color:#666}
+body,.se2_inputarea,.se2_inputarea th,.se2_inputarea td{margin:0;padding:0;font-family:'돋움',Dotum,Helvetica,Sans-serif;font-size:12px;line-height:1.5;color:#666}
 .se2_inputarea p,.se2_inputarea br{margin:0;padding:0}
 /* size */
 .se2_inputarea{margin:15px;word-wrap:break-word}

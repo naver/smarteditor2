@@ -384,7 +384,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 
 	_getFontFamilyFromLI : function(elLi){
 		//return elLi.childNodes[1].innerHTML.toLowerCase();
-		// <li><button type="button"><span>돋음</span>(</span><em style="font-family:'돋음',Dotum,'굴림',Gulim,AppleGothic,AppleMyungjo,Sans-serif;">돋음</em><span>)</span></span></button></li>
+		// <li><button type="button"><span>돋음</span>(</span><em style="font-family:'돋음',Dotum,'굴림',Gulim,Helvetica,Sans-serif;">돋음</em><span>)</span></span></button></li>
 		return (elLi.getElementsByTagName("EM")[0]).style.fontFamily; 
 	},
 	
@@ -452,7 +452,12 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		// 		fontFamily 변경 후 DOM Tree 상에서 더이상 사용되지 않는 것으로 브라우저 판단하여 언로드 해버림.
 		// [해결] 
 		//		언로드가 발생하지 않도록 메뉴 리스트에 스타일을 적용하는 것을 @font-face 이후로 하도록 처리하여 DOM Tree 상에 항상 적용될 수 있도록 함
-		if(this.htBrowser.ie && this.htBrowser.nativeVersion === 9 && document.documentMode === 9) {
+		//
+		// [SMARTEDITORSUS-969] [IE10] 웹폰트를 사용하여 글을 등록하고, 수정모드로 들어갔을 때 웹폰트가 적용되지 않는 문제
+		//		- IE10에서도 웹폰트 언로드가 발생하지 않도록 조건을 수정함
+		//		     -> 기존 : nativeVersion === 9 && documentMode === 9
+		//		     -> 수정 : nativeVersion >= 9 && documentMode >= 9
+		if(this.htBrowser.ie && this.htBrowser.nativeVersion >= 9 && document.documentMode >= 9) {
 			newFont.loadCSSToMenu();
 		}
 		

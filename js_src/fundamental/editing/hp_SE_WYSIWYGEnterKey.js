@@ -44,6 +44,8 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 	},
 	
 	$ON_MSG_APP_READY : function(){
+		this.oApp.exec("ADD_APP_PROPERTY", ["sLineBreaker", this.sLineBreaker]);
+		
 		this.oSelection = this.oApp.getEmptySelection();
 		this.tmpTextNode = this.oSelection._document.createTextNode(unescape("%u00A0"));	// 공백(&nbsp;) 추가 시 사용할 노드
 		jindo.$Fn(this._onKeyDown, this).attach(this.oApp.getWYSIWYGDocument(), "keydown");
@@ -63,6 +65,30 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 				this._wrapBlock(oEvent);
 			}
 		}
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-950] 에디터 적용 페이지의 Compatible meta IE=edge 설정 시 줄간격 벌어짐 이슈 (<BR>)
+	 */
+	$ON_REGISTER_CONVERTERS : function(){
+		this.oApp.exec("ADD_CONVERTER", ["IR_TO_DB", jindo.$Fn(this.onIrToDB, this).bind()]);
+	},
+	
+	/**
+	 * IR_TO_DB 변환기 처리
+	 *	Chrome, FireFox인 경우에만 아래와 같은 처리를 합니다. 
+	 *	: 저장 시 본문 영역에서 P 아래의 모든 하위 태그 중 가장 마지막 childNode가 BR인 경우를 탐색하여 이를 &nbsp;로 변경해 줍니다.
+	 */
+	onIrToDB : function(sHTML){
+		var sContents = sHTML,
+			rxRegEx = /<br(\s[^>]*)?\/?>((?:<\/span>)?<\/p>)/gi;
+		
+		if(this.htBrowser.chrome || this.htBrowser.firefox){
+			if(rxRegEx.test(sContents)){
+				sContents = sContents.replace(rxRegEx, "&nbsp;$2");
+			}
+		}
+		return sContents;
 	},
 	
 	// [IE] Selection 내의 노드를 가져와 빈 노드에 unescape("%uFEFF") (BOM) 을 추가

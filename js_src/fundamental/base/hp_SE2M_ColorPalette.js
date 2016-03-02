@@ -2,20 +2,18 @@
 /**
  * @fileOverview This file contains Husky plugin that takes care of the operations directly related to the color palette
  * @name hp_SE2M_ColorPalette.js
- * @notice Flash Object Block인 경우, 최신 사용 색상의 업데이트과 리스트 생성을 막음. 
  */
  nhn.husky.SE2M_ColorPalette = jindo.$Class({
 	name : "SE2M_ColorPalette",
 	elAppContainer : null,
-	bUseFlashModule : false, 
-	nRecentColorNum : 0,
+	bUseRecentColor : false, 
 	nLimitRecentColor : 17,
 	rxRGBColorPattern : /rgb\((\d+), ?(\d+), ?(\d+)\)/i,
 	rxColorPattern : /^#?[0-9a-fA-F]{6}$|^rgb\(\d+, ?\d+, ?\d+\)$/i,
-	aRecentColor : [],
-	URL_COLOR_ADD : "",
+	aRecentColor : [],	// 최근 사용한 색 목록, 가장 최근에 등록한 색의 index가 가장 작음
 	URL_COLOR_LIST : "",
-	URL_COLOR_DELETE : "",
+	URL_COLOR_ADD : "",
+	URL_COLOR_UPDATE : "",
 	sRecentColorTemp : "<li><button type=\"button\" title=\"{RGB_CODE}\" style=\"background:{RGB_CODE}\"><span><span>{RGB_CODE}</span></span></button></li>",
 	
 	$init : function(elAppContainer){
@@ -27,9 +25,9 @@
 	_assignHTMLElements : function(oAppContainer){
 		var htConfiguration = nhn.husky.SE2M_Configuration.SE2M_ColorPalette;
 		if(htConfiguration){
-			this.bUseFlashModule = htConfiguration.bUseFlashModule || false;
-			this.URL_COLOR_ADD = htConfiguration.addColorURL || "http://api.se2.naver.com/1/colortable/TextAdd.nhn?text_data=";
-			this.URL_COLOR_DELETE = htConfiguration.delColorURL || "http://api.se2.naver.com/1/colortable/TextDelete.nhn?text_data=";
+			this.bUseRecentColor = htConfiguration.bUseRecentColor || false;
+			this.URL_COLOR_ADD = htConfiguration.addColorURL || "http://api.se2.naver.com/1/colortable/TextAdd.nhn";
+			this.URL_COLOR_UPDATE = htConfiguration.updateColorURL || "http://api.se2.naver.com/1/colortable/TextUpdate.nhn";
 			this.URL_COLOR_LIST = htConfiguration.colorListURL || "http://api.se2.naver.com/1/colortable/TextList.nhn";
 		}
 		
@@ -55,7 +53,7 @@
 		
 		this.elOkBtn = jindo.$$.getSingle("BUTTON.husky_se2m_color_palette_ok_btn", this.elColorPaletteLayer);
 		
-		if(this.bUseFlashModule){
+		if(this.bUseRecentColor){
 			this.elColorPaletteLayerRecent = jindo.$$.getSingle("DIV.husky_se2m_color_palette_recent", this.elColorPaletteLayer);
 			this.elRecentColor = jindo.$$.getSingle("ul.se2_pick_color", this.elColorPaletteLayerRecent);
 			this.elDummyNode = jindo.$$.getSingle("ul.se2_pick_color > li", this.elColorPaletteLayerRecent) || null;
@@ -71,7 +69,7 @@
 			jindo.$Element(jindo.$$.getSingle("ul.se2_pick_color > li", this.elColorPaletteLayerRecent)).leave();
 		}
 
-		if( this.bUseFlashModule ){
+		if( this.bUseRecentColor ){
 			this._ajaxRecentColor(this._ajaxRecentColorCallback);
 		}
 		
@@ -118,28 +116,39 @@
 	},
 	
 	$ON_APPLY_COLOR : function(elButton){
-		if(this.elInputColorCode.value.indexOf("#") == -1){this.elInputColorCode.value = "#" + this.elInputColorCode.value;}
+		var sColorCode = this.elInputColorCode.value,
+			welColorParent = null;
+		
+		if(sColorCode.indexOf("#") == -1){
+			sColorCode = "#" + sColorCode;
+			this.elInputColorCode.value = sColorCode;
+		}
+		
+		// 입력 버튼인 경우
 		if(elButton == this.elOkBtn){
-			if(!this.rxColorPattern.test(this.elInputColorCode.value)){
+			if(!this._verifyColorCode(sColorCode)){
 				this.elInputColorCode.value = "";
 				alert(this.oApp.$MSG("SE_Color.invalidColorCode"));
 				this.elInputColorCode.focus();
+				
 				return;
 			}
-			this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [this.elInputColorCode.value,true]);
+			
+			this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [sColorCode,true]);
 			
 			return;
 		}
-		var welColorClassName = jindo.$Element(elButton.parentNode.parentNode.parentNode);
-		this.elInputColorCode.value = elButton.title;
 		
-		if(welColorClassName.hasClass("husky_se2m_color_palette")){
-			this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [this.elInputColorCode.value,false]);
-		}else if(welColorClassName.hasClass("husky_se2m_color_palette_recent")){
-			this.elOkBtn.click();
+		// 색상 버튼인 경우
+		welColorParent = jindo.$Element(elButton.parentNode.parentNode.parentNode);
+		sColorCode = elButton.title;
+		
+		if(welColorParent.hasClass("husky_se2m_color_palette")){				// 템플릿 색상 적용
+			this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [sColorCode,false]);
+		}else if(welColorParent.hasClass("husky_se2m_color_palette_recent")){	// 최근 색상 적용
+			this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [sColorCode,true]);
 		}
 	},
-
 	
 	$ON_RESET_COLOR_PALETTE : function(){
 		this._initColor();
@@ -190,9 +199,42 @@
 	
 	$ON_COLOR_PALETTE_APPLY_COLOR : function(sColorCode , bAddRecentColor){
 		bAddRecentColor = (!bAddRecentColor)? false : bAddRecentColor;
+		sColorCode = this._getHexColorCode(sColorCode);
 		
-		if(this.rxRGBColorPattern.test(sColorCode)){
+		//더보기 레이어에서 적용한 색상만 최근 사용한 색에 추가한다. 
+		if( this.bUseRecentColor && !!bAddRecentColor ){
+			this.oApp.exec("ADD_RECENT_COLOR", [sColorCode]);
+		}
+		this.oApp.exec(this.sCallbackCmd, [sColorCode]);
+	},
 
+	$ON_EVENT_MOUSEUP_COLOR_PALETTE : function(oEvent){
+		var elButton = oEvent.element;
+		if(! elButton.style.backgroundColor){return;}
+		
+		this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [elButton.style.backgroundColor,false]);
+	},
+	
+	$ON_ADD_RECENT_COLOR : function(sRGBCode){
+		var bAdd = (this.aRecentColor.length === 0);
+		
+		this._addRecentColor(sRGBCode);
+		
+		if(bAdd){
+			this._ajaxAddColor();
+		}else{
+			this._ajaxUpdateColor();
+		}
+				
+		this._redrawRecentColorElement();
+	},
+	
+	_verifyColorCode : function(sColorCode){
+		return this.rxColorPattern.test(sColorCode);
+	},
+	
+	_getHexColorCode : function(sColorCode){
+		if(this.rxRGBColorPattern.test(sColorCode)){
 			var dec2Hex = function(sDec){
 				var sTmp = parseInt(sDec, 10).toString(16);
 				if(sTmp.length<2){sTmp = "0"+sTmp;}
@@ -205,90 +247,60 @@
 			sColorCode = "#"+sR+sG+sB;
 		}
 		
-		//더보기 레이어에서 적용한 색상만 최근 사용한 색에 추가한다. 
-		if( this.bUseFlashModule && !!bAddRecentColor ){
-			this.oApp.exec("ADD_RECENT_COLOR", [sColorCode]);
-		}
-		this.oApp.exec(this.sCallbackCmd, [sColorCode]);
+		return sColorCode;
 	},
 	
-	/**
-	 * 미사용 함수.(?)
-	 */
-	$ON_EVENT_MOUSEUP_COLOR_PALETTE : function(oEvent){
-		var elButton = oEvent.element;
-		if(! elButton.style.backgroundColor){return;}
-		
-		this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [elButton.style.backgroundColor,false]);
-	},
-	
-	$ON_ADD_RECENT_COLOR : function(sRGBCode){
-		// Flash 모듈을 브라우저에서 block할 경우 대처
-		if( this.bUseFlashModule && !jindo.$Ajax.SWFRequest.activeFlash){
-			alert(this.oApp.$MSG("SE.SE2M_ColorPalette.failedToLoadFlash"));
-			return;
-		} else if ( !this.bUseFlashModule ){
-			return;
-		}
-		
-		var aRecentColorChild = this.elRecentColor.childNodes;
-		
-		for(var i = 0, nLen = aRecentColorChild.length; i < nLen; i++){
-			if(typeof aRecentColorChild[i] == "undefined"){break;}
-			if(aRecentColorChild[i].nodeType == 1){
-				var elColorButton = jindo.$$.getSingle("button", aRecentColorChild[i]);
-				if(elColorButton.title != sRGBCode){continue;}
+	_addRecentColor : function(sRGBCode){
+		var waRecentColor = jindo.$A(this.aRecentColor);
 				
-				this._ajaxDeleteColor(elColorButton.title);					
-				jindo.$Element(aRecentColorChild[i]).leave();
-				this.nRecentColorNum--;
-				break;
-			}
-		}
-		this.aRecentColor.unshift(sRGBCode);
-		var sRecentColorTemp = this.sRecentColorTemp.replace(/\{RGB_CODE\}/gi, sRGBCode);
-		jindo.$Element(this.elRecentColor).prepend(sRecentColorTemp);
-		setTimeout(jindo.$Fn(this._ajaxSendColor, this).bind(sRGBCode), 17);
-		this.nRecentColorNum++;
+		waRecentColor = waRecentColor.refuse(sRGBCode);
+		waRecentColor.unshift(sRGBCode);
 		
-		if(this.nRecentColorNum > this.nLimitRecentColor){
-			var nNum = 0;
-			var elLastColor = null;
-			do{
-				nNum++;
-				elLastColor = this.elRecentColor.childNodes[this.elRecentColor.childNodes.length - nNum];
-			}while(this.elRecentColor.childNodes[this.elRecentColor.childNodes.length - nNum].nodeType != 1);
-			
-			var elColorButton = jindo.$$.getSingle("button", elLastColor);
-			var sDeleteRGB = elColorButton.title;
-			
-			jindo.$Element(elLastColor).leave();
-			this._ajaxDeleteColor(sDeleteRGB);
-			var waRecentColor = jindo.$A(this.aRecentColor).refuse(sDeleteRGB);
-			this.aRecentColor = waRecentColor.$value();
-			this.nRecentColorNum--;
+		if(waRecentColor.length() > this.nLimitRecentColor){
+			waRecentColor.length(this.nLimitRecentColor);
 		}
 		
-		var waRecentColor = jindo.$A(this.aRecentColor).unique();
 		this.aRecentColor = waRecentColor.$value();
+	},
+	
+	_redrawRecentColorElement : function(){
+		var aRecentColorHtml = [],
+			nRecentColor = this.aRecentColor.length,
+			i;
+		
+		if(nRecentColor === 0){
+			return;
+		}
+		
+		for(i=0; i<nRecentColor; i++){
+			aRecentColorHtml.push(this.sRecentColorTemp.replace(/\{RGB_CODE\}/gi, this.aRecentColor[i]));
+		}
+		
+		this.elRecentColor.innerHTML = aRecentColorHtml.join("");
+		
 		this.elColorPaletteLayerRecent.style.display = "block";
 	},
 	
-	_ajaxDeleteColor : function(sColor){
-		var sUrl = this.URL_COLOR_DELETE + escape(sColor);
-		new jindo.$Ajax(sUrl, {
-			type : "flash",
-			sendheader : false
-		}).request();
+	_ajaxAddColor : function(){		
+		jindo.$Ajax(this.URL_COLOR_ADD, {
+			type : "jsonp",
+			onload: function(){}
+		}).request({
+			text_key : "colortable",
+			text_data : this.aRecentColor.join(",")
+		});
 	},
 	
-	_ajaxSendColor : function(sColor){
-		var sUrl = this.URL_COLOR_ADD + escape(sColor);
-		new jindo.$Ajax(sUrl, {
-			type : "flash",
-			sendheader : false
-		}).request();
+	_ajaxUpdateColor : function(){		
+		jindo.$Ajax(this.URL_COLOR_UPDATE, {
+			type : "jsonp",
+			onload: function(){}
+		}).request({
+			text_key : "colortable",
+			text_data : this.aRecentColor.join(",")
+		});
 	},
+
 	_showColorPickerMain : function(){
 		this._initColor();
 		this.elColorPaletteLayerColorPicker.style.display = "";
@@ -304,54 +316,34 @@
 	},
 	
 	_ajaxRecentColor : function(fCallback){
-		//Flash 모듈을 브라우저에서 block할 경우 대처
-		if(jindo.$Ajax.SWFRequest.activeFlash){
-			// send ajax request to fetch recently used colors
-			var sUrl = this.URL_COLOR_LIST;
-			var ajax = new jindo.$Ajax(sUrl, {
-				type : "flash",
-				sendheader : false,
-				onload : jindo.$Fn(fCallback, this).bind()
-			}).request();
-		} 
+		jindo.$Ajax(this.URL_COLOR_LIST, {
+			type : "jsonp",
+			onload : jindo.$Fn(fCallback, this).bind()
+		}).request();
 	},
 
 	_ajaxRecentColorCallback : function(htResponse){
-		var aColorList = htResponse.json()["result"];
-		if(!aColorList || !!aColorList.error) return;
-		
-		aColorList = aColorList.reverse();
-		aColorList = jindo.$A(aColorList).refuse("").$value();
-		
-		for(var i = 0, nLen = aColorList.length; i < nLen; i++){
-			if (i == this.nLimitRecentColor) {break;}
-			//비정상적인 data의 경우 list에서 보여주지 않는다.
-			if ( aColorList[i].indexOf("#") > -1 ) {
-				var sRecentColorTemp = this.sRecentColorTemp.replace(/\{RGB_CODE\}/gi, aColorList[i]);
-				
-				jindo.$Element(this.elRecentColor).append(sRecentColorTemp);
-				this.aRecentColor.push(aColorList[i]);
-			}
+		var aColorList = htResponse.json()["result"],
+			waColorList,
+			i, nLen;
+			
+		if(!aColorList || !!aColorList.error){
+			return;
 		}
-		this._initRecentColor();
-	},
-	
-	_initRecentColor : function(){
-		var aRecentColorChild = this.elRecentColor.childNodes;
-		var nRecentColorNum = 0;
 		
-		for(var i = 0, nLen = aRecentColorChild.length; i < nLen; i++){
-			if(typeof aRecentColorChild[i] == "undefined"){break;}
-			if(aRecentColorChild[i].nodeType == 1){
-				if (!aRecentColorChild[i].tagName) {
-					continue;
-				}else{
-					this.elColorPaletteLayerRecent.style.display = "block";
-					nRecentColorNum++;
-				}
-			}
+		waColorList = jindo.$A(aColorList).filter(this._verifyColorCode, this);
+		
+		if(waColorList.length() > this.nLimitRecentColor){
+			waColorList.length(this.nLimitRecentColor);
 		}
-		this.nRecentColorNum = nRecentColorNum;
+		
+		aColorList = waColorList.reverse().$value();
+
+		for(i = 0, nLen = aColorList.length; i < nLen; i++){
+			this._addRecentColor(this._getHexColorCode(aColorList[i]));
+		}
+		
+		this._redrawRecentColorElement();
 	}
 }).extend(jindo.Component);
 //}

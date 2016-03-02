@@ -570,8 +570,14 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		}else{
 			sContents = sIR;
 		}
+		
+		sContents = this._cleanContents(sContents);
 
 		return sContents;
+	},
+	
+	_cleanContents : function(sContents){
+		return sContents.replace(new RegExp("(<img [^>]*>)"+unescape("%uFEFF")+"", "ig"), "$1");
 	},
 
 	setContents : function(sContents, bDontAddUndo){

@@ -31,7 +31,7 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 	 * Ajax처리를 하지 않음
 	 * @type {Boolean}
 	 */
-	_bUseFlashModule : true,
+	_bUseConfig : true,
 	
 	/**
 	 * 공통 서버에서 개인 설정 받아오는 AjaxUrl 
@@ -52,11 +52,10 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 		var htConfiguration = nhn.husky.SE2M_Configuration.QuickEditor;
 		
 		if(htConfiguration){
-			this._bUseFlashModule = (!!htConfiguration.common && typeof htConfiguration.common.bUseFlashModule !== "undefined") ? htConfiguration.common.bUseFlashModule : true;	
+			this._bUseConfig = (!!htConfiguration.common && typeof htConfiguration.common.bUseConfig !== "undefined") ? htConfiguration.common.bUseConfig : true;	
 		}
 
-    	if(!this._bUseFlashModule || !jindo.$Ajax.SWFRequest.activeFlash){	
-    		// AUSE-970  Flash 모듈을 브라우저에서 block할 경우 대처
+    	if(!this._bUseConfig){	
 			this.setData("{table:'full',img:'full',review:'full'}");
 		} else {
 			this._sBaseAjaxUrl = htConfiguration.common.sBaseAjaxUrl;
@@ -78,9 +77,8 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 	getData : function() {
 		var self = this;
 		jindo.$Ajax(self._sBaseAjaxUrl, {
-			type : "flash",
+			type : "jsonp",
 			timeout : 1,
-			sendheader : false,
 			onload: function(rp) {
 				var result = rp.json().result;
 				if (!!result && !!result.length) {
@@ -147,7 +145,7 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 	
 	//@lazyload_js OPEN_QE_LAYER[
 	$ON_MSG_BEFOREUNLOAD_FIRED : function(){
-		if (!this._environmentData || !this._bUseFlashModule || !jindo.$Ajax.SWFRequest.activeFlash) {
+		if (!this._environmentData || !this._bUseConfig) {
 			return;
 		}
 		
@@ -514,8 +512,8 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 			nEleHeight = wEle.height();
 		}else{
 			oOffset = {
-				top : parseInt(oLayer.style.top) - this.nYGap,
-				left : parseInt(oLayer.style.left) - this.nXGap
+				top : parseInt(oLayer.style.top, 10) - this.nYGap,
+				left : parseInt(oLayer.style.left, 10) - this.nXGap
 			};
 			nEleWidth = 0;
 			nEleHeight = 0;

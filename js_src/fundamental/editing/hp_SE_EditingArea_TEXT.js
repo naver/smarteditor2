@@ -94,9 +94,7 @@ nhn.husky.SE_EditingArea_TEXT = jindo.$Class({
 			return;
 		}
 
-		var oContent = new StringBuffer();
-		var sContent = sHtml, sTemp = null;
-		var aContent = null, aContentLng = 0, aTemp = null;
+		var sContent = sHtml, aTemp = null;
 		
 		// applyConverter에서 추가한 sTmpStr를 잠시 제거해준다. sTmpStr도 하나의 string으로 인식하는 경우가 있기 때문.
 		aTemp = sContent.match(new RegExp(this.sRxConverter));
@@ -105,8 +103,24 @@ nhn.husky.SE_EditingArea_TEXT = jindo.$Class({
 		}
 				
 		sContent = this.htmlSpecialChars(sContent);
-		aContent = sContent.split('\n'); // \n을 기준으로 블럭을 나눈다.
-		aContentLng = aContent.length;
+		sContent = this._addLineBreaker(sContent);
+
+		if (aTemp !== null) {
+			sContent = aTemp[0] + sContent;
+		}
+		
+		return sContent;
+	},
+	
+	_addLineBreaker : function(sContent){
+		if(this.oApp.sLineBreaker === "BR"){
+			return sContent.replace(/\r?\n/g, "<BR>");
+		}
+		
+		var oContent = new StringBuffer(),
+			aContent = sContent.split('\n'), // \n을 기준으로 블럭을 나눈다.
+			aContentLng = aContent.length, 
+			sTemp = "";
 		
 		for (var i = 0; i < aContentLng; i++) {
 			sTemp = jindo.$S(aContent[i]).trim().$value();
@@ -120,19 +134,14 @@ nhn.husky.SE_EditingArea_TEXT = jindo.$Class({
 				oContent.append('</P>');
 			} else {
 				if (!jindo.$Agent().navigator().ie) {
-					oContent.append('<P><br></P>');
+					oContent.append('<P><BR></P>');
 				} else {
 					oContent.append('<P>&nbsp;<\/P>');
 				}
 			}
 		}
 		
-		sContent = oContent.toString();
-		if (aTemp !== null) {
-			sContent = aTemp[0] + sContent;
-		}
-		
-		return sContent;
+		return oContent.toString();
 	},
 
 	/**

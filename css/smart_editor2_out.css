@@ -3,7 +3,7 @@
 
 .se2_outputarea ,
 .se2_outputarea th,
-.se2_outputarea td{margin:0;padding:0;color:#666;font-size:12px;font-family:'돋움',Dotum,'굴림',Gulim,AppleGothic,Sans-serif;line-height:1.5;}
+.se2_outputarea td{margin:0;padding:0;color:#666;font-size:12px;font-family:'돋움',Dotum,'굴림',Gulim,Helvetica,Sans-serif;line-height:1.5;}
 .se2_outputarea p {margin:0;padding:0;}
 .se2_outputarea a:hover{text-decoration:underline;}
 .se2_outputarea a:link{color:#0000ff;}
@@ -14,9 +14,9 @@
 .se2_outputarea img,
 .se2_outputarea fieldset{border:0;}
 /* Nboard */
-#n2_nboard .se2_outputarea {color:#666;font-size:12px;font-family:'돋움',Dotum,'굴림',Gulim, AppleGothic,Sans-serif;line-height:1.5;}
+#n2_nboard .se2_outputarea {color:#666;font-size:12px;font-family:'돋움',Dotum,'굴림',Gulim, Helvetica,Sans-serif;line-height:1.5;}
 #n2_nboard .se2_outputarea th,
-#n2_nboard .se2_outputarea td{margin:0;padding:0;color:#666;font-size:12px;font-family:'돋움',Dotum,'굴림',Gulim,AppleGothic,Sans-serif;line-height:1.5;}
+#n2_nboard .se2_outputarea td{margin:0;padding:0;color:#666;font-size:12px;font-family:'돋움',Dotum,'굴림',Gulim,Helvetica,Sans-serif;line-height:1.5;}
 #n2_nboard .se2_outputarea p {margin:0;padding:0;}
 #n2_nboard .conts ul li {list-style-type:disc;}
 #n2_nboard .conts ul li li {list-style-type:circle;}

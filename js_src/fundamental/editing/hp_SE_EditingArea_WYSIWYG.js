@@ -45,7 +45,7 @@
  */
 nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	name : "SE_EditingArea_WYSIWYG",
-	status : nhn.husky.PLUGIN_STATUS["NOT_READY"],
+	status : nhn.husky.PLUGIN_STATUS.NOT_READY,
 
 	sMode : "WYSIWYG",
 	iframe : null,
@@ -74,26 +74,25 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		if(oAgent.ie){
 			this.iframe.style.display = "none";
 		}
-
-		// IE8에서는 이미지 뒤로 커서가 가지 않는 등의 여러 오동작이 발생 해서 IE8에서는 IE7모드로 작동하도록 설정 되어 있는 빈 페이지를 이용함
+	
+		// IE8 : 찾기/바꾸기에서 글자 일부에 스타일이 적용된 경우 찾기가 안되는 브라우저 버그로 인해 EmulateIE7 파일을 사용
 		// <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
 		this.sBlankPageURL = "smart_editor2_inputarea.html";
-		this.sBlankPageURL_IE8 = "smart_editor2_inputarea_ie8.html";
-		
+		this.sBlankPageURL_EmulateIE7 = "smart_editor2_inputarea_ie8.html";
+		this.aAddtionalEmulateIE7 = [];
+
 		this.htOptions = nhn.husky.SE2M_Configuration.SE_EditingAreaManager;	
 		if (this.htOptions) {
-			if (this.htOptions.sBlankPageURL) {
-				this.sBlankPageURL = this.htOptions.sBlankPageURL;
-			}
-			
-			if (this.htOptions.sBlankPageURL_IE8) {
-				this.sBlankPageURL_IE8 = this.htOptions.sBlankPageURL_IE8;
-			}
+			this.sBlankPageURL = this.htOptions.sBlankPageURL || this.sBlankPageURL;
+			this.sBlankPageURL_EmulateIE7 = this.htOptions.sBlankPageURL_EmulateIE7 || this.sBlankPageURL_EmulateIE7;
+			this.aAddtionalEmulateIE7 = this.htOptions.aAddtionalEmulateIE7 || this.aAddtionalEmulateIE7;
 		}
+		
+		this.aAddtionalEmulateIE7.push(8); // IE8은 Default 사용
 
 		this.sIFrameSrc = this.sBlankPageURL;
-		if(oAgent.ie && oAgent.nativeVersion >= 8) {
-			this.sIFrameSrc = this.sBlankPageURL_IE8;
+		if(oAgent.ie && jindo.$A(this.aAddtionalEmulateIE7).has(oAgent.nativeVersion)) {
+			this.sIFrameSrc = this.sBlankPageURL_EmulateIE7;
 		}
 
 		this.iframe.src = this.sIFrameSrc;
@@ -113,6 +112,8 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		if (!!this.isWYSIWYGEnabled()) {
 			this.oApp.exec('ENABLE_WYSIWYG_RULER', []);
 		}
+		
+		this.oApp.registerBrowserEvent(this.getDocument().body, 'paste', 'EVENT_EDITING_AREA_PASTE');
 	},
 
 	$ON_MSG_APP_READY : function(){
@@ -132,7 +133,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		if(jindo.$Agent().navigator().ie){
 			jindo.$Fn(
 				function(weEvent){
-					if(this.iframe.contentWindow.document.selection.type.toLowerCase() == 'control' && weEvent.key().keyCode == 8){
+					if(this.iframe.contentWindow.document.selection.type.toLowerCase() === 'control' && weEvent.key().keyCode === 8){
 						this.oApp.exec("EXECCOMMAND", ['delete', false, false]);
 						weEvent.stop();
 					}
@@ -174,14 +175,14 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	 * 스크롤바의 사이즈 측정하여 설정
 	 */
 	_setScrollbarWidth : function(){
-		var oDocument = this.getDocument();
-		var elScrollDiv = oDocument.createElement("div");
+		var oDocument = this.getDocument(),
+			elScrollDiv = oDocument.createElement("div");
 		
-		elScrollDiv.style["width"] = "100px";
-		elScrollDiv.style["height"] = "100px";
-		elScrollDiv.style["overflow"] = "scroll";
-		elScrollDiv.style["position"] = "absolute";
-		elScrollDiv.style["top"] = "-9999px";
+		elScrollDiv.style.width = "100px";
+		elScrollDiv.style.height = "100px";
+		elScrollDiv.style.overflow = "scroll";
+		elScrollDiv.style.position = "absolute";
+		elScrollDiv.style.top = "-9999px";
 				
 		oDocument.body.appendChild(elScrollDiv);
 
@@ -200,7 +201,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		
 		var oKeyInfo = oEvent.key();
 
-		if((oKeyInfo.keyCode >= 33 && oKeyInfo.keyCode <= 40) || oKeyInfo.alt || oKeyInfo.ctrl || oKeyInfo.keyCode == 16){
+		if((oKeyInfo.keyCode >= 33 && oKeyInfo.keyCode <= 40) || oKeyInfo.alt || oKeyInfo.ctrl || oKeyInfo.keyCode === 16){
 			return;
 		}
 		
@@ -224,13 +225,20 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	startAutoResize : function(){
 		this.oApp.exec("STOP_CHECKING_BODY_HEIGHT");
 		this.bAutoResize = true;
-
-		jindo.$Element(this.getDocument().body).css({
-			"overflow" : "hidden",	// IE7에서 Body가 늘어날 때 스크롤이 보였다 사라졌다 하지 않도록 함
-			"overflowY" : "hidden"
-			//"wordWrap" : "break-word"
-		});
 		
+		var oBrowser = this.oApp.oNavigator;
+
+		// [SMARTEDITORSUS-887] [블로그 1단] 자동확장 모드에서 에디터 가로사이즈보다 큰 사진을 추가했을 때 가로스크롤이 안생기는 문제
+		if(oBrowser.ie && oBrowser.version < 9){
+			jindo.$Element(this.getDocument().body).css({ "overflow" : "visible" });
+
+			// { "overflowX" : "visible", "overflowY" : "hidden" } 으로 설정하면 세로 스크롤 뿐 아니라 가로 스크롤도 보이지 않는 문제가 있어
+			// { "overflow" : "visible" } 로 처리하고 에디터의 container 사이즈를 늘려 세로 스크롤이 보이지 않도록 처리해야 함
+			// [한계] 자동 확장 모드에서 내용이 늘어날 때 세로 스크롤이 보였다가 없어지는 문제
+		}else{
+			jindo.$Element(this.getDocument().body).css({ "overflowX" : "visible", "overflowY" : "hidden" });
+		}
+				
 		this._setAutoResize();
 		this.nCheckBodyInterval = setInterval(this.fnCheckBodyChange, 500);
 		
@@ -246,10 +254,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 
 		this.oApp.exec("STOP_FLOAT_TOOLBAR");	// remove scroll event
 		
-		jindo.$Element(this.getDocument().body).css({
-			"overflow" : "visible",
-			"overflowY" : "visible"
-		});
+		jindo.$Element(this.getDocument().body).css({ "overflow" : "visible", "overflowY" : "visible" });
 		
 		this.oApp.exec("START_CHECKING_BODY_HEIGHT");
 	},
@@ -276,8 +281,10 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	 */ 
 	_getResizeHeight : function(){
 		var elBody = this.getDocument().body,
+			welBody,
 			nBodyHeight,
-			aCopyStyle = ['width', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'textTransform', 'wordSpacing'];
+			aCopyStyle = ['width', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'textTransform', 'wordSpacing'],
+			oCss, i;
 
 		if(!this.oApp.oNavigator.firefox && !this.oApp.oNavigator.safari){
 			if(this.oApp.oNavigator.ie && this.oApp.oNavigator.version === 8 && document.documentMode === 8){
@@ -304,15 +311,15 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			this.elDummy.style.height = this.nBodyMinHeight + "px";
 		}
 		
-		var welBody = jindo.$Element(elBody),
-	    	i = aCopyStyle.length,
-	    	oCss = {};
+		welBody = jindo.$Element(elBody);
+	    i = aCopyStyle.length;
+	    oCss = {};
 	    
 		while(i--){
 			oCss[aCopyStyle[i]] = welBody.css(aCopyStyle[i]);
 		}
 		
-		if(oCss.lineHeight.indexOf("px")){
+		if(oCss.lineHeight.indexOf("px") > -1){
 			oCss.lineHeight = (parseInt(oCss.lineHeight, 10)/parseInt(oCss.fontSize, 10));
 		}
 
@@ -359,7 +366,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 				}
 
 				nContainerHeight = nBodyHeight + nStyleSize;
-				nContainerHeight += 10;
+				nContainerHeight += 18;
 				
 				bExpand = true;
 			}else{
@@ -484,18 +491,29 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	$ON_IE_CHECK_EXCEPTION_FOR_SELECTION_PRESERVATION : function(){
 		// 현재 선택된 앨리먼트가 iframe이라면, 셀렉션을 따로 기억 해 두지 않아도 유지 됨으로 RESTORE_IE_SELECTION을 타지 않도록 this._oIERange을 지워준다.
 		// (필요 없을 뿐더러 저장 시 문제 발생)
-		var tmpSelection = this.getDocument().selection;
+		
+        if(this.getDocument().selection.type === "Control"){
+            this._oIERange = null;
+        }
+        
+		/* // [SMARTEDITORSUS-978] HuskyRange.js 의 [SMARTEDITORSUS-888] 이슈 수정과 관련
+		var tmpSelection = this.getDocument().selection,
+			oRange, elNode;
 
 		if(tmpSelection.type === "Control"){
-			var oRange = tmpSelection.createRange();
-			var elNode = oRange.item(0);
+			oRange = tmpSelection.createRange();
+			elNode = oRange.item(0);
+
 			if(elNode && elNode.tagName === "IFRAME"){
 				this._oIERange = null;
 			}
 		}
+		*/
 	},
 	
 	_onIEBeforeDeactivate : function(wev){
+		var tmpSelection, tmpRange;
+
 		this.oApp.delayedExec("IE_CHECK_EXCEPTION_FOR_SELECTION_PRESERVATION", [], 0);
 
 		if(this._oIERange){
@@ -508,18 +526,22 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			return;
 		}
 
-		var tmpSelection = this.getDocument().selection;
-		var tmpRange = tmpSelection.createRange();
+		this._oIERange = this.oApp.getSelection().cloneRange();
+		
+		/* [SMARTEDITORSUS-978] HuskyRange.js 의 [SMARTEDITORSUS-888] 이슈 수정과 관련
+		tmpSelection = this.getDocument().selection;
+		tmpRange = tmpSelection.createRange();
 		// Control range does not have parentElement
-		if(tmpRange.parentElement && tmpRange.parentElement() && tmpRange.parentElement().tagName == "INPUT"){
+		if(tmpRange.parentElement && tmpRange.parentElement() && tmpRange.parentElement().tagName === "INPUT"){
 			this._oIERange = this._oPrevIERange;
 		}else{
 			this._oIERange = tmpRange;
 		}
+		*/
 	},
 	
 	$ON_CHANGE_EDITING_MODE : function(sMode, bNoFocus){
-		if(sMode == this.sMode){
+		if(sMode === this.sMode){
 			this.iframe.style.display = "block";
 			
 			this.oApp.exec("REFRESH_WYSIWYG", []);
@@ -560,7 +582,21 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		this._onIEBeforeDeactivate();
 
 		// De-select the default selection.
-		this.oApp.getEmptySelection().oBrowserSelection.selectNone();
+		// [SMARTEDITORSUS-978] IE9에서 removeAllRanges로 제거되지 않아
+		// 이전 IE와 동일하게 empty 방식을 사용하도록 하였으나 doc.selection.type이 None인 경우 에러
+		// Range를 재설정 해주어 selectNone 으로 처리되도록 예외처리
+        if(this.oApp.getWYSIWYGDocument().selection.createRange){
+        	try{
+        		this.oApp.getWYSIWYGDocument().selection.empty();
+        	}catch(e){
+        		// [SMARTEDITORSUS-1003] IE9 / doc.selection.type === "None"
+        		var oSelection = this.oApp.getSelection();
+        		oSelection.select();
+        		oSelection.oBrowserSelection.selectNone();
+        	}
+        }else{
+            this.oApp.getEmptySelection().oBrowserSelection.selectNone();
+        }
 	},
 	
 	$AFTER_SHOW_ACTIVE_LAYER : function(){
@@ -573,7 +609,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	},
 	
 	$ON_EVENT_EDITING_AREA_KEYDOWN : function(oEvent){
-		if(this.oApp.getEditingMode() != this.sMode){
+		if(this.oApp.getEditingMode() !== this.sMode){
 			return;
 		}
 		
@@ -636,34 +672,40 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	},
 
 	$BEFORE_PASTE_HTML : function(){
-		if(this.oApp.getEditingMode() != this.sMode){
+		if(this.oApp.getEditingMode() !== this.sMode){
 			this.oApp.exec("CHANGE_EDITING_MODE", [this.sMode]);
 		}
 	},
 	
 	$ON_PASTE_HTML : function(sHTML, oPSelection, bNoUndo){
-		if(this.oApp.getEditingMode() != this.sMode){
+		var oSelection, oNavigator, sTmpBookmark, 
+			oStartContainer, aImgChild, elLastImg, elChild, elNextChild;
+
+		if(this.oApp.getEditingMode() !== this.sMode){
 			return;
 		}
 		
 		if(!bNoUndo){
 			this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", ["PASTE HTML"]);
 		}
-			
-		var oSelection, oNavigator;
 		 
 		oNavigator = jindo.$Agent().navigator();
 		oSelection = oPSelection || this.oApp.getSelection();
 
-		//[SMARTEDITORSUS-387]IE9 표준모드에서 엘리먼트 뒤에 어떠한 엘리먼트도 없는 상태에서 커서가 안들어가는 현상.
-		if(oNavigator.ie && oNavigator.nativeVersion >= 9 && document.documentMode >= 9){
-		 	sHTML = sHTML + unescape("%uFEFF");
+		//[SMARTEDITORSUS-888] 브라우저 별 테스트 후 아래 부분이 불필요하여 제거함
+		//	- [SMARTEDITORSUS-387] IE9 표준모드에서 엘리먼트 뒤에 어떠한 엘리먼트도 없는 상태에서 커서가 안들어가는 현상.
+		// if(oNavigator.ie && oNavigator.nativeVersion >= 9 && document.documentMode >= 9){
+		//		sHTML = sHTML + unescape("%uFEFF");
+		// }
+		if(oNavigator.ie && oNavigator.nativeVersion == 8 && document.documentMode == 8){
+			sHTML = sHTML + unescape("%uFEFF");
 		}
+
 		oSelection.pasteHTML(sHTML);
 		
 		// every browser except for IE may modify the innerHTML when it is inserted
 		if(!oNavigator.ie){
-			var sTmpBookmark = oSelection.placeStringBookmark();
+			sTmpBookmark = oSelection.placeStringBookmark();
 			this.oApp.getWYSIWYGDocument().body.innerHTML = this.oApp.getWYSIWYGDocument().body.innerHTML;
 			oSelection.moveToBookmark(sTmpBookmark);
 			oSelection.collapseToEnd();
@@ -674,21 +716,30 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			// 원인 확인 결과 컨텐츠 삽입 후 기존 Bookmark 삭제 시 갱신된 Selection 이 제대로 반영되지 않는 점이 있었습니다.
 			// 이에, Selection 을 갱신하는 코드를 추가하였습니다.
 			oSelection = this.oApp.getSelection();
+			
+			//[SMARTEDITORSUS-831] 비IE 계열 브라우저에서 스크롤바가 생기게 문자입력 후 엔터 클릭하지 않은 상태에서 
+			//이미지 하나 삽입 시 이미지에 포커싱이 놓이지 않습니다.
+			//원인 : parameter로 넘겨 받은 oPSelecion에 변경된 값을 복사해 주지 않아서 발생
+			//해결 : parameter로 넘겨 받은 oPSelecion에 변경된 값을 복사해준다
+			//       call by reference로 넘겨 받았으므로 직접 객체 안의 인자 값을 바꿔주는 setRange 함수 사용
+			if(!!oPSelection){
+				oPSelection.setRange(oSelection);
+			}
 		}else{
 			// [SMARTEDITORSUS-428] [IE9.0] IE9에서 포스트 쓰기에 접근하여 맨위에 임의의 글감 첨부 후 엔터를 클릭 시 글감이 사라짐
 			// PASTE_HTML 후에 IFRAME 부분이 선택된 상태여서 Enter 시 내용이 제거되어 발생한 문제
 			oSelection.collapseToEnd();
 			oSelection.select();
 			
+			this._oIERange = null;
 			this._bIERangeReset = false;
 		}
 		
 		// [SMARTEDITORSUS-639] 사진 첨부 후 이미지 뒤의 공백으로 인해 스크롤이 생기는 문제
 		if(sHTML.indexOf("<img") > -1){
-			var oStartContainer = oSelection.startContainer,
-				aImgChild, elLastImg, elChild, elNextChild;
+			oStartContainer = oSelection.startContainer;
 				
-			if(oStartContainer.nodeType === 1 && oStartContainer.tagName == "P"){
+			if(oStartContainer.nodeType === 1 && oStartContainer.tagName === "P"){
 				aImgChild = jindo.$Element(oStartContainer).child(function(v){  
 					return (v.$value().nodeType === 1 && v.$value().tagName === "IMG");
 				}, 1);
@@ -744,11 +795,11 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	 */
 	_getElementVerticalPosition : function(el){
 	    var nTop = 0,
-	    	elParent = el,
-	    	htPos = {nTop : 0, nBottom : 0};
+			elParent = el,
+			htPos = {nTop : 0, nBottom : 0};
 	    
 	    if(!el){
-	    	return htPos;
+			return htPos;
 	    }
 
 	    while(elParent) {
@@ -817,7 +868,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	},
 	
 	$AFTER_MSG_EDITING_AREA_RESIZE_ENDED : function(FnMouseDown, FnMouseMove, FnMouseUp){
-		if(this.oApp.getEditingMode() != this.sMode){
+		if(this.oApp.getEditingMode() !== this.sMode){
 			return;
 		}
 		
@@ -847,11 +898,52 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			}catch(e){}
 		}
 	},
+	
+	/**
+	  * EVENT_EDITING_AREA_PASTE 의 ON 메시지 핸들러
+	  *		위지윅 모드에서 에디터 본문의 paste 이벤트에 대한 메시지를 처리한다.
+	  *		paste 시에 내용이 붙여진 본문의 내용을 바로 가져올 수 없어 delay 를 준다.
+	  */	
+	$ON_EVENT_EDITING_AREA_PASTE : function(oEvent){
+		this.oApp.delayedExec('EVENT_EDITING_AREA_PASTE_DELAY', [oEvent], 0);
+	},
 
+	$ON_EVENT_EDITING_AREA_PASTE_DELAY : function(weEvent) {	
+		this._replaceBlankToNbsp(weEvent.element);
+	},
+	
+	// [SMARTEDITORSUS-855] IE에서 특정 블로그 글을 복사하여 붙여넣기 했을 때 개행이 제거되는 문제
+	_replaceBlankToNbsp : function(el){
+		var oNavigator = this.oApp.oNavigator;
+		
+		if(!oNavigator.ie){
+			return;
+		}
+		
+		if(oNavigator.nativeVersion !== 9 || document.documentMode !== 7) { // IE9 호환모드에서만 발생
+			return;
+		}
+
+		if(el.nodeType !== 1){
+			return;
+		}
+		
+		if(el.tagName === "BR"){
+			return;
+		}
+		
+		var aEl = jindo.$$("p:empty()", this.oApp.getWYSIWYGDocument().body, { oneTimeOffCache:true });
+		
+		jindo.$A(aEl).forEach(function(value, index, array) {
+			value.innerHTML = "&nbsp;";
+		});
+	},
+	
 	_pageUp : function(we){
-		var nEditorHeight = this._getEditorHeight();
-		var htPos = jindo.$Document(this.oApp.getWYSIWYGDocument()).scrollPosition();
-		var nNewTop;
+		var nEditorHeight = this._getEditorHeight(),
+			htPos = jindo.$Document(this.oApp.getWYSIWYGDocument()).scrollPosition(),
+			nNewTop;
+
 		if(htPos.top <= nEditorHeight){
 			nNewTop = 0;
 		}else{
@@ -862,10 +954,11 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	},
 	
 	_pageDown : function(we){
-		var nEditorHeight = this._getEditorHeight();
-		var htPos = jindo.$Document(this.oApp.getWYSIWYGDocument()).scrollPosition();
-		var nBodyHeight = this._getBodyHeight();
-		var nNewTop;
+		var nEditorHeight = this._getEditorHeight(),
+			htPos = jindo.$Document(this.oApp.getWYSIWYGDocument()).scrollPosition(),
+			nBodyHeight = this._getBodyHeight(),
+			nNewTop;
+
 		if(htPos.top+nEditorHeight >= nBodyHeight){
 			nNewTop = nBodyHeight - nEditorHeight;
 		}else{
@@ -884,13 +977,15 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	},
 	
 	tidyNbsp : function(){
+		var i, pNodes;
+
 		if(!this.oApp.oNavigator.ie) {
 			return;
 		}	
 		
-		var pNodes = this.oApp.getWYSIWYGDocument().body.getElementsByTagName("P");
-		for(var i=0; i<pNodes.length; i++){
-			if(pNodes[i].childNodes.length == 1 && pNodes[i].innerHTML == "&nbsp;"){
+		pNodes = this.oApp.getWYSIWYGDocument().body.getElementsByTagName("P");
+		for(i=0; i<pNodes.length; i++){
+			if(pNodes[i].childNodes.length === 1 && pNodes[i].innerHTML === "&nbsp;"){
 				pNodes[i].innerHTML = '';
 			}
 		}
@@ -898,13 +993,13 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 
 	initIframe : function(){
 		try {
-			if (!this.iframe.contentWindow.document || !this.iframe.contentWindow.document.body || this.iframe.contentWindow.document.location.href == 'about:blank'){
+			if (!this.iframe.contentWindow.document || !this.iframe.contentWindow.document.body || this.iframe.contentWindow.document.location.href === 'about:blank'){
 				throw new Error('Access denied');
 			}
 
 			this._enableWYSIWYG();
 
-			this.status = nhn.husky.PLUGIN_STATUS["READY"];
+			this.status = nhn.husky.PLUGIN_STATUS.READY;
 		} catch(e) {
 			if(this._nIFrameReadyCount-- > 0){
 				setTimeout(jindo.$Fn(this.initIframe, this).bind(), 100);
@@ -915,8 +1010,8 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	},
 
 	getIR : function(){
-		var sContent = this.iframe.contentWindow.document.body.innerHTML;
-		var sIR;
+		var sContent = this.iframe.contentWindow.document.body.innerHTML,
+			sIR;
 
 		if(this.oApp.applyConverter){
 			sIR = this.oApp.applyConverter(this.sMode+"_TO_IR", sContent, this.oApp.getWYSIWYGDocument());
@@ -944,11 +1039,11 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		this.iframe.contentWindow.document.body.innerHTML = sContent;
 		
 		if(!oNavigator.ie){
-			if((this.iframe.contentWindow.document.body.innerHTML).replace(/[\r\n\t\s]*/,"") == ""){
+			if((this.iframe.contentWindow.document.body.innerHTML).replace(/[\r\n\t\s]*/,"") === ""){
 				this.iframe.contentWindow.document.body.innerHTML = "<br>";
 			}
 		}else{
-			if(this.oApp.getEditingMode() == this.sMode){
+			if(this.oApp.getEditingMode() === this.sMode){
 				this.tidyNbsp();
 			}
 		}
@@ -996,18 +1091,18 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			return;
 		}
 
-		if(oKeyInfo.alt || oKeyInfo.ctrl || oKeyInfo.keyCode == 16){
+		if(oKeyInfo.alt || oKeyInfo.ctrl || oKeyInfo.keyCode === 16){
 			return;
 		}
 
-		if(this.oApp.getLastKey() == oKeyInfo.keyCode){
+		if(this.oApp.getLastKey() === oKeyInfo.keyCode){
 			return;
 		}
 		
 		this.oApp.setLastKey(oKeyInfo.keyCode);
 
-		// && oKeyInfo.keyCode != 32 	// 속도 문제로 인하여 Space 는 제외함
-		if(!oKeyInfo.enter && oKeyInfo.keyCode != 46 && oKeyInfo.keyCode != 8){
+		// && oKeyInfo.keyCode != 32		// 속도 문제로 인하여 Space 는 제외함
+		if(!oKeyInfo.enter && oKeyInfo.keyCode !== 46 && oKeyInfo.keyCode !== 8){
 			return;
 		}
 	

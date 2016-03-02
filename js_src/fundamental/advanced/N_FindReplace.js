@@ -77,18 +77,23 @@ nhn.FindReplace = jindo.$Class({
 		
 		// IE solution
 		if(this.document.body.createTextRange){
-			var iOption = 0;
-			if(bBackwards) iOption += 1;
-			if(bWholeWord) iOption += 2;
-			if(bCaseMatch) iOption += 4;
-			
-			this.window.focus();
-			this._range = this.document.selection.createRangeCollection().item(0);
-			this._range.collapse(false);
-			bSearchResult = this._range.findText(sKeyword, 1, iOption);
-
-			this._range.select();
-			return bSearchResult;
+			try{
+				var iOption = 0;
+				if(bBackwards) iOption += 1;
+				if(bWholeWord) iOption += 2;
+				if(bCaseMatch) iOption += 4;
+				
+				this.window.focus();
+				this._range = this.document.selection.createRangeCollection().item(0);
+				this._range.collapse(false);
+				bSearchResult = this._range.findText(sKeyword, 1, iOption);
+	
+				this._range.select();
+				
+				return bSearchResult;
+			}catch(e){
+				return false;
+			}
 		}
 		
 		return false;

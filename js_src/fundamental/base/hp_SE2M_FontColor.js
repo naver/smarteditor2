@@ -53,24 +53,28 @@ nhn.husky.SE2M_FontColor = jindo.$Class({
 			alert(this.oApp.$MSG("SE_FontColor.invalidColorCode"));
 			return;
 		}
-		var oAgent = jindo.$Agent().navigator();	
+
 		this._setLastUsedFontColor(sFontColor);
 		
-		if( oAgent.ie || oAgent.firefox ){	// [SMARTEDITORSUS-658] Firefox 추가
-			this.oApp.exec("SET_WYSIWYG_STYLE", [{"color":sFontColor}]);
-		} else {
-			var bDontAddUndoHistory = false;
+		this.oApp.exec("SET_WYSIWYG_STYLE", [{"color":sFontColor}]);
+
+		// [SMARTEDITORSUS-907] 모든 브라우저에서 SET_WYSIWYG_STYLE로 색상을 설정하도록 변경
+		// var oAgent = jindo.$Agent().navigator();
+		// if( oAgent.ie || oAgent.firefox ){	// [SMARTEDITORSUS-658] Firefox 추가
+		//	this.oApp.exec("SET_WYSIWYG_STYLE", [{"color":sFontColor}]);
+		// } else {
+		// 	var bDontAddUndoHistory = false;
 			
-			if(this.oApp.getSelection().collapsed){
-				bDontAddUndoHistory = true;
-			}
+		// 	if(this.oApp.getSelection().collapsed){
+		// 		bDontAddUndoHistory = true;
+		// 	}
 			
-			this.oApp.exec("EXECCOMMAND", ["ForeColor", false, sFontColor, { "bDontAddUndoHistory" : bDontAddUndoHistory }]);
+		// 	this.oApp.exec("EXECCOMMAND", ["ForeColor", false, sFontColor, { "bDontAddUndoHistory" : bDontAddUndoHistory }]);
 			
-			if(bDontAddUndoHistory){
-				this.oApp.exec("RECORD_UNDO_ACTION", ["FONT COLOR", {bMustBlockElement : true}]);
-			}
-		}
+		// 	if(bDontAddUndoHistory){
+		// 		this.oApp.exec("RECORD_UNDO_ACTION", ["FONT COLOR", {bMustBlockElement : true}]);
+		// 	}
+		// }
 		
 		this.oApp.exec("HIDE_ACTIVE_LAYER");
 	},

@@ -376,7 +376,8 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		welBody = jindo.$Element(elBody);
 		htBrowser = jindo.$Agent().navigator();
 		
-		this.nTableWidth = elBody.offsetWidth - parseInt(welBody.css("marginLeft"), 10) - parseInt(welBody.css("marginRight"), 10);
+		this.nTableWidth = elBody.offsetWidth;
+		
 		sTable = this._getTableString();
 	
 		elTmpDiv = this.oApp.getWYSIWYGDocument().createElement("DIV");

@@ -18,7 +18,8 @@ nhn.husky.SE2M_Configuration.LinkageDomain = {
 
 nhn.husky.SE2M_Configuration.SE_EditingAreaManager = {
 	sBlankPageURL : "smart_editor2_inputarea.html",
-	sBlankPageURL_IE8 : "smart_editor2_inputarea_ie8.html"
+	sBlankPageURL_EmulateIE7 : "smart_editor2_inputarea_ie8.html",
+	aAddtionalEmulateIE7 : [9, 10] // IE8 default 사용, IE9 ~ 선택적 사용
 };
 
 nhn.husky.SE2M_Configuration.LazyLoad = {
@@ -66,5 +67,11 @@ nhn.husky.SE2M_Configuration.SE2M_ReEditAction = {
 };
 
 nhn.husky.SE2M_Configuration.SE2M_ColorPalette = {
-	bUseFlashModule : false
+	bUseRecentColor : false
+};
+
+nhn.husky.SE2M_Configuration.QuickEditor = {
+	common : {
+		bUseConfig : false
+	}
 };

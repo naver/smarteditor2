@@ -356,12 +356,25 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 	},
 	
 	$ON_REGISTER_UI_EVENT : function(sUIName, sEvent, sCmd, aParams){
+		//[SMARTEDITORSUS-966][IE8 표준/IE 10] 호환 모드를 제거하고 사진 첨부 시 에디팅 영역의 
+		//						커서 주위에 <sub><sup> 태그가 붙어서 글자가 매우 작게 되는 현상
+		//원인 : 아래의 [SMARTEDITORSUS-901] 수정 내용에서 윗첨자 아랫첨자 이벤트 등록 시 
+		//해당 플러그인이 마크업에 없으면 this.htUIList에 존재하지 않아 getsingle 사용시 사진첨부에 이벤트가 걸렸음
+		//해결 : this.htUIList에 존재하지 않으면 이벤트를 등록하지 않음
+		if(!this.htUIList[sUIName]){
+			return;
+		}
 		// map cmd & ui
+		var elButton;
 		if(!this.aUICmdMap[sUIName]){this.aUICmdMap[sUIName] = [];}
 		this.aUICmdMap[sUIName][this.aUICmdMap[sUIName].length] = sCmd;
-		var elUI = this.htUIList[sUIName];
-		if(!elUI){return;}
-		this.oApp.registerBrowserEvent(elUI.firstChild, sEvent, sCmd, aParams);
+		//[SMARTEDITORSUS-901]플러그인 태그 코드 추가 시 <li>태그와<button>태그 사이에 개행이 있으면 이벤트가 등록되지 않는 현상
+		//원인 : IE9, Chrome, FF, Safari 에서는 태그를 개행 시 그 개행을 text node로 인식하여 firstchild가 text 노드가 되어 버튼 이벤트가 할당되지 않음 
+		//해결 : firstchild에 이벤트를 거는 것이 아니라, child 중 button 인 것에 이벤트를 걸도록 변경
+		elButton = jindo.$$.getSingle('button', this.htUIList[sUIName]);
+	
+		if(!elButton){return;}
+		this.oApp.registerBrowserEvent(elButton, sEvent, sCmd, aParams);
 	},
 
 	getToolbarButtonByUIName : function(sUIName){
