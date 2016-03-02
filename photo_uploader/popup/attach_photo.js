@@ -355,9 +355,15 @@
 			type: 'xhr',
 			method : "post",
 			onload : function(res){ // 요청이 완료되면 실행될 콜백 함수
+				var sResString = res._response.responseText;
 				if (res.readyState() == 4) {
-					//성공 시에  responseText를 가지고 array로 만드는 부분.
-					makeArrayFromString(res._response.responseText);
+					if(sResString.indexOf("NOTALLOW_") > -1){
+						var sFileName = sResString.replace("NOTALLOW_", "");
+						alert("이미지 파일(jpg,gif,png,bmp)만 업로드 하실 수 있습니다. ("+sFileName+")");
+					}else{
+						//성공 시에  responseText를 가지고 array로 만드는 부분.
+						makeArrayFromString(res._response.responseText);
+					}
 				}
 			},
 			timeout : 3,
