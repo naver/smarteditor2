@@ -1,4 +1,4 @@
-/**    * SmartEditor2 NHN_Library:SE2.3.4.O10204:SmartEditor2.0-OpenSource    * @version 10204    */    var nSE2Version = 10204;if(typeof window.nhn=='undefined') window.nhn = {};
+/**    * SmartEditor2 NHN_Library:SE2.3.5.O10318:SmartEditor2.0-OpenSource    * @version 10318    */    var nSE2Version = 10318;if(typeof window.nhn=='undefined') window.nhn = {};
 
 /**
  * @fileOverview This file contains a function that takes care of various operations related to find and replace
@@ -10390,7 +10390,8 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
  */
 nhn.husky.SE2M_LineHeightWithLayerUI = jindo.$Class({
 	name : "SE2M_LineHeightWithLayerUI",
-
+	MIN_LINE_HEIGHT : 50,
+	
 	$ON_MSG_APP_READY : function(){
 		this.oApp.exec("REGISTER_UI_EVENT", ["lineHeight", "click", "SE2M_TOGGLE_LINEHEIGHT_LAYER"]);
 	},
@@ -10441,13 +10442,13 @@ nhn.husky.SE2M_LineHeightWithLayerUI = jindo.$Class({
 	},
 	
 	$ON_SE2M_INC_LINEHEIGHT : function(){
-		this.oInput.value = parseInt(this.oInput.value, 10)||0;
+		this.oInput.value = parseInt(this.oInput.value, 10) || this.MIN_LINE_HEIGHT;
 		this.oInput.value++;
 	},
 
 	$ON_SE2M_DEC_LINEHEIGHT : function(){
-		this.oInput.value = parseInt(this.oInput.value, 10)||0;
-		if(this.oInput.value > 0){this.oInput.value--;}
+		this.oInput.value = parseInt(this.oInput.value, 10) || this.MIN_LINE_HEIGHT;
+		if(this.oInput.value > this.MIN_LINE_HEIGHT){this.oInput.value--;}
 	},
 	
 	$ON_LINEHEIGHT_LAYER_SHOWN : function(){
@@ -10471,7 +10472,9 @@ nhn.husky.SE2M_LineHeightWithLayerUI = jindo.$Class({
 	},
 	
 	$ON_SE2M_SET_LINEHEIGHT_FROM_DIRECT_INPUT : function(){
-		this._setLineHeightAndCloseLayer(this.oInput.value);
+		var nInputValue = parseInt(this.oInput.value, 10);
+		var sValue = (nInputValue < this.MIN_LINE_HEIGHT) ? this.MIN_LINE_HEIGHT : nInputValue;
+		this._setLineHeightAndCloseLayer(sValue);
 	},
 
 	$ON_SET_LINEHEIGHT_FROM_LAYER_UI : function(sValue){
@@ -10521,7 +10524,7 @@ nhn.husky.SE2M_LineHeightWithLayerUI = jindo.$Class({
 	}
 	//@lazyload_js]
 });
-//}
+//}  
 //{
 /**
  * @fileOverview This file contains Husky plugin that takes care of the operations related to setting/changing the line style
@@ -12732,9 +12735,9 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		this.oApp.exec('MSG_NOTIFY_CLICKCR', ['table']);
 	},
 	
-	$ON_TABLE_BORDER_STYLE_LAYER_CLICKED : function(weEvent){
-		top.document.title = weEvent.element.tagName;
-	},
+	// $ON_TABLE_BORDER_STYLE_LAYER_CLICKED : function(weEvent){
+		// top.document.title = weEvent.element.tagName;
+	// },
 	
 	$ON_TABLE_CLOSE_ALL : function(){
 		this.oApp.exec("TABLE_HIDE_BORDER_COLOR_PALLET", []);
@@ -16956,6 +16959,33 @@ nhn.husky.DialogLayerManager = jindo.$Class({
 		elLayer.style.left = nLeft;
 	}
 	//@lazyload_js]
+});
+nhn.husky.ErrorCollector = jindo.$Class({
+        name : "ErrorCollector",
+
+        $init : function() {
+        },
+
+        $ON_MSG_APP_READY: function() {
+        },
+        
+        $ON_FIRE_ERROR: function(message, el) {
+            if( typeof message == 'object' & typeof message.description == 'string') {
+                message = message + " : " + message.description;
+            }
+            var line = message.lineNumber;
+
+            if(!el) el = document.location;
+            if(!line) line = 0;
+
+            if(el) {
+                var tmp = 'http://smarteditor.naver.com/';
+                tmp += el;
+                el = tmp;
+            }
+
+            JEagleEyeClientForSE2.sendError(message, el, line);    
+        }   
 });
 nhn.husky.JDUtil = jindo.$Class({
         name : "JDUtil",
