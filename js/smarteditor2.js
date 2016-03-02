@@ -1,4 +1,4 @@
-/**    * SmartEditor2 NHN_Library:SE2.3.1.O9858:SmartEditor2.0-OpenSource    * @version 9858    */    var nSE2Version = 9858;if(typeof window.nhn=='undefined') window.nhn = {};
+/**    * SmartEditor2 NHN_Library:SE2.3.3.O10158:SmartEditor2.0-OpenSource    * @version 10158    */    var nSE2Version = 10158;if(typeof window.nhn=='undefined') window.nhn = {};
 
 /**
  * @fileOverview This file contains a function that takes care of various operations related to find and replace
@@ -6906,7 +6906,10 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		elNode = this._getStyleNode(elWrapper);
 		
 		if(elNode.innerHTML == "" && elNode.nodeName.toLowerCase() != "param"){
-			elNode.innerHTML = unescape("%uFEFF");
+			try{
+				elNode.innerHTML = unescape("%uFEFF");
+			}catch(e) {
+			}
 		}
 		
 		return elNode;
@@ -7120,7 +7123,7 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 	
 	// [IE] P 태그 가장 뒤 자식노드로 공백(&nbsp;)을 값으로 하는 텍스트 노드를 추가
 	_addSpace : function(elNode){
-		var tmpTextNode, sInnerHTML, elChild, elNextChild, bHasNBSP, aImgChild, elLastImg;
+		var tmpTextNode, elChild, elNextChild, bHasNBSP, aImgChild, elLastImg;
 
 		if(!elNode){
 			return;
@@ -7153,9 +7156,7 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			}
 			return elNode;
 		}
-
-		sInnerHTML = elNode.innerHTML;
-
+		
 		elChild = elNode.firstChild;
 		elNextChild = elChild;
 		bHasNBSP = false;
@@ -7961,7 +7962,12 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 		if(jindo.$Agent().navigator().ie && jindo.$Agent().navigator().version == 7) {
             window.focus();
 		}
-		this.oButton.focus();
+		
+		try {
+			this.oButton.focus();
+		} catch(e) {
+		}
+		
 	},
 	
 	$ON_OPEN_HELP_POPUP : function() {
@@ -8038,6 +8044,10 @@ nhn.husky.SE2M_BGColor = jindo.$Class({
 		this._setLastUsedBGColor("#777777");
 	},
 	
+	$BEFORE_MSG_APP_READY : function() {
+		this.oApp.exec("ADD_APP_PROPERTY", ["getLastUsedBackgroundColor", jindo.$Fn(this.getLastUsedBGColor, this).bind()]);
+  	},
+	
 	$ON_MSG_APP_READY : function(){
 		this.oApp.exec("REGISTER_UI_EVENT", ["BGColorA", "click", "APPLY_LAST_USED_BGCOLOR"]);
 		this.oApp.exec("REGISTER_UI_EVENT", ["BGColorB", "click", "TOGGLE_BGCOLOR_LAYER"]);
@@ -8100,6 +8110,10 @@ nhn.husky.SE2M_BGColor = jindo.$Class({
 	_setLastUsedBGColor : function(sBGColor){
 		this.sLastUsedColor = sBGColor;
 		this.elLastUsed.style.backgroundColor = this.sLastUsedColor;
+	},
+	
+	getLastUsedBGColor : function(){
+		return (!!this.sLastUsedColor) ? this.sLastUsedColor : '#777777';
 	}
 });
 //}
@@ -8481,6 +8495,10 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		this.oApp.exec("REGISTER_HOTKEY", ["ctrl+u", "EXECCOMMAND", ["underline", false, false]]);
 		this.oApp.exec("REGISTER_HOTKEY", ["ctrl+i", "EXECCOMMAND", ["italic", false, false]]);
 		this.oApp.exec("REGISTER_HOTKEY", ["ctrl+d", "EXECCOMMAND", ["strikethrough", false, false]]);
+		this.oApp.exec("REGISTER_HOTKEY", ["meta+b", "EXECCOMMAND", ["bold", false, false]]);
+		this.oApp.exec("REGISTER_HOTKEY", ["meta+u", "EXECCOMMAND", ["underline", false, false]]);
+		this.oApp.exec("REGISTER_HOTKEY", ["meta+i", "EXECCOMMAND", ["italic", false, false]]);
+		this.oApp.exec("REGISTER_HOTKEY", ["meta+d", "EXECCOMMAND", ["strikethrough", false, false]]);
 		this.oApp.exec("REGISTER_HOTKEY", ["tab", "INDENT"]);
 		this.oApp.exec("REGISTER_HOTKEY", ["shift+tab", "OUTDENT"]);
 		//this.oApp.exec("REGISTER_HOTKEY", ["tab", "EXECCOMMAND", ["indent", false, false]]);
@@ -9139,6 +9157,10 @@ nhn.husky.SE2M_FontColor = jindo.$Class({
 		this._setLastUsedFontColor("#000000");
 	},
 
+	$BEFORE_MSG_APP_READY : function() {
+		this.oApp.exec("ADD_APP_PROPERTY", ["getLastUsedFontColor", jindo.$Fn(this.getLastUsedFontColor, this).bind()]);
+  	},
+    	
 	$ON_MSG_APP_READY : function(){
 		this.oApp.exec("REGISTER_UI_EVENT", ["fontColorA", "click", "APPLY_LAST_USED_FONTCOLOR"]);
 		this.oApp.exec("REGISTER_UI_EVENT", ["fontColorB", "click", "TOGGLE_FONTCOLOR_LAYER"]);
@@ -9196,10 +9218,14 @@ nhn.husky.SE2M_FontColor = jindo.$Class({
 		this.oApp.exec("HIDE_ACTIVE_LAYER");
 	},
 	//@lazyload_js]
-
+	
 	_setLastUsedFontColor : function(sFontColor){
 		this.sLastUsedColor = sFontColor;
 		this.elLastUsed.style.backgroundColor = this.sLastUsedColor;
+	},
+	
+	getLastUsedFontColor : function(){
+		return (!!this.sLastUsedColor) ? this.sLastUsedColor : '#000000';
 	}
 });
 //}
@@ -9275,6 +9301,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 			this.addFont('Tahoma', 'Tahoma', 0, "", "", 1, "abcd");
 			this.addFont('Times New Roman', 'Times New Roman', 0, "", "", 1, "abcd");
 			this.addFont('Verdana', 'Verdana', 0, "", "", 1, "abcd");
+			this.addFont('Courier New', 'Courier New', 0, "", "", 1, "abcd");
 		}
 	},
 	
@@ -9310,6 +9337,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		this.elSeparator = jindo.$$.getSingle("LI.husky_seditor_font_separator", this.oDropdownLayer);
 		this.elNanumgothic = jindo.$$.getSingle("LI.husky_seditor_font_nanumgothic", this.oDropdownLayer);
 		this.elNanummyeongjo = jindo.$$.getSingle("LI.husky_seditor_font_nanummyeongjo", this.oDropdownLayer);
+		this.elNanumgothiccoding = jindo.$$.getSingle("LI.husky_seditor_font_nanumgothiccoding", this.oDropdownLayer);
 		//@ec]
 		
 		this.sDefaultText = this.elFontNameLabel.innerHTML;
@@ -9329,10 +9357,12 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		var bUseSeparator = false;
 		var nanum_gothic = unescape("%uB098%uB214%uACE0%uB515");
 		var nanum_myungjo = unescape("%uB098%uB214%uBA85%uC870");
+		var nanum_gothic_coding = unescape("%uB098%uB214%uACE0%uB515%uCF54%uB529");
 		
 		if(jindo.$Agent().os().mac){
 			nanum_gothic = "NanumGothic";
 			nanum_myungjo = "NanumMyeongjo";
+			nanum_gothic_coding = "NanumGothicCoding";
 		}
 		
 		if(!!this.elNanumgothic){
@@ -9350,6 +9380,15 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 				this.elNanummyeongjo.style.display = "block";
 			}else{
 				this.elNanummyeongjo.style.display = "none";
+			}
+		}
+		
+		if(!!this.elNanumgothicCoding){
+			if(IsInstalledFont(nanum_gothic_coding)){
+				bUseSeparator = true;
+				this.elNanumgothiccoding.style.display = "block";
+			}else{
+				this.elNanumgothiccoding.style.display = "none";
 			}
 		}
 		
@@ -10195,6 +10234,12 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		//원인 : 확인 불가. IE 저작권 관련 이슈로 추정
 		//해결 : contents를 가지고 있는 div 태그를 이 함수 내부에서 복사하여 수정 후 call by reference로 넘어온 변수의 innerHTML을 변경	
 		var oCopyNode = oTmpNode.cloneNode(true);
+		try{
+			oCopyNode.innerHTML;
+		}catch(e) {
+			oCopyNode = jindo.$(oTmpNode.outerHTML);
+		}
+	 
 		var oTmpRange = this.oApp.getEmptySelection();
 		var elFirstNode = oTmpRange._getFirstRealChild(oCopyNode);
 		var elLastNode = oTmpRange._getLastRealChild(oCopyNode);
@@ -10239,14 +10284,21 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 			// www.또는 http://으로 시작하는 텍스트에 링크 걸어 줌
 			// IE에서 텍스트 노드 앞쪽의 스페이스나 주석등이 사라지는 현상이 있어 sTmpStr을 앞에 붙여줌.
 			elTmpDiv.innerHTML = "";
-			elTmpDiv.appendChild(a[i].cloneNode(true));
+			
+			
+			try {
+				elTmpDiv.appendChild(a[i].cloneNode(true));
 
-			// IE에서 innerHTML를 이용 해 직접 텍스트 노드 값을 할당 할 경우 줄바꿈등이 깨질 수 있어, 텍스트 노드로 만들어서 이를 바로 append 시켜줌
-			elTmpDiv.innerHTML = (sTmpStr+elTmpDiv.innerHTML).replace(/(&nbsp|\s)?(((?!http:\/\/)www\.(?:(?!\&nbsp;|\s|"|').)+)|(http:\/\/(?:(?!&nbsp;|\s|"|').)+))/ig, this._generateAutoLink);
+				// IE에서 innerHTML를 이용 해 직접 텍스트 노드 값을 할당 할 경우 줄바꿈등이 깨질 수 있어, 텍스트 노드로 만들어서 이를 바로 append 시켜줌
+				elTmpDiv.innerHTML = (sTmpStr+elTmpDiv.innerHTML).replace(/(&nbsp|\s)?(((?!http:\/\/)www\.(?:(?!\&nbsp;|\s|"|').)+)|(http:\/\/(?:(?!&nbsp;|\s|"|').)+))/ig, this._generateAutoLink);
 
-			// innerHTML 내에 텍스트가 있을 경우 insert 시에 주변 텍스트 노드와 합쳐지는 현상이 있어 div로 위치를 먼저 잡고 하나씩 삽입
-			a[i].parentNode.insertBefore(elTmpDiv, a[i]);
-			a[i].parentNode.removeChild(a[i]);
+				// innerHTML 내에 텍스트가 있을 경우 insert 시에 주변 텍스트 노드와 합쳐지는 현상이 있어 div로 위치를 먼저 잡고 하나씩 삽입
+				a[i].parentNode.insertBefore(elTmpDiv, a[i]);
+				a[i].parentNode.removeChild(a[i]);
+			} catch(e1) {
+				
+			}
+			
 			while(elTmpDiv.firstChild){
 				elTmpDiv.parentNode.insertBefore(elTmpDiv.firstChild, elTmpDiv);
 			}
@@ -10431,6 +10483,10 @@ nhn.husky.SE2M_LineHeightWithLayerUI = jindo.$Class({
  */
 nhn.husky.SE2M_LineStyler = jindo.$Class({
 	name : "SE2M_LineStyler",
+	
+	$BEFORE_MSG_APP_READY : function() {
+		this.oApp.exec("ADD_APP_PROPERTY", ["getLineStyle", jindo.$Fn(this.getLineStyle, this).bind()]);
+  	},
 
 	//@lazyload_js SE2M_TOGGLE_LINEHEIGHT_LAYER,SET_LINE_STYLE[
 	$ON_SE2M_TOGGLE_LINEHEIGHT_LAYER : function(){
@@ -10812,7 +10868,7 @@ nhn.husky.SE_WYSIWYGStyleGetter = jindo.$Class({
 		this.oDocument = this.oApp.getWYSIWYGDocument();
 		this.oApp.exec("ADD_APP_PROPERTY", ["getCurrentStyle", jindo.$Fn(this.getCurrentStyle, this).bind()]);
 		
-		if(jindo.$Agent().navigator().safari || jindo.$Agent().navigator().chrome){
+		if(jindo.$Agent().navigator().safari || jindo.$Agent().navigator().chrome || jindo.$Agent().navigator().ie){
 			this.oStyleMap.textAlign = {
 				type : "Value",
 				css : "textAlign"
@@ -11746,10 +11802,12 @@ nhn.husky.SE2M_Quote = jindo.$Class({
 		if(oSelection.startContainer === oSelection.endContainer && 
 			oSelection.startContainer.nodeType === 1 &&
 			oSelection.startContainer.tagName === "P"){
-				if(nhn.husky.SE2M_Utils.isBlankNode(oSelection.startContainer) || nhn.husky.SE2M_Utils.isFirstChildOfNode("IMG", oSelection.startContainer.tagName, oSelection.startContainer)){
-					oLineInfo = oSelection.getLineInfo(true);
+				if(nhn.husky.SE2M_Utils.isBlankNode(oSelection.startContainer) ||
+					nhn.husky.SE2M_Utils.isFirstChildOfNode("IMG", oSelection.startContainer.tagName, oSelection.startContainer) ||
+					nhn.husky.SE2M_Utils.isFirstChildOfNode("IFRAME", oSelection.startContainer.tagName, oSelection.startContainer)){
+						oLineInfo = oSelection.getLineInfo(true);
 				}else{
-					oLineInfo = oSelection.getLineInfo(false);
+						oLineInfo = oSelection.getLineInfo(false);
 				}
 		}else{
 			oLineInfo = oSelection.getLineInfo(false);
@@ -14370,17 +14428,14 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 				if(htBrowser.ie && htBrowser.nativeVersion >= 9){
 					// IE9, IE10
 					nOffsetWidth = elCell.offsetWidth + "px";
-					nOffsetHeight = elCell.offsetHeight - (nBorderTop + nBorderBottom) + "px";
+					nOffsetHeight = elCell.offsetHeight - (nPaddingTop + nPaddingBottom + nBorderTop + nBorderBottom) + "px";
 				}else{
 					// Firefox, Chrome, IE7, IE8
 					nOffsetWidth = elCell.offsetWidth - (nPaddingLeft + nPaddingRight + nBorderLeft + nBorderRight) + "px";
 					nOffsetHeight = elCell.offsetHeight - (nPaddingTop + nPaddingBottom + nBorderTop + nBorderBottom) + "px";
 				}
 				
-				aAllCellsWithSizeInfo[numCells++] = [elCell, 
-													nOffsetWidth,
-													nOffsetHeight
-													];
+				aAllCellsWithSizeInfo[numCells++] = [elCell, nOffsetWidth, nOffsetHeight];
 			}
 		}
 		for(var i = 0; i < numCells; i++){
@@ -16856,6 +16911,60 @@ nhn.husky.DialogLayerManager = jindo.$Class({
 	}
 	//@lazyload_js]
 });
+nhn.husky.ErrorCollector = jindo.$Class({
+        name : "ErrorCollector",
+
+        $init : function() {
+        },
+
+        $ON_MSG_APP_READY: function() {
+        },
+        
+        $ON_FIRE_ERROR: function(message, el) {
+            if( typeof message == 'object' & typeof message.description == 'string') {
+                message = message + " : " + message.description;
+            }
+            var line = message.lineNumber;
+
+            if(!el) el = document.location;
+            if(!line) line = 0;
+
+            if(el) {
+                var tmp = 'http://smarteditor.naver.com/';
+                tmp += el;
+                el = tmp;
+            }
+
+            JEagleEyeClientForSE2.sendError(message, el, line);    
+        }   
+});
+nhn.husky.JDUtil = jindo.$Class({
+        name : "JDUtil",
+
+        $init : function() {
+        },
+
+        $ON_MSG_APP_READY: function() {
+        },
+        
+        $ON_FIRE_ERROR: function(message, el) {
+            if( typeof message == 'object' & typeof message.description == 'string') {
+                message = message + " : " + message.description;
+            }
+            var line = message.lineNumber;
+
+            if(!el) el = document.location;
+            if(!line) line = 0;
+
+            if(el) {
+                var tmp = 'http://smarteditor.naver.com/';
+                tmp += el;
+                el = tmp;
+            }
+
+            JEagleEyeClientForSE2.sendError(message, el, line);    
+        }   
+});
 //{
 /**
  * @fileOverview This file contains 
@@ -17688,7 +17797,7 @@ getFilteredHashTable({
 			return false;
 		};
 		var bEmptyP = function(elNode){
-			if(elNode.tagName == "IMG"){
+			if(elNode.tagName == "IMG" || elNode.tagName == "IFRAME"){
 				return false;
 			}
 			
@@ -17705,7 +17814,7 @@ getFilteredHashTable({
 				}
 				
 				if(elNode.childNodes.length == 1){
-					if(elNode.firstChild.tagName == "IMG"){
+					if(elNode.firstChild.tagName == "IMG" || elNode.firstChild.tagName == "IFRAME"){
 						return false;
 					}
 					if(bEmptyContent(elNode.firstChild)){

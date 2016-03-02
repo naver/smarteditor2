@@ -17,7 +17,7 @@ if(bSuccessUpload) {
 	
 	$newPath = $uploadDir.urlencode($_FILES['Filedata']['name']);
 	
-	@move_uploaded_file($tmp_name, $new_path);
+	@move_uploaded_file($tmp_name, $newPath);
 	
 	$url .= "&bNewLine=true";
 	$url .= "&sFileName=".urlencode(urlencode($name));
