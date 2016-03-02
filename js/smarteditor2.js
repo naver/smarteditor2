@@ -1,4 +1,4 @@
-/**    * SmartEditor2 NHN_Library:SE2.3.7.O10703:SmartEditor2.0-OpenSource    * @version 10703    */    var nSE2Version = 10703;if(typeof window.nhn=='undefined') window.nhn = {};
+/**    * SmartEditor2 NHN_Library:SE2.3.8.O10836:SmartEditor2.0-OpenSource    * @version 10836    */    var nSE2Version = 10836;if(typeof window.nhn=='undefined') window.nhn = {};
 
 /**
  * @fileOverview This file contains a function that takes care of various operations related to find and replace
@@ -5306,207 +5306,10 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 	},
 	
 	setRawContents : function(sContent) {
-		// [SMARTEDITORSUS-875] HTML 모드에서 코드 가독성 개선
-        sContent = this._beautifyContent(sContent);
-        // --[SMARTEDITORSUS-875]
-		
 		if (typeof sContent !== 'undefined') {
 			this.elEditingArea.value = sContent;
 		}
 	},
-	
-	// [SMARTEDITORSUS-875] HTML 모드에서 코드 가독성 개선
-	_beautifyContent : function(sOriginalContent){
-		// 본문 코드를 읽어온 뒤, 가장 앞 노드를 정규식으로 획득하여 검사한다.
-		// 해당 부분은 열리고 닫히는 태그일 수도 있고, 단독 태그일 수도 있고, 커스텀 태그일 수도 있으며, 태그가 아닐 수도 있다.
-		// 이러한 분기에 의거하여 들여쓰기를 적용한 뒤, 결과 문자열에 붙여넣고,
-		// 붙여넣은 문자열은 읽어온 본문 코드에서 삭제한 후, 
-		// 가장 앞 부분을 판별하는 작업을 반복하여,
-		// 본문 코드가 빈 텍스트("")가 될 때까지 작업을 진행한다.
-		
-		var sResultContent = "", // 본문 코드에 들여쓰기가 적용된 결과 문자열
-		aResult = [],
-		sContent, // 개별 작업 후 결과에 추가되는 단위 문자열
-		nDepth = 0, // 현재 코드의 depth
-		sIndentCharacter = "    ", // space 4칸을 들여쓰기 기본 단위로 설정
-		sIndent, // 실제 들여쓰기로 추가되는 공백으로, 코드의 depth x 들여쓰기
-		sLineBreaker = "\n",
-		isWhiteSpace,
-		aNoDepthTag = ["BR", "IMG", "COLGROUP", "COL"], // 열고 닫히는 형태가 아닌 태그들로, depth와 무관.
-		bDepth, // depth 변경이 없는 br, img인지 판별하는 용도
-		bInit = true, // 첫 번째 작업인 경우 보정에 사용
-		wasSibling = true, // 작업 태그를 기준으로 이전 태그가 형제 depth였는지 판단
-		wasJustOpened = true, // 작업 태그가 닫힌 태그일 때, 직전 태그가 열린 태그라면 depth를 유지해 줘야 함 
-		wasClosed = true, 
-		sMatch, // 판별식과 일치하는 부분
-		sTagName, // 판별식과 일치하는 부분의 태그명
-		
-		openingTagPattern = /^<[A-Za-z]+(([\s]{0})|([\s]+[^>]+))>/, // 열린 태그
-		tagNamePattern = /^<([A-Za-z]+)(([\s]{0})|([\s]+[^>]+))>/, // 태그명
-		closingTagPattern = /^<\/[A-Za-z]+>/, // 닫힌 태그
-		openingAndClosingTagPattern = /^<[^>]+\/>/, // 자체로 열고 닫는 태그
-		commentTagPattern = /^<!--[^<>]+-->/, // 주석이나 커스텀 태그
-		openingCommentTagPattern = /^<!--[^->]+>/, // 열린 주석 태그
-		closingCommentTagPattern = /^<![^->]+-->/,	// 닫힌 주석 태그
-		whiteSpacePattern = /^[\n\r\t\s]+/, // 공백
-		nonTagPattern = /^[^<\n]+/, // 태그 아닌 요소
-		exceptedTagPattern = /^<[^>]+>/, // 어느 조건도 통과하지 않은 예외 태그들
-		appliedPattern; // 결과 문자열 작업시 적용하는 패턴
-		
-		while(sOriginalContent != ""){
-			sIndent = "",
-			sContent = "",
-			sResult = "",
-			sMatch = "",
-			bDepth = true,
-			isWhiteSpace = false;
-			
-			if(openingAndClosingTagPattern.test(sOriginalContent)){ // <tagName />
-				sMatch = sOriginalContent.match(openingAndClosingTagPattern);
-
-				if(!wasSibling){ // 직전 태그가 형제가 아닌, 열려 있는 부모 태그인 경우.
-					nDepth++;
-					wasSibling = true;
-				}
-				
-				wasJustOpened = false;
-				appliedPattern = openingAndClosingTagPattern;
-			}else if(closingCommentTagPattern.test(sOriginalContent)){ // <! text-->
-				sMatch = sOriginalContent.match(closingCommentTagPattern);
-				
-				if(wasJustOpened){
-					wasJustOpened = false;
-				}else{
-					nDepth--;
-				}
-				
-				wasSibling = true;
-				wasClosed = true;
-				appliedPattern = closingCommentTagPattern; 
-			}else if(openingCommentTagPattern.test(sOriginalContent)){ // <!-- text>
-				sMatch = sOriginalContent.match(openingCommentTagPattern);
-			
-				if(!wasClosed || wasJustOpened){
-					if(!wasSibling){
-						nDepth++;
-					}
-				}
-				wasSibling = false;
-				wasJustOpened = true;
-					
-				appliedPattern = openingCommentTagPattern;
-			}else if(openingTagPattern.test(sOriginalContent)){ // <tagName>
-				bDepth = true;
-				
-				sMatch = sOriginalContent.match(openingTagPattern);
-			
-				sTagName = sMatch[0].replace(tagNamePattern, "$1");
-				
-				for(var i = 0, len = aNoDepthTag.length; i < len; i++){
-					if(sTagName.toUpperCase() == aNoDepthTag[i]){ // br, img
-						bDepth = false;
-					}
-				}
-				
-				if(bDepth){ // br, img 태그가 아닌 열린 태그
-					if(!wasClosed || wasJustOpened){
-						if(!wasSibling){
-							nDepth++;
-						}
-					}
-					wasSibling = false;
-					wasJustOpened = true;
-				}else{ // br, img
-					if(!wasSibling){
-						nDepth++;
-						wasSibling = true;
-					}
-					
-					wasJustOpened = false;
-				}
-				
-				appliedPattern = openingTagPattern;
-			}else if(whiteSpacePattern.test(sOriginalContent)){ // 공백문자는 모두 제거한 뒤 depth에 의거하여 공백을 재지정
-				sMatch = sOriginalContent.match(whiteSpacePattern);
-				
-				isWhiteSpace = true;
-				
-				appliedPattern = whiteSpacePattern;
-			}else if(nonTagPattern.test(sOriginalContent)){ // 태그 아님
-				sMatch = sOriginalContent.match(nonTagPattern);
-
-				if(!wasSibling){ // 직전 태그가 형제가 아닌, 열려 있는 부모 태그인 경우.
-					nDepth++;
-					wasSibling = true;
-				}
-				
-				wasJustOpened = false;
-				appliedPattern = nonTagPattern;
-			}else if(commentTagPattern.test(sOriginalContent)){ // <!-- text -->
-				sMatch = sOriginalContent.match(commentTagPattern);
-				
-				if(!wasSibling){
-					nDepth++;
-					wasSibling = true;
-				}
-				
-				wasJustOpened = false;
-				appliedPattern = commentTagPattern;
-			}else if(closingTagPattern.test(sOriginalContent)){ // </tagName>
-				sMatch = sOriginalContent.match(closingTagPattern);
-				
-				if(wasJustOpened){ // 태그가 열리자마자 컨텐츠 없이 닫힘 태그가 이어질 경우 depth 변경 없음
-					wasJustOpened = false;
-				}else{
-					nDepth--;
-				}
-				
-				wasSibling = true;
-				wasClosed = true;
-				appliedPattern = closingTagPattern; 
-			}else{ // <*unknown*>
-				sMatch = sOriginalContent.match(exceptedTagPattern);
-
-				if(!wasSibling){ // 직전 태그가 형제가 아닌, 열려 있는 부모 태그인 경우.
-					nDepth++;
-					wasSibling = true;
-				}
-				
-				wasJustOpened = false;
-				appliedPattern = exceptedTagPattern;
-			}
-
-			// 최초 작업 시 열린 태그가 오는 경우 depth를 보정
-			if(bInit){
-				if(wasJustOpened){
-					nDepth = 0;
-				}
-				bInit = false;
-			}
-			
-			// depth에 의거하여 실제 추가 공백을 산정
-			if(nDepth > 0){
-				for(var i = 0; i < nDepth; i++){
-					sIndent += sIndentCharacter;
-				}
-			} 
-			
-			if(isWhiteSpace){ // 공백문자는 단순제거
-				isWhiteSpace = false;
-				sContent = "";
-			}else{ // 공백문자가 아니라면 (계산된 추가 공백 + 작업 대상 + 줄바꿈)을 적용하여 결과 문자열에 더함 
-				sContent = sIndent + sMatch[0] + sLineBreaker;
-			}
-			
-			aResult.push(sContent);
-			
-			// 분류가 끝난 컨텐츠는 원래 컨텐츠에서 제거
-			sOriginalContent = sOriginalContent.replace(appliedPattern, "");
-		};
-		
-		return aResult.join("");
-	},
-	// --[SMARTEDITORSUS-875]
 	
 	getRawContents : function() {
 		return this.elEditingArea.value;
@@ -6920,7 +6723,11 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		return sIR;
 	},
 
-	setIR : function(sIR){		
+	setIR : function(sIR){
+		// [SMARTEDITORSUS-875] HTML 모드의 beautify에서 추가된 공백을 다시 제거
+		//sIR = sIR.replace(/(>)([\n\r\t\s]*)([^<]?)/g, "$1$3").replace(/([\n\r\t\s]*)(<)/g, "$2")
+		// --[SMARTEDITORSUS-875]
+		
 		var sContent, oNavigator = jindo.$Agent().navigator();
 		
 		if(this.oApp.applyConverter){
@@ -7096,18 +6903,6 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 	_onKeyDown : function(oEvent){
 		var oKeyInfo = oEvent.key();
 		
-		// [SMARTEDITORSUS-874] FireFox에서 shift + enter로 개행문자 추가할 경우 이슈가 발생하여, enter처럼 동작하게 함
-		if(this.htBrowser.firefox){
-			if(oKeyInfo.enter && oKeyInfo.shift){
-				if(this.sLineBreaker == "BR"){
-					this._insertBR(oEvent);
-				}else{
-					this._wrapBlock(oEvent);
-				}
-			}
-		}
-		// --[SMARTEDITORSUS-874]
-		
 		if(oKeyInfo.shift){
 			return;
 		}
@@ -7216,10 +7011,6 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			oEWrapper,
 			elStyleOnlyNode;
 		
-		// [SMARTEDITORSUS-874] Firefox 에서 발생하는 줄바꿈 문제와 관련
-		bBRIssue = true; // 다양한 enter 키 입력 시점에 따른 처리를 위한 flag
-		// --[SMARTEDITORSUS-874]
-		
 		// line broke by sibling
 		// or
 		// the parent line breaker is just a block container
@@ -7268,18 +7059,6 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 				this.oApp.exec("CHECK_STYLE_CHANGE", []);
 				
 				sBM = oSelection.placeStringBookmark();
-				
-				// [SMARTEDITORSUS-874] 에디터 로딩 직후 enter키 없이 내용을 입력하거나 클립보드에서 텍스트를 붙여넣는 경우에 대응
-				if(this.htBrowser.firefox){
-					bBRIssue = this._dealBRIssue(sBM, 1, bBRIssue);
-					oSelection.moveToStringBookmark(sBM);
-					oSelection.select();
-					oSelection.removeStringBookmark(sBM);	
-					
-					return;
-				}
-				// --[SMARTEDITORSUS-874]
-				
 				setTimeout(jindo.$Fn(function(sBM){
 					var elBookmark = oSelection.getStringBookmark(sBM);
 					if(!elBookmark){return;}
@@ -7298,10 +7077,6 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		// 아래는 기본적으로 브라우저 기본 기능에 맡겨서 처리함
 		if(this.htBrowser.firefox){
 			elBookmark = oSelection.getStringBookmark(sBM, true);
-
-			// [SMARTEDITORSUS-874]
-			bBRIssue = this._dealBRIssue(sBM, 2, bBRIssue);
-			// --[SMARTEDITORSUS-874]
 			
 			if(elBookmark && elBookmark.nextSibling && elBookmark.nextSibling.tagName == "IFRAME"){
 				setTimeout(jindo.$Fn(function(sBM){
@@ -7313,10 +7088,6 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 					oSelection.removeStringBookmark(sBM);
 				}, this).bind(sBM), 0);
 			}else{
-				// [SMARTEDITORSUS-874] 여기까지 줄바꿈 문제가 해결되지 않았다면 최종적으로 이 부분을 거치게 된다.
-				bBRIssue = this._dealBRIssue(sBM, 3, bBRIssue);
-				// --[SMARTEDITORSUS-874]
-				
 				oSelection.removeStringBookmark(sBM);
 			}
 		}else if(this.htBrowser.ie){
@@ -7332,7 +7103,7 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			}
 		
 			oSelection.removeStringBookmark(sBM);
-			
+
 			// -- [SMARTEDITORSUS-1452]
 			var bAddCursorHolder = (elParentNode.tagName === "DIV" && elParentNode.parentNode.tagName === "LI");
 			if (elParentNode.innerHTML !== "" && elParentNode.innerHTML !== unescape("%uFEFF")) {
@@ -7393,369 +7164,6 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		}
 	},
 	
-	// [SMARTEDITORSUS-874] Firefox 에서 발생하는 줄바꿈 문제와 관련
-	_dealBRIssue : function(sBM, nMode, bBRIssue){
-		var oSelection = this.oApp.getSelection(),
-		nSelectionLength = oSelection.getNodes().length,
-		elBookmark = oSelection.getStringBookmark(sBM, true),
-		elBeforeBookmark = elBookmark.previousSibling.previousSibling,
-		elStartBookmark = elBookmark.previousSibling,
-		elInsertAfterTarget,
-		elParent = elBookmark.parentNode,
-		aChildren = elParent.childNodes,
-		aPreviousTagsInRow = [],
-		aNextTagsInRow = [],
-		elParagraph = document.createElement("P"),
-		nStartFrom = 3; // 북마크 뒷쪽에서 처리하기 시작하는 지점. 3이면 시작 북마크, 끝 북마크, 북마크 바로 뒤 br을 건너뛰고 시작.
-		
-		if(nMode == 1){
-			var elPreviousSibling = elParent.previousSibling;
-			var elPreviousLastChild = elPreviousSibling.lastChild; 
-			
-			// 에디터 로딩 직후 입력하는 값을 분기 기준으로 함
-			if(elParent.parentNode.childNodes.length == 2){
-				if(elParent.previousSibling.childNodes.length == 1){
-					if(elPreviousLastChild.tagName == "BR"){
-						// enter키 입력. 처리 불필요.
-						bBRIssue = false;
-					}else if(elParent.childNodes.length == 3){
-						// 텍스트 입력 후 enter키 입력. 처리 불필요. 
-						bBRIssue = false;
-					}else{
-						// 클립보드에서 텍스트를 붙여넣었으나, 줄의 맨 끝이나 중간에서 enter 키 입력. 처리 불필요.
-						bBRIssue = false;
-					}
-				}else{
-					// 클립보드에서 텍스트를 붙여넣은 경우
-					if(elPreviousLastChild.tagName == "BR"){ //커서 바로 앞 공백
-						// 빈 라인에서 enter 키 입력
-					}else if(elPreviousLastChild.nodeType && (elPreviousLastChild.textContent == "")){
-						// 텍스트가 포함된 라인의 맨 처음에서 enter 키 입력
-					}else{
-						bBRIssue = false;
-					}
-				}
-			}
-			
-			// enter 입력 위치(bookmark)를 기준으로 앞과 뒤를 분리시킨다.
-			if(bBRIssue){
-				nStartFrom = 0; // bookmark를 id로 찾아서 위치를 파악하기 때문에 초기화 
-
-				// bookmark 앞쪽 처리
-				for(var i = 0, len = aChildren.length; i < len; i++){
-					var elChild = aChildren[i]; 
-					
-					// start bookmark를 만날 때까지 반복
-					if(elChild.tagName == "SPAN" && /husky_bookmark_/.test(elChild.id)){
-						nStartFrom = i + 3;
-						break;
-					}
-					aPreviousTagsInRow.push(elChild);
-				}
-
-				if(aPreviousTagsInRow.length > 0){
-					var elResultParent = elParagraph.cloneNode();
-					for(var i = 0, len = aPreviousTagsInRow.length; i < len; i++){
-						elResultParent.appendChild(aPreviousTagsInRow[i]);
-					}
-					elParent.parentNode.insertBefore(elResultParent, elParent);
-				}
-				
-				// enter 입력이 있었기 때문에 보정을 위한 삽입
-				var elParagraphForEnterKey = elParagraph.cloneNode();
-				var elBR = document.createElement("BR");
-				elParagraphForEnterKey.appendChild(elBR);
-				elParent.parentNode.insertBefore(elParagraphForEnterKey, elParent);
-				
-				// bookmark 뒤쪽 처리
-				var aNextTagsInRow = [];
-				for(var i = nStartFrom, len = aChildren.length; i < len; i++){
-					var elChild = aChildren[i];
-					
-					// bookmark는 제외한다.
-					if(elChild.tagName == "SPAN" && /husky_bookmark_/.test(elChild.id)){
-						continue;
-					}
-					
-					aNextTagsInRow.push(elChild);
-				}
-				
-				if(aNextTagsInRow.length > 0){
-					elResultParent = elParagraph.cloneNode();
-					for(var i = 0, len = aNextTagsInRow.length; i < len; i++){
-						elResultParent.appendChild(aNextTagsInRow[i]);
-					}
-					if(elParent.parentNode.lastChild == elParent){
-						elParent.parentNode.appendChild(elResultParent);
-					}else{
-						elParent.parentNode.insertBefore(elResultParent, elParent.nextSibling);
-					}
-				}
-				
-				bBRIssue = false;
-			}
-		}else if(nMode == 2){
-			if(elBeforeBookmark && elBeforeBookmark.tagName == "BR"){
-				// 이 부분은 enter 키를 한 번이라도 입력한 경우 처리된다.
-				// <br>이 2개 이상 연속되는 경우, 첫 br은 줄바꿈을 위한 br(linebreaker)로 처리한다.
-				// 줄바꿈을 사전에 적용하여 아래의 index를 가지는 이차원 배열에 집어넣어 처리한다.
-				// [줄번호][해당 줄의 내용]
-				var bLineBreaker = false,
-				aPreviousResult = [], // bookmark 앞쪽 처리. 작업 결과는 이차원 배열이다.
-				aPreviousLinebreaker = [],
-				aNextResult = [], // bookmark 뒷쪽 처리. 작업 결과는 이차원 배열이다.
-				aNextLinebreaker = [];
-				
-				// bookmark 앞쪽 처리
-				for(var i = 0, len = aChildren.length; i < len; i++){
-					var elChild = aChildren[i]; 
-
-					if(elChild.tagName != "BR"){
-						aPreviousTagsInRow.push(elChild);
-						
-						bLineBreaker = true;
-					}else{
-						
-						if(bLineBreaker){
-							// 줄바꿈을 위한 첫 번째 br
-							// linebreaker를 만나기 전까지의 컨텐츠들을 한 line으로 묶는다.
-							aPreviousResult.push(aPreviousTagsInRow);
-							aPreviousTagsInRow = [];
-
-							// linebreaker를 별도로 처리하지 않으면 올바르지 않게 인식된다.
-							aPreviousLinebreaker.push(elChild);
-							bLineBreaker = false;
-						}else{
-							// 에디터에서 enter 키만 가지고 작업한 경우를 제외하고는, 비정상적인 br태그가 삽입된다. 이를 포함시켜 준다.
-							aPreviousResult.push([elChild]);
-						}
-					}
-					
-					// 시작 bookmark 앞에서 이 작업은 종료된다.
-					if(elChild == elBeforeBookmark){
-						break;
-					}
-				}
-				
-				// 결과물이 들어간 이차원 배열로 작업
-				var aRemoveFromPreviousResult = []; 
-				for(var i = 0, len = aPreviousResult.length; i < len; i++){
-					var elResultParent = elParagraph.cloneNode();
-					var aSecondaryResult = aPreviousResult[i];
-					
-					for(var j = 0, len2 = aSecondaryResult.length; j < len2; j++){
-						elResultParent.appendChild(aSecondaryResult[j]);
-					}
-					elParent.parentNode.insertBefore(elResultParent, elParent);
-				}
-				
-				// linebreaker로 분류되었던 br 태그들을 제거해 줘야 비정상적인 추가 줄바꿈을 방지할 수 있다.
-				for(var i = 0, len = aPreviousLinebreaker.length; i < len; i++){
-					elParent.removeChild(aPreviousLinebreaker[i]);
-				}
-
-				// bookmark 뒤쪽 처리
-				for(var i = nStartFrom, len = aChildren.length; i < len; i++){
-					var elChild = aChildren[i]; 
-					
-					if(elChild.tagName != "BR"){
-						aNextTagsInRow.push(elChild);
-						
-						bLineBreaker = true;
-					}else{
-						if(bLineBreaker){
-							aNextResult.push(aNextTagsInRow);
-							aNextTagsInRow = [];
-							
-							aNextLinebreaker.push(elChild);
-							bLineBreaker = false;
-						}else{
-							aNextResult.push([elChild]);
-						}
-					}
-				}
-				
-				var aRemoveFromNextResult = []; 
-				elInsertAfterTarget = elParent;
-				for(var i = 0, len = aNextResult.length; i < len; i++){
-					var elResultParent = elParagraph.cloneNode();
-					var aSecondaryResult = aNextResult[i];
-					
-					for(var j = 0, len2 = aSecondaryResult.length; j < len2; j++){
-						elResultParent.appendChild(aSecondaryResult[j]);
-					}
-
-					// bookmark가 포함된 P 태그 뒤로 연속해서 밀어넣기 위한 insertAfter
-					if(elInsertAfterTarget.parentNode.lastChild == elInsertAfterTarget){
-						elInsertAfterTarget.parentNode.appendChild(elResultParent);
-					}else{
-						elInsertAfterTarget.parentNode.insertBefore(elResultParent, elInsertAfterTarget.nextSibling);
-					}
-					elInsertAfterTarget = elResultParent;
-				}
-				
-				// linebreaker로 분류되었던 br 태그들을 제거
-				for(var i = 0, len = aNextLinebreaker.length; i < len; i++){
-					elParent.removeChild(aNextLinebreaker[i]);
-				}
-				
-				bBRIssue = false;
-			}
-		}else if(nMode == 3){
-			if(bBRIssue){
-				var isEmptyTextNode = false;
-				
-				// 내용이 있는 line의 맨 앞에서 enter를 누를 경우, 간혹 아무 내용이 없는 텍스트 노드가 bookmark 앞에 위치하여 처리가 필요하다.
-				if(nSelectionLength == 0){
-					if(elBeforeBookmark && elBeforeBookmark.nodeType && (elBeforeBookmark.textContent == "")){
-						isEmptyTextNode = true;
-					}else{
-						isEmptyTextNode = false;
-					}
-
-					if(isEmptyTextNode){
-						// 이 부분은 다른 곳과 다르게 일차원 배열을 사용한다.
-						// 텍스트 노드를 포함한 bookmark 앞쪽 처리
-						for(var i = 0, len = aChildren.length; i < len; i++){
-							var elChild = aChildren[i]; 
-							aPreviousTagsInRow.push(elChild);
-							
-							// 시작 bookmark 앞에서 이 작업은 종료된다.
-							if(elChild == elBeforeBookmark){
-								break;
-							}
-						}
-						
-						var elResultParent = elParagraph.cloneNode();
-						
-						for(var i = 0, len = aPreviousTagsInRow.length; i < len; i++){
-							elResultParent.appendChild(aPreviousTagsInRow[i]);
-						}
-						elParent.parentNode.insertBefore(elResultParent, elParent);
-						
-						// bookmark 뒤쪽 처리
-						// linebreaker용 br도 제외시키고 시작하기 때문에 nStartFrom을 보정
-						for(var i = (nStartFrom + 1), len = aChildren.length; i < len; i++){
-							var elChild = aChildren[i]; 
-							aNextTagsInRow.push(elChild);
-						}
-
-						elResultParent = elParagraph.cloneNode();
-						for(var i = 0, len = aNextTagsInRow.length; i < len; i++){
-							elResultParent.appendChild(aNextTagsInRow[i]);
-						}
-
-						// insertAfter
-						elInsertAfterTarget = elParent;
-						if(elInsertAfterTarget.parentNode.lastChild == elInsertAfterTarget){
-							elInsertAfterTarget.parentNode.appendChild(elResultParent);
-						}else{
-							elInsertAfterTarget.parentNode.insertBefore(elResultParent, elInsertAfterTarget.nextSibling);
-							elInsertAfterTarget = elResultParent;
-						}
-					}else if(elBeforeBookmark && elBeforeBookmark.tagName != "BR" && elBookmark.nextSibling && (elBookmark.nextSibling.tagName == "BR")){
-						// 빈 텍스트노드가 앞에 있지 않은 경우 이 곳에서 처리한다.
-						var bLineBreaker = false;
-						var aPreviousResult = [];
-						var aPreviousLinebreaker = [];
-						var aNextResult = [];
-						var aNextLinebreaker = [];
-						
-						// bookmark 앞쪽 처리
-						for(var i = 0, len = aChildren.length; i < len; i++){
-							var elChild = aChildren[i]; 
-							
-							if(elChild.tagName != "BR"){
-								aPreviousTagsInRow.push(elChild);
-								
-								bLineBreaker = true;
-							}else{
-								if(bLineBreaker){
-									aPreviousResult.push(aPreviousTagsInRow);
-									aPreviousTagsInRow = [];
-
-									aPreviousLinebreaker.push(elChild);
-									bLineBreaker = false;
-								}else{
-									aPreviousResult.push([elChild]);
-								}
-							}
-							
-							if(elChild == elBeforeBookmark){
-								break;
-							}
-						}
-						
-						var aRemoveFromPreviousResult = []; 
-						for(var i = 0, len = aPreviousResult.length; i < len; i++){
-							var elResultParent = elParagraph.cloneNode();
-							var aSecondaryResult = aPreviousResult[i];
-							
-							for(var j = 0, len2 = aSecondaryResult.length; j < len2; j++){
-								elResultParent.appendChild(aSecondaryResult[j]);
-							}
-							elParent.parentNode.insertBefore(elResultParent, elParent);
-						}
-						
-						// linebreaker로 분류되었던 br 태그들을 제거
-						for(var i = 0, len = aPreviousLinebreaker.length; i < len; i++){
-							elParent.removeChild(aPreviousLinebreaker[i]);
-						}
-						
-						// bookmark 뒤쪽 처리
-						for(var i = nStartFrom, len = aChildren.length; i < len; i++){
-							var elChild = aChildren[i]; 
-							
-							if(elChild.tagName != "BR"){
-								aNextTagsInRow.push(elChild);
-								
-								bLineBreaker = true;
-							}else{
-								if(bLineBreaker){
-									if(aNextTagsInRow.length > 0){
-										aNextResult.push(aNextTagsInRow);
-										aNextTagsInRow = [];
-									}
-
-									aNextLinebreaker.push(elChild);
-									bLineBreaker = false;
-								}else{
-									aNextResult.push([elChild]);
-								}
-								
-							}
-						}
-						
-						var aRemoveFromNextResult = []; 
-						elInsertAfterTarget = elParent;
-						for(var i = 0, len = aNextResult.length; i < len; i++){
-							var elResultParent = elParagraph.cloneNode();
-							var aSecondaryResult = aNextResult[i];
-							
-							for(var j = 0, len2 = aSecondaryResult.length; j < len2; j++){
-								elResultParent.appendChild(aSecondaryResult[j]);
-							}
-							
-							// insertAfter
-							if(elInsertAfterTarget.parentNode.lastChild == elInsertAfterTarget){
-								elInsertAfterTarget.parentNode.appendChild(elResultParent);
-							}else{
-								elInsertAfterTarget.parentNode.insertBefore(elResultParent, elInsertAfterTarget.nextSibling);
-							}
-							elInsertAfterTarget = elResultParent;
-						}
-						
-						for(var i = 0, len = aNextLinebreaker.length; i < len; i++){
-							elParent.removeChild(aNextLinebreaker[i]);
-						}
-					}
-				}
-			}
-		}
-		
-		return bBRIssue;
-	},
-	// --[SMARTEDITORSUS-874]
 	
 	// [IE9 standard mode] 엔터 후의 상/하단 P 태그를 확인하여 BOM, 공백(&nbsp;) 추가
 	_addExtraCursorHolder : function(elUpperNode){
@@ -9198,6 +8606,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	name : "SE2M_ExecCommand",
 	oEditingArea : null,
 	oUndoOption : null,
+	_rxTable : /^(TBODY|TR|TD)$/i,
 
 	$init : function(oEditingArea){
 		this.oEditingArea = oEditingArea;
@@ -9271,28 +8680,49 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	$ON_OUTDENT : function(){
 		this.oApp.delayedExec("EXECCOMMAND", ["outdent", false, false], 0);
 	},
-	
+
+	/**
+	 * TBODY, TR, TD 사이에 있는 텍스트노드인지 판별한다.
+	 * @param oNode {Node} 검사할 노드
+	 * @return {Boolean} TBODY, TR, TD 사이에 있는 텍스트노드인지 여부
+	 */
+	_isTextBetweenTable : function(oNode){
+		var oTmpNode;
+		if(oNode && oNode.nodeType === 3){	// 텍스트 노드
+			if((oTmpNode = oNode.previousSibling) && oTmpNode.nodeName.match(this._rxTable)){
+				return true;
+			}
+			if((oTmpNode = oNode.nextSibling) && oTmpNode.nodeName.match(this._rxTable)){
+				return true;
+			}
+		}
+		return false;
+	},
+
 	$BEFORE_EXECCOMMAND : function(sCommand, bUserInterface, vValue, htOptions){
 		var elTmp, oSelection;
 		
 		//본문에 전혀 클릭이 한번도 안 일어난 상태에서 크롬과 IE에서 EXECCOMMAND가 정상적으로 안 먹히는 현상. 
 		this.oApp.exec("FOCUS");
-		this._bOnlyCursorChanged = false;		
+		this._bOnlyCursorChanged = false;
 		oSelection = this.oApp.getSelection();
-			
+		// [SMARTEDITORSUS-1584] IE에서 테이블관련 태그 사이의 텍스트노드가 포함된 채로 execCommand 가 실행되면 
+		// 테이블 태그들 사이에 더미 P 태그가 추가된다. 
+		// 테이블관련 태그 사이에 태그가 있으면 문법에 어긋나기 때문에 getContents 시 이 더미 P 태그들이 밖으로 빠져나가게 된다.
+		// 때문에 execCommand 실행되기 전에 셀렉션에 테이블관련 태그 사이의 텍스트노드를 찾아내 지워준다.
+		for(var i = 0, aNodes = oSelection.getNodes(), oNode;oNode = aNodes[i]; i++){
+			if(this._isTextBetweenTable(oNode)){
+				// TODO: 노드를 삭제하지 않고 Selection 에서만 뺄수 있는 방법은 없을까?
+				oNode.parentNode.removeChild(oNode);
+			}
+		}
+
 		if(/^insertorderedlist|insertunorderedlist$/i.test(sCommand)){
 			this._getDocumentBR();
 		}
 		
 		if(/^justify*/i.test(sCommand)){
 			this._removeSpanAlign();
-			
-			// [SMARTEDITORSUS-1452]의 Side-effect로 수정 : 여러 줄의 컨텐츠 중 아무 내용도 없는 줄에 커서가 있을 때 정렬이 비정상적으로 동작
-			var htBrowser = jindo.$Agent().navigator();
-			if(!htBrowser.safari){
-				this._addCursorHolder();	
-			}
-			// --[SMARTEDITORSUS-1452]
 		}
 		
 		if(sCommand.match(/^bold|underline|italic|strikethrough|superscript|subscript$/i)){
@@ -9465,7 +8895,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 				// --[SMARTEDITORSUS-1143]
 			}
 		}
-		
+
 		this._countClickCr(sCommand);
 	},
 
@@ -9498,20 +8928,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 
 		this.oApp.exec("CHECK_STYLE_CHANGE", []);
 	},
-	
-	
-	// [SMARTEDITORSUS-1452] 정력방식 변경시  공백문자(%uFEFF)를 넣어줌
-	_addCursorHolder:function(){
-		var oSelection = this.oApp.getSelection();	
-				oSelection.fixCommonAncestorContainer();
-				var elLowerNode = oSelection.commonAncestorContainer;
-				if(elLowerNode.nodeType != 3){
-					elLowerNode.innerHTML += unescape("%uFEFF");
-					oSelection.selectNodeContents(elLowerNode);	
-				}
-				
-	},
-	
+		
 	_removeSpanAlign : function(){
 		var oSelection = this.oApp.getSelection(),
 			aNodes = oSelection.getNodes(),
@@ -10072,7 +9489,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 			aFontInUse = this.htOptions.aFontInUse;
 			
 			//add Font
-			if(this.oApp.oNavigator.ie && aFontList){
+			if(this.htBrowser.ie && aFontList){
 				for(i=0; i<aFontList.length; i++){
 					this.addFont(aFontList[i].id, aFontList[i].name, aFontList[i].size, aFontList[i].url, aFontList[i].cssUrl);
 				}
@@ -10089,7 +9506,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 				this.setMainFont(htMainFont.id, htMainFont.name, htMainFont.size, htMainFont.url, htMainFont.cssUrl);
 			}
 			// add font in use
-			if(this.oApp.oNavigator.ie && aFontInUse){
+			if(this.htBrowser.ie && aFontInUse){
 				for(i=0; i<aFontInUse.length; i++){
 					this.addFontInUse(aFontInUse[i].id, aFontInUse[i].name, aFontInUse[i].size, aFontInUse[i].url, aFontInUse[i].cssUrl);
 				}
@@ -10098,14 +9515,14 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		
 		// [SMARTEDITORSUS-245] 서비스 적용 시 글꼴정보를 넘기지 않으면 기본 글꼴 목록이 보이지 않는 오류
 		if(!this.htOptions || !this.htOptions.aDefaultFontList || this.htOptions.aDefaultFontList.length === 0){
-			this.addFont("돋움,Dotum", "돋움", 0, "", "", 1);
-			this.addFont("돋움체,DotumChe", "돋움체", 0, "", "", 1);
-			this.addFont("굴림,Gulim", "굴림", 0, "", "", 1);
-			this.addFont("굴림체,GulimChe", "굴림체", 0, "", "", 1);
-			this.addFont("바탕,Batang", "바탕", 0, "", "", 1);
-			this.addFont("바탕체,BatangChe", "바탕체", 0, "", "", 1);
-			this.addFont("궁서,Gungsuh", "궁서", 0, "", "", 1);
-			this.addFont('Arial', 'Arial', 0, "", "", 1);
+			this.addFont("돋움,Dotum", "돋움", 0, "", "", 1, null, true);
+			this.addFont("돋움체,DotumChe,AppleGothic", "돋움체", 0, "", "", 1);
+			this.addFont("굴림,Gulim", "굴림", 0, "", "", 1, null, true);
+			this.addFont("굴림체,GulimChe", "굴림체", 0, "", "", 1, null, true);
+			this.addFont("바탕,Batang,AppleMyungjo", "바탕", 0, "", "", 1);
+			this.addFont("바탕체,BatangChe", "바탕체", 0, "", "", 1, null, true);
+			this.addFont("궁서,Gungsuh,GungSeo", "궁서", 0, "", "", 1);
+			this.addFont('Arial', 'Arial', 0, "", "", 1, "abcd");
 			this.addFont('Tahoma', 'Tahoma', 0, "", "", 1, "abcd");
 			this.addFont('Times New Roman', 'Times New Roman', 0, "", "", 1, "abcd");
 			this.addFont('Verdana', 'Verdana', 0, "", "", 1, "abcd");
@@ -10457,13 +9874,27 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		}
 	},
 
-	// Add the font to the list
-	// fontType == null, custom font (sent from the server)
-	// fontType == 1, default font
-	// fontType == 2, tempSavedFont
-	addFont : function (fontId, fontName, defaultSize, fontURL, fontCSSURL, fontType, sSampleText) {
+	/**
+	 * Add the font to the list
+	 * @param fontId {String} value of font-family in style
+	 * @param fontName {String} name of font list in editor
+	 * @param defaultSize 
+	 * @param fontURL 
+	 * @param fontCSSURL 
+	 * @param fontType fontType == null, custom font (sent from the server)
+	 *                 fontType == 1, default font
+	 *                 fontType == 2, tempSavedFont
+	 * @param sSampleText {String} sample text of font list in editor
+	 * @param bCheck {Boolean} 
+	 */
+	addFont : function (fontId, fontName, defaultSize, fontURL, fontCSSURL, fontType, sSampleText, bCheck) {
 		// custom font feature only available in IE
-		if(!this.oApp.oNavigator.ie && fontCSSURL){
+		if(!this.htBrowser.ie && fontCSSURL){
+			return null;
+		}
+
+		// OS에 해당 폰트가 존재하는지 여부를 확인한다.
+		if(bCheck && !IsInstalledFont(fontId)){
 			return null;
 		}
 
@@ -12640,7 +12071,8 @@ nhn.husky.SE2M_Quote = jindo.$Class({
 
 		// [SMARTEDITORSUS-430] 문자를 입력하고 Enter 후 인용구를 적용할 때 위의 문자들이 인용구 안에 들어가는 문제
 		// [SMARTEDITORSUS-1323] 사진 첨부 후 인용구 적용 시 첨부한 사진이 삭제되는 현상
-		if(oSelection.startContainer === oSelection.endContainer && 
+		// [SMARTEDITORSUS-1567] 엔터키를 한 번도 누르지 않고 인용구를 삽입하는 경우에 대응
+		/*if(oSelection.startContainer === oSelection.endContainer && 
 			oSelection.startContainer.nodeType === 1 &&
 			oSelection.startContainer.tagName === "P"){
 				if(nhn.husky.SE2M_Utils.isBlankNode(oSelection.startContainer) ||
@@ -12652,7 +12084,60 @@ nhn.husky.SE2M_Quote = jindo.$Class({
 				}
 		}else{
 			oLineInfo = oSelection.getLineInfo(false);
+		}*/
+		if(oSelection.startContainer === oSelection.endContainer){
+			if(oSelection.startContainer.nodeType === 1 &&
+					oSelection.startContainer.tagName === "P"){
+				if(nhn.husky.SE2M_Utils.isBlankNode(oSelection.startContainer) ||
+						nhn.husky.SE2M_Utils.isFirstChildOfNode("IMG", oSelection.startContainer.tagName, oSelection.startContainer) ||
+						nhn.husky.SE2M_Utils.isFirstChildOfNode("IFRAME", oSelection.startContainer.tagName, oSelection.startContainer)){
+					oLineInfo = oSelection.getLineInfo(true);
+				}else{
+					oLineInfo = oSelection.getLineInfo(false);
+				}
+			}else{
+				// 시작 컨테이너와 끝 컨테이너는 같되 P 태그가 아닌 경우로,
+				// 엔터를 한 번도 입력하지 않은 상황이다.
+				// TD 태그나 BODY 태그 내부에 속해 있을 것이라고 가정하고 진행하는데,
+				// 올바른 정렬 적용을 위해 현재 위치에 속한 컨텐츠를 P 태그로 감싸 주게 된다.
+				var _startContainer = oSelection.startContainer;
+				var _startOffset = oSelection.startOffset;
+				var _endContainer = oSelection.endContainer;
+				var _endOffset = oSelection.endOffset;
+				
+				var _sBM = oSelection.placeStringBookmark();
+				var _elBookmark = oSelection.getStringBookmark(_sBM);
+				var _elParent = _elBookmark.parentNode;
+				var _elAncestor = nhn.husky.SE2M_Utils.findAncestorByTagName("P", _elParent); // 원래 P 태그를 포함할 수 있는 부모 목록
+				var _aParagraphContainer = ["TD", "BODY"]; // 탐색 순서는 TD, BODY 순
+				
+				if(!_elAncestor){
+					for(var i = 0, len = _aParagraphContainer.length; i < len; i++){
+						_elAncestor = nhn.husky.SE2M_Utils.findAncestorByTagName(_aParagraphContainer[i], _elParent);
+
+						if(_elAncestor){
+							break;
+						}
+					}
+
+					var _elParagraph = document.createElement("P");
+					var _aAncestorChildren = _elAncestor.childNodes;
+					for(var i = 0, len = _aAncestorChildren.length; i < len; i++){
+						_elParagraph.appendChild(_aAncestorChildren[0]);
+					}
+					_elAncestor.appendChild(_elParagraph);
+				}
+				oSelection.removeStringBookmark(_sBM);
+				oSelection = this.oApp.getSelection();
+				oSelection.setStart(_startContainer, _startOffset);
+				oSelection.setEnd(_endContainer, _endOffset);
+				
+				oLineInfo = oSelection.getLineInfo(true);
+			}
+		}else{
+			oLineInfo = oSelection.getLineInfo(false);
 		}
+		// --[SMARTEDITORSUS-1567]
 		
 		oStart = oLineInfo.oStart;
 		oEnd = oLineInfo.oEnd;
@@ -12778,7 +12263,18 @@ nhn.husky.SE2M_Quote = jindo.$Class({
 			// oSelection = this.oApp.getEmptySelection();
 			// oSelection.selectNode(oP);
 			// [SMARTEDITORSUS-645] 편집영역 포커스 없이 인용구 추가했을 때 IE7에서 박스가 늘어나는 문제
-			oFormattingNode.innerHTML = "&nbsp;";
+			
+			// [SMARTEDITORSUS-1567] [Chrome] 인용구 삽입 직전 내용이 아무것도 없는 경우에 대응
+			//oFormattingNode.innerHTML = "&nbsp;";
+			var htBrowser = jindo.$Agent().navigator();
+			if(htBrowser.chrome){ // P 태그로 감싸주지 않으면 blockquote 태그에 정렬이 적용되는데, DB로 넘어갈 때 스타일이 적용되지 않는 문제 발견
+				oFormattingNode.innerHTML = "<p>&nbsp;</p>";
+			}else{
+				oFormattingNode.innerHTML = "&nbsp;";
+			}
+			// --[SMARTEDITORSUS-1567]
+			
+			
 			oSelection.selectNodeContents(oFormattingNode);
 			oSelection.collapseToStart();
 			oSelection.select();
@@ -15290,7 +14786,10 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 					}
 				}
 				
-				if(!isIEUnder9){
+				// [SMARTEDITORSUS-1571] IE 10 이상임에도 불구하고, 문서 모드가 8 이하로 설정되어 있는 경우가 있어 메서드 기반 분기로 변경
+				//if(!isIEUnder9){
+				if(elCell.getComputedStyle){
+				// --[SMARTEDITORSUS-1571]
 					// getComputedStyle()로 inherit된 스타일을 획득. IE 8 이하에서는 지원되지 않는다.  
 					nPaddingLeft = parseFloat(getComputedStyle(elCell).paddingLeft, 10);
 					nPaddingRight = parseFloat(getComputedStyle(elCell).paddingRight, 10);
@@ -19412,10 +18911,10 @@ StringBuffer.prototype.setLength = function(nLen) {
 
 (function() {
 
-	var oDummy = null;
+	var oDummy = null, rx = /,/gi;
 
 	IsInstalledFont = function(sFont) {
-	
+
 		var sDefFont = sFont == 'Comic Sans MS' ? 'Courier New' : 'Comic Sans MS';
 		if (!oDummy) {
 			oDummy = document.createElement('div');
@@ -19433,9 +18932,9 @@ StringBuffer.prototype.setLength = function(nLen) {
 		}
 		
 		var sOrg = oDummy.offsetWidth + '-' + oDummy.offsetHeight;
-		
-		oDummy.style.cssText = sStyle + 'font-family:"' + sFont + '", "' + sDefFont + '" !important';
-		
+
+		oDummy.style.cssText = sStyle + 'font-family:"' + sFont.replace(rx, '","') + '", "' + sDefFont + '" !important';
+
 		var bInstalled = sOrg != (oDummy.offsetWidth + '-' + oDummy.offsetHeight);
 		
 		document.body.removeChild(oDummy);
