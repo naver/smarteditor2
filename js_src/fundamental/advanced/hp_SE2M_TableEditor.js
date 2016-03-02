@@ -2145,6 +2145,10 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		}
 		*/
 		
+		if (!elTable) {
+			return;
+		}
+
 		// 사용자가 지정한 스타일 무시하고 새 템플릿 적용
 		// http://bts.nhncorp.com/nhnbts/browse/COM-871
 		this._clearAllTableStyles(elTable);

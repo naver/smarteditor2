@@ -131,6 +131,8 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 						this.oApp.exec("EXECCOMMAND", ['delete', false, false]);
 						weEvent.stop();
 					}
+					
+					this._bIERangeReset = false;
 				}, this
 			).attach(this.iframe.contentWindow.document, "keydown");
 			jindo.$Fn(
@@ -323,9 +325,9 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 				case 34:
 					this._pageDown(oEvent);
 					break;
-				// case 8:		// [SMARTEDITORSUS-495] IE에서 표가 삭제되지 않는 문제
-					// this._backspaceTable(oEvent);
-					// break;
+				case 8:		// [SMARTEDITORSUS-495][SMARTEDITORSUS-548] IE에서 표가 삭제되지 않는 문제
+					this._backspaceTable(oEvent);
+					break;
 				default:
 			}
 		}else if(this.oApp.oNavigator.firefox){
@@ -374,14 +376,6 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		if(this.oApp.getEditingMode() != this.sMode){
 			this.oApp.exec("CHANGE_EDITING_MODE", [this.sMode]);
 		}
-		
-		//[SMARTEDITORSUS-381]Start 본문에 한번도 클릭을 하지 않은 상태에서 첨부를 하는 경우 커서의 위치문제.
-		//IE전용 이슈이며, 추후 selection 쪽이 안정화되면 제거해야하는 코드입니다.
-		var sContents = this.oApp.getIR();
-		if ( sContents !== null && this.oApp.getContents().length === 0 ){	
-			var oSelection = this.oApp.getEmptySelection();		
-		}
-		//[SMARTEDITORSUS-381] End
 	},
 	
 	$ON_PASTE_HTML : function(sHTML, oPSelection, bNoUndo){
@@ -422,6 +416,8 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			// PASTE_HTML 후에 IFRAME 부분이 선택된 상태여서 Enter 시 내용이 제거되어 발생한 문제
 			oSelection.collapseToEnd();
 			oSelection.select();
+			
+			this._bIERangeReset = false;
 		}
 		
 		// [SMARTEDITORSUS-639] 사진 첨부 후 이미지 뒤의 공백으로 인해 스크롤이 생기는 문제
@@ -455,7 +451,10 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			this.oApp.exec("RECORD_UNDO_AFTER_ACTION", ["PASTE HTML"]);
 		}
 	},
-	
+
+	/**
+	 * [SMARTEDITORSUS-344]사진/동영상/지도 연속첨부시 포커싱 개선이슈로 추가되 함수.
+	 */
 	$ON_FOCUS_N_CURSOR : function (bEndCursor, sId){
 		//지도 추가 후 포커싱을 주기 위해서
 		bEndCursor = bEndCursor || true;		
@@ -464,7 +463,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			if(bEndCursor){
 				oSelection.collapseToEnd();
 			} else {
-				Selection.collapseToStart();
+				oSelection.collapseToStart();
 			}
 			oSelection.select();
 		}else if(!!oSelection.collapsed && !sId) {

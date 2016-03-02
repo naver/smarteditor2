@@ -102,6 +102,9 @@ nhn.husky.SE2M_SCharacter = jindo.$Class({
 	$ON_INSERT_SCHARACTERS : function(){
 		this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", ["INSERT SCHARACTER"]);
 		this.oSelection.pasteHTML(this.oTextField.value);
+		this.oSelection.collapseToEnd();
+		this.oSelection.select();
+		this.oApp.exec("FOCUS");
 		this.oApp.exec("RECORD_UNDO_AFTER_ACTION", ["INSERT SCHARACTER"]);
 		
 		this.oApp.exec("HIDE_ACTIVE_LAYER", []);

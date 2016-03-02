@@ -366,6 +366,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 			welBody,
 			elTmpDiv,
 			elTable,
+			elFirstTD,
 			oSelection,
 			elTableHolder, 
 			htBrowser;
@@ -417,10 +418,12 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 			this.oApp.exec("STYLE_TABLE", [elTable, this.nTableStyleIdx]);
 		}
 		
-		oSelection.selectNodeContents(elTable.getElementsByTagName("TD")[0]);
+		elFirstTD = elTable.getElementsByTagName("TD")[0];
+		oSelection.selectNodeContents(elFirstTD.firstChild || elFirstTD);
 		oSelection.collapseToEnd();
-		oSelection.select();		
-
+		oSelection.select();	
+		
+		this.oApp.exec("FOCUS");
 		this.oApp.exec("RECORD_UNDO_AFTER_ACTION", ["INSERT TABLE", {sSaveTarget:"BODY"}]);
 		
 		this.oApp.exec("HIDE_ACTIVE_LAYER", []);
@@ -697,22 +700,11 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 	},
 
 	_getPreviewTableString : function(nColumns, nRows){
-		var sTD = "";
-		if(jindo.$Agent().navigator().ie){
-			sTD = "<td><p>&nbsp;</p></td>\n";
-		}else{
-			if(jindo.$Agent().navigator().firefox){
-				sTD = "<td><p><br/></p></td>\n";
-			}else{
-				sTD = "<td><p>&nbsp;</p></td>\n";
-			}
-		}
-		
 		var sTable = '<table border="0" cellspacing="1" class="se2_pre_table husky_se2m_table_preview">';
 		var sRow = '<tr>';
 
 		for(var i=0; i<nColumns; i++){
-			sRow += sTD;
+			sRow += "<td><p>&nbsp;</p></td>\n";
 		}
 		sRow += "</tr>\n";
 		
@@ -748,17 +740,6 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 			sTableStyle += "class=se2_pre_table";
 		}
 
-		var sTD = "";
-		if(jindo.$Agent().navigator().ie){
-			sTD = "<td "+sTDStyle+"><p>&nbsp;</p></td>\n";
-		}else{
-			if(jindo.$Agent().navigator().firefox){
-				sTD = "<td "+sTDStyle+"><p><br/></p></td>\n";
-			}else{
-				sTD = "<td "+sTDStyle+"><p>&nbsp;</p></td>\n";
-			}
-		}
-		
 		// [SMARTEDITORSUS-365] 테이블퀵에디터 > 속성 직접입력 > 테두리 스타일
 		//		- 테두리 없음을 선택하는 경우 본문에 삽입하는 표에 가이드 라인을 표시해 줍니다. 보기 시에는 테두리가 보이지 않습니다.
 		//		- 글 저장 시에는 글 작성 시에 적용하였던 style 을 제거합니다. 이를 위해서 임의의 속성(attr_no_border_tbl)을 추가하였다가 저장 시점에서 제거해 주도록 합니다.
@@ -767,7 +748,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		var sTable = "<table "+sTableStyle+" "+sTempNoBorderClass+">";
 		var sRow = "<tr>";
 		for(var i=0; i<nColumns; i++){
-			sRow += sTD;
+			sRow += "<td "+sTDStyle+"><p>&nbsp;</p></td>\n";
 		}
 		sRow += "</tr>\n";
 		

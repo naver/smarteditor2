@@ -51,3 +51,4 @@
 <script type="text/javascript" src="./js_src/service/husky_SE2B_Lang_KR.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js_src/service/hp_SE2B_Customize_ToolBar.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js_src/service/hp_SE_OuterIFrameControl.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/service/hp_SE_ToolbarToggler.js" charset="utf-8"></script>

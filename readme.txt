@@ -24,6 +24,8 @@ Chrome 4.0+
 /css : 에디터에서 사용하는 css 파일
 /img : 에디터에서 사용하는 이미지 파일
 /js : 에디터를 적용할 때 사용하는 JS 파일
+/js_src : 에디터 기능 플러그인 JS의 원본 파일
+/popup : 사진 퀵 업로더 팝업을 구성하는 파일
 readme.txt : 간략한 설명
 release_notes.txt : 릴리즈 노트
 sample.php : SmartEditor2.html을 이용해 편집한 내용을 서버에서 받는 php 예제

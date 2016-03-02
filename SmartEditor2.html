@@ -3,7 +3,6 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>네이버 :: Smart Editor 2 &#8482;</title>
-<script type="text/javascript">document.domain = "naver.com";</script>
 <script type="text/javascript" src="./js/HuskyEZCreator.js" charset="utf-8"></script>
 </head>
 <body>
@@ -13,6 +12,7 @@
 		<input type="button" onclick="pasteHTML();" value="본문에 내용 넣기" />
 		<input type="button" onclick="showHTML();" value="본문 내용 가져오기" />
 		<input type="button" onclick="submitContents(this);" value="서버로 내용 전송" />
+		<input type="button" onclick="setDefaultFont();" value="기본 폰트 지정하기 (궁서_24)" />
 	</p>
 </form>
 
@@ -21,7 +21,12 @@ var oEditors = [];
 nhn.husky.EZCreator.createInIFrame({
 	oAppRef: oEditors,
 	elPlaceHolder: "ir1",
-	sSkinURI: "SmartEditor2Skin.html",
+	sSkinURI: "SmartEditor2Skin.html",	
+	htParams : {bUseToolbar : true,
+		fOnBeforeUnload : function(){
+			//alert("아싸!");	
+		}
+	}, //boolean
 	fCreator: "createSEditor2"
 });
 
@@ -43,6 +48,12 @@ function submitContents(elClickedObj) {
 	try {
 		elClickedObj.form.submit();
 	} catch(e) {}
+}
+
+function setDefaultFont() {
+	var sDefaultFont = '궁서';
+	var nFontSize = 24;
+	oEditors.getById["ir1"].setDefaultFont(sDefaultFont, nFontSize);
 }
 </script>
 

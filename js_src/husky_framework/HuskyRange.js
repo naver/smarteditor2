@@ -29,7 +29,7 @@ nhn.CurrentSelection_FF = function(){
 	this.isCollapsed = function(){
 		var oSelection = this._window.getSelection();
 		
-		if(oSelection.rangeCount<1) return true;
+		if(oSelection.rangeCount<1){ return true; }
 		return oSelection.getRangeAt(0).collapsed;
 	};
 	
@@ -39,7 +39,7 @@ nhn.CurrentSelection_FF = function(){
 		}catch(e){
 			return this._document.createRange();
 		}
-	}
+	};
 };
 
 nhn.CurrentSelection = new (jindo.$Class({
@@ -241,6 +241,7 @@ nhn.W3CDOMRange = jindo.$Class({
 
 		// container node A in common ancestor container
 		var oNodeA = oContainerA;
+		var oTmpNode = null;
 		if(oNodeA != oCommonAncestor){
 			while((oTmpNode = nhn.DOMFix.parentNode(oNodeA)) != oCommonAncestor){oNodeA = oTmpNode;}
 			
@@ -1770,14 +1771,16 @@ nhn.HuskyRange = jindo.$Class({
 		return {oNode: backEndFinal, oLineBreaker: lineBreaker, bParentBreak: bParentBreak};
 	},
 
-	getLineInfo : function(){
+	getLineInfo : function(bAfter){
+		var bAfter = bAfter || false;
+		
 		var oSNode = this.getStartNode();
 		var oENode = this.getEndNode();
 
 		// oSNode && oENode will be null if the range is currently collapsed and the cursor is not located in the middle of a text node.
-		if(!oSNode){oSNode = this.getNodeAroundRange(true, true);}
-		if(!oENode){oENode = this.getNodeAroundRange(true, true);}
-
+		if(!oSNode){oSNode = this.getNodeAroundRange(!bAfter, true);}
+		if(!oENode){oENode = this.getNodeAroundRange(!bAfter, true);}
+		
 		var oStart = this._getLineStartInfo(oSNode);
 		var oStartNode = oStart.oNode;
 		var oEnd = this._getLineEndInfo(oENode);

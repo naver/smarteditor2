@@ -110,7 +110,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			
 			this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", [sCommand, this.oUndoOption]);
 		}
-		if(jindo.$Agent().navigator().ie){
+		if(oNavigator.ie){
 			if(this.oApp.getWYSIWYGDocument().selection.type === "Control"){
 				oSelection = this.oApp.getSelection();
 				oSelection.select();
@@ -164,11 +164,29 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
                 }, this).bind(sCommand), 25);
 
 				break;
-
-			default:
+			
+			case "justifyleft":
+			case "justifycenter":
+			case "justifyright":
+			case "justifyfull":
+				var oSelectionClone = null;
+				
 				if(jindo.$Agent().navigator().firefox){
-					//this.oEditingArea.execCommand("styleWithCSS", bUserInterface, false);
+					oSelectionClone = this._extendBlock();
 				}
+				
+				this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
+				
+				if(!!oSelectionClone){
+					oSelectionClone.select();
+				}
+				
+				break;
+				
+			default:
+				//if(jindo.$Agent().navigator().firefox){
+					//this.oEditingArea.execCommand("styleWithCSS", bUserInterface, false);
+				//}
 				this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
 			}
 		}
@@ -495,6 +513,42 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		}	
 
 		this.oApp.exec('MSG_NOTIFY_CLICKCR', [sCommand.replace(/^insert/i, '')]);
+	}, 
+	
+	_extendBlock : function(){
+		// [SMARTEDITORSUS-663] [FF] lock단위로 확장하여 Range를 새로 지정해주는것이 원래 스펙이므로
+		// 해결을 위해서는 현재 선택된 부분을 Block으로 extend하여 execCommand API가 처리될 수 있도록 함
+
+		var oSelection = this.oApp.getSelection(),
+			oStartContainer = oSelection.startContainer,
+			oEndContainer = oSelection.endContainer,
+			aChildImg = [],
+			aSelectedImg = [],
+			oSelectionClone = oSelection.cloneRange();
+		
+		// <p><img><br/><img><br/><img></p> 일 때 이미지가 일부만 선택되면 발생
+		// - container 노드는 P 이고 container 노드의 자식노드 중 이미지가 여러개인데 선택된 이미지가 그 중 일부인 경우
+		
+		if(!(oStartContainer === oEndContainer && oStartContainer.nodeType === 1 && oStartContainer.tagName === "P")){
+			return;
+		}
+
+		aChildImg = jindo.$A(oStartContainer.childNodes).filter(function(value, index, array){
+			return (value.nodeType === 1 && value.tagName === "IMG");
+		}).$value();
+		
+		aSelectedImg = jindo.$A(oSelection.getNodes()).filter(function(value, index, array){
+			return (value.nodeType === 1 && value.tagName === "IMG");
+		}).$value();
+		
+		if(aChildImg.length <= aSelectedImg.length){
+			return;
+		}
+		
+		oSelection.selectNode(oStartContainer);
+		oSelection.select();
+		
+		return oSelectionClone;
 	}
 });
 //}

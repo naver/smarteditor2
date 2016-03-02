@@ -3,10 +3,6 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 		parent.document.body.innerHTML="진도 프레임웍이 필요합니다.<br>\n<a href='http://dev.naver.com/projects/jindo/download'>http://dev.naver.com/projects/jindo/download</a>에서 Jindo 1.5.3 버전의 jindo.min.js를 다운로드 받아 /js 폴더에 복사 해 주세요.\n(아직 Jindo 2 는 지원하지 않습니다.)";
 		return;
 	}
-	nEditingAreaHeight = elIRField.style.height||elIRField.offsetHeight+"px";
-	nEditingAreaWidth = elIRField.style.width||elIRField.offsetWidth+"px";
-	
-	elIRField.style.display = "none";
 
 	var elAppContainer = (elSeAppContainer || jindo.$("smart_editor2"));	
 	var elEditingArea = jindo.$$.getSingle("DIV.husky_seditor_editing_area_container", elAppContainer);
@@ -15,15 +11,24 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 	var oHTMLSrc = jindo.$$.getSingle("TEXTAREA.se2_input_htmlsrc", elEditingArea);
 	var oTextArea = jindo.$$.getSingle("TEXTAREA.se2_input_text", elEditingArea);
 	
-	if(!htParams){ htParams = {}; }
+	if(!htParams){ 
+		htParams = {}; 
+		htParams.fOnBeforeUnload = null;
+	}
 	htParams.elAppContainer = elAppContainer;												// 에디터 UI 최상위 element 셋팅 
 	htParams.oNavigator = jindo.$Agent().navigator();										// navigator 객체 셋팅
 	
 	var oEditor = new nhn.husky.HuskyCore(htParams);
 	oEditor.registerPlugin(new nhn.husky.CorePlugin(htParams?htParams.fOnAppLoad:null));	
 	oEditor.registerPlugin(new nhn.husky.StringConverterManager());
-	
-	oEditor.registerPlugin(new nhn.husky.SE_EditingAreaManager("WYSIWYG", oIRTextarea, {nHeight:nEditingAreaHeight, nMinHeight:300}, null, elAppContainer));
+
+	var htDimension = {
+		nMinHeight:205,
+		nMinWidth:570,
+		nHeight:parseInt(elIRField.style.height||elIRField.offsetHeight, 10),
+		nWidth : parseInt(elIRField.style.width||elIRField.offsetWidth, 10)
+	};
+	oEditor.registerPlugin(new nhn.husky.SE_EditingAreaManager("WYSIWYG", oIRTextarea, htDimension,  htParams.fOnBeforeUnload, elAppContainer));
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_WYSIWYG(oWYSIWYGIFrame));			// Tab Editor 모드
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_HTMLSrc(oHTMLSrc));					// Tab HTML 모드
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_TEXT(oTextArea));					// Tab Text 모드
@@ -61,6 +66,7 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 	oEditor.registerPlugin(new nhn.husky.SE2M_TableCreator(elAppContainer));				// 테이블 생성
 	oEditor.registerPlugin(new nhn.husky.SE2M_TableEditor(elAppContainer));					// 테이블 편집
 	oEditor.registerPlugin(new nhn.husky.SE2M_TableBlockStyler(elAppContainer));			// 테이블 스타일
+	oEditor.registerPlugin(new nhn.husky.SE2M_AttachQuickPhoto(elAppContainer));			// 사진			
 
 	oEditor.registerPlugin(new nhn.husky.MessageManager(oMessageMap));
 	oEditor.registerPlugin(new nhn.husky.SE2M_QuickEditor_Common(elAppContainer));			// 퀵에디터 공통(표, 이미지)
@@ -71,6 +77,8 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 		
 	oEditor.registerPlugin(new nhn.husky.SE2B_CSSLoader());									// CSS lazy load
 	oEditor.registerPlugin(new nhn.husky.SE_OuterIFrameControl(elAppContainer, 100));
-
+	
+	oEditor.registerPlugin(new nhn.husky.SE_ToolbarToggler(elAppContainer, htParams.bUseToolbar));
+	
 	return oEditor;
 }

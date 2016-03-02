@@ -27,7 +27,7 @@ nhn.husky.SE_WYSIWYGStyler = jindo.$Class({
 		oAncestor = oBody;
 		
 		if(sHtml === welSpan.outerHTML()){
-			tmpTextNode = oSelection._document.createTextNode(unescape("%u00A0"));
+			tmpTextNode = oSelection._document.createTextNode(unescape("%uFEFF"));
 			oAncestor.appendChild(tmpTextNode);
 			
 			return;

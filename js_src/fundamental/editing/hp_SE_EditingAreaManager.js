@@ -104,11 +104,38 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		
 		this.oEditingMode = {};
 		
-		this.elEditingAreaContainer.style.width = oDimension.width || (this.elEditingAreaContainer.offsetWidth + "px");
-		this.elEditingAreaContainer.style.height = oDimension.nHeight || (this.elEditingAreaContainer.offsetHeight + "px");
+		this.elContentsField.style.display = "none";
+		
+		this.nMinWidth = parseInt((oDimension.nMinWidth || 60), 10);
+		this.nMinHeight = parseInt((oDimension.nMinHeight || 60), 10);
+		
+		var oEditorInitSize = this._getInitialSize(oDimension);
 
-		this.nMinHeight = oDimension.nMinHeight || 60;
-		this.nMinWidth = oDimension.nMinWidth || 60;		
+		this.elEditingAreaContainer.style.width = oEditorInitSize.nWidth + "px";
+		this.elEditingAreaContainer.style.height = oEditorInitSize.nHeight + "px";
+		
+		elAppContainer.style.width = (oEditorInitSize.nWidth + 2) + "px";
+	},
+	
+	_getInitialSize : function(oDimension){
+		var nEditingAreaWidth, nEditingAreaHeight;
+		
+		nEditingAreaWidth = parseInt(oDimension.nWidth, 10);
+		nEditingAreaWidth = !!nEditingAreaWidth ? nEditingAreaWidth : parseInt(oDimension.width, 10);
+		nEditingAreaWidth = !!nEditingAreaWidth ? nEditingAreaWidth : parseInt(this.elEditingAreaContainer.offsetWidth, 10);
+		
+		nEditingAreaHeight = parseInt(oDimension.nHeight, 10);
+		nEditingAreaHeight = !!nEditingAreaHeight ? nEditingAreaHeight : parseInt(oDimension.height, 10);
+		nEditingAreaHeight = !!nEditingAreaHeight ? nEditingAreaHeight : parseInt(this.elEditingAreaContainer.offsetHeight, 10);
+		
+		if(!nEditingAreaWidth || nEditingAreaWidth < this.nMinWidth){
+			nEditingAreaWidth = this.nMinWidth;
+		}
+		if(!nEditingAreaHeight || nEditingAreaHeight < this.nMinHeight){
+			nEditingAreaHeight = this.nMinHeight;
+		}
+		
+		return {nWidth : nEditingAreaWidth, nHeight : nEditingAreaHeight};
 	},
 
 	_assignHTMLElements : function(elAppContainer){
@@ -131,17 +158,14 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	},
 
 	$ON_MSG_APP_READY : function(){
-		this.htOptions =  this.oApp.htOptions["SE_EditingAreaManager"] || {};
+		this.htOptions =  this.oApp.htOptions[this.name] || {};
 		this.sDefaultEditingMode = this.htOptions["sDefaultEditingMode"] || this.sDefaultEditingMode;
 
 		this.oApp.exec("REGISTER_CONVERTERS", []);
 		this.oApp.exec("CHANGE_EDITING_MODE", [this.sDefaultEditingMode, true]);
 		this.oApp.exec("LOAD_CONTENTS_FIELD", [false]);
 		
-//		this.oApp.registerBrowserEvent(this.elEditingAreaSkipUI, "focus", "MSG_EDITING_AREA_SIZE_CHANGED", [], 50);
-//		this.oApp.registerBrowserEvent(this.elEditingAreaSkipUI, "blur", "MSG_EDITING_AREA_SIZE_CHANGED", [], 50);
-
-		if(this.fOnBeforeUnload){
+		if(!!this.fOnBeforeUnload){
 			window.onbeforeunload = this.fOnBeforeUnload;
 		}else{
 			window.onbeforeunload = jindo.$Fn(function(){

@@ -16,19 +16,26 @@ nhn.husky.SE_OuterIFrameControl = $Class({
 	$init : function(oAppContainer){
 		// page up, page down, home, end, left, up, right, down
 		this.aHeightChangeKeyMap = [-100, 100, 500, -500, -1, -10, 1, 10];
-
+	
 		this._assignHTMLObjects(oAppContainer);
 
+		//키보드 이벤트
 		this.$FnKeyDown = $Fn(this._keydown, this);
-		this.$FnMouseDown = $Fn(this._mousedown, this);
-		this.$FnMouseMove = $Fn(this._mousemove, this);
-		this.$FnMouseMove_Parent = $Fn(this._mousemove_parent, this);
-		this.$FnMouseUp = $Fn(this._mouseup, this);
-
 		if(this.oResizeGrip){
 			this.$FnKeyDown.attach(this.oResizeGrip, "keydown");
-			this.$FnMouseDown.attach(this.oResizeGrip, "mousedown");
 		}
+		
+		//마우스 이벤트 
+		if(!!jindo.$Agent().navigator().ie){
+			this.$FnMouseDown = $Fn(this._mousedown, this);
+			this.$FnMouseMove = $Fn(this._mousemove, this);
+			this.$FnMouseMove_Parent = $Fn(this._mousemove_parent, this);
+			this.$FnMouseUp = $Fn(this._mouseup, this);
+			
+			if(this.oResizeGrip){
+				this.$FnMouseDown.attach(this.oResizeGrip, "mousedown");
+			}
+		}	
 	},
 
 	_assignHTMLObjects : function(oAppContainer){

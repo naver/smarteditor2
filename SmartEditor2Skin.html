@@ -7,7 +7,6 @@
 <meta http-equiv="Content-Style-Type" content="text/css">
 <title>네이버 :: Smart Editor 2 &#8482;</title>
 <link href="./css/smart_editor2.css" rel="stylesheet" type="text/css">
-<script type="text/javascript">document.domain = "naver.com";</script>
 <script type="text/javascript" src="./js/jindo.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js/jindo_component.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js/SE2B_Configuration.js" charset="utf-8"></script>
@@ -21,9 +20,17 @@ body{margin:0; padding:0;}
 <body>
 
 <!-- SE2 Markup Start -->
-<div id="smart_editor2" style="width:790px;margin:0;">
+<div id="smart_editor2">
 	<div id="smart_editor2_content"><a href="#se2_iframe" class="blind">글쓰기영역으로 가기</a>
 		<div class="se2_tool">
+			<!-- icon toolbar -->
+			<div class="se2_icon_tool" style="display:block;">
+				<ul class="se2_itool1">
+					<li class="se2_mn husky_seditor_ui_photo_attach"><button type="button" class="se2_photo se2_wty2_ic se2_mfirst"><span class="se2_icon"></span><span class="se2_mntxt">사진</span></button></li>
+				</ul>
+			</div>
+			<!-- //704이상 -->
+							
 			<!-- 텍스트 툴바 -->
 			<div class="se2_text_tool">
 				<ul class="se2_font_type">

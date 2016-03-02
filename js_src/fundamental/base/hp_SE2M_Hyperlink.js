@@ -289,12 +289,13 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 			setTimeout(jindo.$Fn(function(){
 				var oSelection = this.oApp.getEmptySelection();
 				oSelection.moveToBookmark(sBM);
+				oSelection.collapseToEnd();
 				oSelection.select();
 				oSelection.removeStringBookmark(sBM);
-				//this.oSelection.select();
-				
+	
+				this.oApp.exec("FOCUS");
 				this.oApp.exec("RECORD_UNDO_AFTER_ACTION", ["HYPERLINK", {sSaveTarget:(this.bModify ? "A" : null)}]);
-			}, this).bind(), 17);
+			}, this).bind(), 17);			
 		}else{
 			alert(this.oApp.$MSG("URL을 정확히 입력해 주세요."));
 			this.oLinkInput.focus();

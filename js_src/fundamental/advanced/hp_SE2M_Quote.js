@@ -179,7 +179,7 @@ nhn.husky.SE2M_Quote = jindo.$Class({
 	_isBlankQuote : function(elParentQuote){
 		var	elChild,
 			aChildNodes,
-			i,
+			i, nLen, 
 			bChrome = this.oApp.oNavigator.chrome,
 			bSafari = this.oApp.oNavigator.safari,
 			isBlankText = function(sText){
@@ -351,7 +351,17 @@ nhn.husky.SE2M_Quote = jindo.$Class({
 		oSelection = this.oApp.getSelection();
 //		var sBookmarkID = oSelection.placeStringBookmark();
 
-		oLineInfo = oSelection.getLineInfo();
+		// [SMARTEDITORSUS-430] 문자를 입력하고 Enter 후 인용구를 적용할 때 위의 문자들이 인용구 안에 들어가는 문제
+		if(oSelection.startContainer === oSelection.endContainer && 
+			oSelection.startContainer.nodeType === 1 &&
+			oSelection.startContainer.tagName === "P" &&
+			nhn.husky.SE2M_Utils.isBlankNode(oSelection.startContainer)){
+						
+			oLineInfo = oSelection.getLineInfo(true);
+		}else{
+			oLineInfo = oSelection.getLineInfo(false);
+		}
+		
 		oStart = oLineInfo.oStart;
 		oEnd = oLineInfo.oEnd;
 		

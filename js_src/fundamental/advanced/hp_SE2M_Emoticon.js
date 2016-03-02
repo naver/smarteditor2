@@ -119,13 +119,12 @@ nhn.husky.SE2M_Emoticon = jindo.$Class({
 				return;
 			}
 		}
-		
-		var elImg = jindo.$$.getSingle("IMG", elButton);
-
-		this.oApp.exec("PASTE_HTML", ["<img src="+elImg.src+">"]);
-		this.oApp.exec("TOGGLE_EMOTICON_LAYER", []);
-		
 		weEvent.stop();
+		var elImg = jindo.$$.getSingle("IMG", elButton);
+		this.oApp.exec("TOGGLE_EMOTICON_LAYER", []);
+		this.oApp.exec("PASTE_HTML", ["<img src="+elImg.src+">"]);
+		
+		this.oApp.exec("FOCUS");
 	},
 	
 	// _requestUserEmoticonList : function(){

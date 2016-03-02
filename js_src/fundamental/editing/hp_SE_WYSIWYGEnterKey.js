@@ -102,6 +102,10 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			elStyleOnlyNode.innerHTML = "<br>";
 		}
 		
+		if(!elStyleOnlyNode){
+			elStyleOnlyNode = this._getStyleNode(elWrapper);
+		}
+		
 		return elStyleOnlyNode;
 	},
 	
@@ -472,6 +476,28 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 				aSpanList[i].html(unescape("%uFEFF"));
 			}
 		}
+	},
+	
+	// returns inner-most styling node
+	// -> returns span3 from <span1><span2><span3>aaa</span></span></span>
+	_getStyleNode : function(elNode){			
+		while(elNode.firstChild && this.oSelection._isBlankTextNode(elNode.firstChild)){
+			elNode.removeChild(elNode.firstChild);
+		}
+		
+		var elFirstChild = elNode.firstChild;
+
+		if(!elFirstChild){
+			return elNode;
+		}
+				
+		if(elFirstChild.nodeType === 3 || 
+			(elFirstChild.nodeType === 1 && 
+				(elFirstChild.tagName == "IMG" || elFirstChild.tagName == "BR" || elFirstChild.tagName == "HR" || elFirstChild.tagName == "IFRAME"))){
+			return elNode;
+		}
+
+		return this._getStyleNode(elNode.firstChild);
 	},
 	
 	// returns inner-most styling only node if there's any.
