@@ -1,4 +1,4 @@
-SmartEditor Basic 2.0 릴리즈 패키지
+﻿SmartEditor Basic 2.0 릴리즈 패키지
 
 SmartEdtitor™는 Javascript로 구현된 웹 기반의 WYSIWYG 에디터입니다. SmartEdtitor™는 WYSIWYG 모드 및 HTML 편집 모드와 TEXT 모드를 제공하고, 자유로운 폰트 크기 설정 기능, 줄 간격 설정 기능, 단어 찾기/바꾸기 기능 등 편집에 필요한 다양한 기능을 제공하므로 사용자들은 SmartEdtitor™를 사용하여 쉽고 편리하게 원하는 형태의 글을 작성할 수 있습니다.
 또한, SmartEdtitor™의 구조는 기능을 쉽게 추가할 수 있는 플러그인 구조로 되어 있어 정해진 규칙에 따라 플러그인을 만들기만 하면 됩니다.
@@ -24,8 +24,7 @@ Chrome 4.0+
 /css : 에디터에서 사용하는 css 파일
 /img : 에디터에서 사용하는 이미지 파일
 /js : 에디터를 적용할 때 사용하는 JS 파일
-/js_src : 에디터 기능 플러그인 JS의 원본 파일
-/popup : 사진 퀵 업로더 팝업을 구성하는 파일
+/quick_photo_uploader : 사진 퀵 업로더 팝업을 구성하는 파일
 readme.txt : 간략한 설명
 release_notes.txt : 릴리즈 노트
 sample.php : SmartEditor2.html을 이용해 편집한 내용을 서버에서 받는 php 예제
@@ -33,7 +32,7 @@ smart_editor2_inputarea.html : 에디터의 편집 영역을 나타내는 HTML�
 smart_editor2_inputarea_ie8.html : smart_editor2_inputarea.html와 동일한 기능이나 사용자의 브라우저 Internet Explorer 8.x 이상인 경우에 사용
 SmartEditor2.html : 에디터 데모 페이지. 에디터 적용 시에도 참고 할 수 있다.
 SmartEditor2Skin.html : 에디터를 적용한 페이지에서 로드하는 에디터의 스킨 HTML 파일로 에디터에서 사용하는 JS 파일과 css 파일을 링크하며 에디터의 마크업을 가지고 있다. SmartEditor2.html 에서도 확인할 수 있다.
-src_include.txt : 개별 소스를 수정 하고자 할 경우 편리하게 copy/paste 하실 수 있는 코드
+src_include.txt : 개별 소스를 수정 하고자 할 경우 참고할 수 있는 파일
 
 ===================================================================================
 
