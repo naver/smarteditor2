@@ -10,6 +10,7 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 	var oIRTextarea = elIRField?elIRField:jindo.$$.getSingle("TEXTAREA.blind", elEditingArea);
 	var oHTMLSrc = jindo.$$.getSingle("TEXTAREA.se2_input_htmlsrc", elEditingArea);
 	var oTextArea = jindo.$$.getSingle("TEXTAREA.se2_input_text", elEditingArea);
+	var sEditorMode = "open";
 	
 	if(!htParams){ 
 		htParams = {}; 
@@ -28,11 +29,17 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 		nHeight:elIRField.style.height||elIRField.offsetHeight,
 		nWidth:elIRField.style.width||elIRField.offsetWidth
 	};
+	
+	var htConversionMode = {
+		bUseVerticalResizer : htParams.bUseVerticalResizer,
+		bUseModeChanger : htParams.bUseModeChanger
+	};
+	
 	oEditor.registerPlugin(new nhn.husky.SE_EditingAreaManager("WYSIWYG", oIRTextarea, htDimension,  htParams.fOnBeforeUnload, elAppContainer));
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_WYSIWYG(oWYSIWYGIFrame));			// Tab Editor 모드
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_HTMLSrc(oHTMLSrc));					// Tab HTML 모드
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_TEXT(oTextArea));					// Tab Text 모드
-	oEditor.registerPlugin(new nhn.husky.SE2M_EditingModeChanger(elAppContainer));			// 모드간 변경(Editor, HTML, Text)
+	oEditor.registerPlugin(new nhn.husky.SE2M_EditingModeChanger(elAppContainer, htConversionMode));	// 모드간 변경(Editor, HTML, Text)
 	
 	oEditor.registerPlugin(new nhn.husky.HuskyRangeManager(oWYSIWYGIFrame));
 	oEditor.registerPlugin(new nhn.husky.Utils());
@@ -41,7 +48,7 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 	oEditor.registerPlugin(new nhn.husky.SE2M_Toolbar(elAppContainer));
 	
 	oEditor.registerPlugin(new nhn.husky.Hotkey());											// 단축키
-	oEditor.registerPlugin(new nhn.husky.SE_EditingAreaVerticalResizer(elAppContainer));	// 편집영역 리사이즈
+	oEditor.registerPlugin(new nhn.husky.SE_EditingAreaVerticalResizer(elAppContainer, htConversionMode));	// 편집영역 리사이즈
 	oEditor.registerPlugin(new nhn.husky.DialogLayerManager());
 	oEditor.registerPlugin(new nhn.husky.ActiveLayerManager());
 	oEditor.registerPlugin(new nhn.husky.SE_WYSIWYGStyleGetter());							// 커서 위치 스타일 정보 가져오기
@@ -79,6 +86,7 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 	oEditor.registerPlugin(new nhn.husky.SE_OuterIFrameControl(elAppContainer, 100));
 	
 	oEditor.registerPlugin(new nhn.husky.SE_ToolbarToggler(elAppContainer, htParams.bUseToolbar));
+	oEditor.registerPlugin(new nhn.husky.SE2M_Accessibility(elAppContainer));				// 에디터내의 웹접근성 관련 기능모음 플러그인 
 	
 	return oEditor;
 }

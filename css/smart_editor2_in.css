@@ -6,7 +6,7 @@ body, .se2_inputarea { margin: 0; padding: 0; font-family: '돋움',Dotum,Helvet
 /* body,.se2_inputarea,.se2_inputarea th,.se2_inputarea td{margin:0;padding:0;font-family:'돋움',Dotum,Helvetica,Sans-serif;font-size:12px;line-height:1.5;color:#666} */
 .se2_inputarea p, .se2_inputarea br { margin: 0; padding: 0; }
 
-.se2_inputarea { margin: 15px; word-wrap: break-word; }
+.se2_inputarea { margin: 15px; word-wrap: break-word; *word-wrap: normal; *word-break: break-all; }
 
 .se2_inputarea_890 { width: 741px; margin: 20px 0 10px 64px; }
 

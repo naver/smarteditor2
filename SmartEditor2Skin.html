@@ -16,7 +16,7 @@
 <script type="text/javascript" src="./js/SE2BasicCreator.js" charset="utf-8"></script>
 
 <script src='js/smarteditor2.min.js' charset='utf-8'></script>
-<script src='quick_photo_uploader/plugin/hp_SE2M_AttachQuickPhoto.js' charset='utf-8'></script>
+<script src='photo_uploader/plugin/hp_SE2M_AttachQuickPhoto.js' charset='utf-8'></script>
 </head>
 <body>
 
@@ -191,18 +191,18 @@
 						<div class="se2_in_layer">
 							<div class="se2_palette_bgcolor">
 								<ul class="se2_background husky_se2m_bgcolor_list">
-								<li><button type="button" title="#ff0000" style="background:#ff0000; color:#ffffff"><span><span>가나다</span></span></button></li>								
-								<li><button type="button" title="#6d30cf" style="background:#6d30cf; color:#ffffff"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#000000" style="background:#000000; color:#ffffff"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#ff6600" style="background:#ff6600; color:#ffffff"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#3333cc" style="background:#3333cc; color:#ffffff"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#333333" style="background:#333333; color:#ffff00"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#ffa700" style="background:#ffa700; color:#ffffff"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#009999" style="background:#009999; color:#ffffff"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#8e8e8e" style="background:#8e8e8e; color:#ffffff"><span><span>가나다</span></span></button></li>								
-								<li><button type="button" title="#cc9900" style="background:#cc9900; color:#ffffff"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#77b02b" style="background:#77b02b; color:#ffffff"><span><span>가나다</span></span></button></li>
-								<li><button type="button" title="#ffffff" style="background:#ffffff; color:#000000"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#ff0000 글자색#ffffff" style="background:#ff0000; color:#ffffff"><span><span>가나다</span></span></button></li>								
+								<li><button type="button" title="배경색#6d30cf 글자색#ffffff" style="background:#6d30cf; color:#ffffff"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#000000 글자색#ffffff" style="background:#000000; color:#ffffff"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#ff6600 글자색#ffffff" style="background:#ff6600; color:#ffffff"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#3333cc 글자색#ffffff" style="background:#3333cc; color:#ffffff"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#333333 글자색#ffff00" style="background:#333333; color:#ffff00"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#ffa700 글자색#ffffff" style="background:#ffa700; color:#ffffff"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#009999 글자색#ffffff" style="background:#009999; color:#ffffff"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#8e8e8e 글자색#ffffff" style="background:#8e8e8e; color:#ffffff"><span><span>가나다</span></span></button></li>								
+								<li><button type="button" title="배경색#cc9900 글자색#ffffff" style="background:#cc9900; color:#ffffff"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#77b02b 글자색#ffffff" style="background:#77b02b; color:#ffffff"><span><span>가나다</span></span></button></li>
+								<li><button type="button" title="배경색#ffffff 글자색#000000" style="background:#ffffff; color:#000000"><span><span>가나다</span></span></button></li>
 								</ul>
 							</div>
 							<div class="husky_se2m_BGColor_paletteHolder"></div>
@@ -546,11 +546,11 @@
 					<!-- //찾기/바꾸기 -->
 					<!--//@lazyload_html-->
 				</li>
-</ul>
+</ul><ul>
 				<ul class="se2_multy">
 					<li class="se2_mn husky_seditor_ui_photo_attach"><button type="button" class="se2_photo ico_btn"><span class="se2_icon"></span><span class="se2_mntxt">사진<span class="se2_new"></span></span></button></li>
 				</ul>
-
+</ul>
 			<!--
 				<ul class="se2_font_type"></ul> 
 				<ul></ul>
@@ -559,6 +559,38 @@
 			<!-- //704이상 -->
 		</div>
 		
+				<!-- 접근성 도움말 레이어 -->
+		<div class="se2_layer se2_accessibility" style="display:none;">
+			<div class="se2_in_layer">
+				<button type="button" title="닫기" class="se2_close"><span>닫기</span></button>
+				<h3><strong>접근성 도움말</strong></h3>
+				<div class="box_help">
+					<div>
+						<strong>툴바</strong>
+						<p>ALT+F10 을 누르면 툴바로 이동합니다. 다음 버튼은 TAB 으로 이전 버튼은 SHIFT+TAB 으로 이동 가능합니다. ENTER 를 누르면 해당 버튼의 기능이 동작하고 글쓰기 영역으로 포커스가 이동합니다. ESC 를 누르면 아무런 기능을 실행하지 않고 글쓰기 영역으로 포커스가 이동합니다.</p>
+						<strong>빠져 나가기</strong>
+						<p>ALT+. 를 누르면 스마트 에디터 다음 요소로 ALT+, 를 누르면 스마트에디터 이전 요소로 빠져나갈 수 있습니다.</p>
+						<strong>명령어 단축키</strong>
+						<ul>
+						<li>CTRL+B <span>굵게</span></li>
+						<li>SHIFT+TAB <span>내어쓰기</span></li>
+						<li>CTRL+U <span>밑줄</span></li>
+						<li>CTRL+F <span>찾기</span></li>
+						<li>CTRL+I <span>기울임 글꼴</span></li>
+						<li>CTRL+H <span>바꾸기</span></li>
+						<li>CTRL+D <span>취소선</span></li>
+						<li>CTRL+K <span>링크걸기</span></li>
+						<li>TAB <span>들여쓰기</span></li>
+						</ul>
+					</div>
+				</div>
+				<div class="se2_btns">
+					<button type="button" class="se2_close2"><span>닫기</span></button>
+				</div>
+			</div>
+		</div>		
+		<!-- //접근성 도움말 레이어 -->
+
 		<hr>
 		<!-- 입력 -->
 		<div class="se2_input_area husky_seditor_editing_area_container">

@@ -30,9 +30,9 @@ body, #smart_editor2, #smart_editor2 h1, #smart_editor2 h2, #smart_editor2 h3, #
 /* LAYOUT */
 #smart_editor2 .se2_header { margin: 10px 0 29px 0; }
 
-#smart_editor2 .se2_bi { float: left; width: 93px; height: 20px; margin: 0; padding: 0; background: url("../img/ko_KR/btn_set.png") -343px -358px no-repeat; font-size: 0; line-height: 0; text-indent: -10000px; vertical-align: middle; }
+#smart_editor2 .se2_bi { float: left; width: 93px; height: 20px; margin: 0; padding: 0; background: url("../img/ko_KR/btn_set.png?130306") -343px -358px no-repeat; font-size: 0; line-height: 0; text-indent: -10000px; vertical-align: middle; }
 
-#smart_editor2 .se2_allhelp { display: inline-block; width: 18px; height: 18px; padding: 0; background: url("../img/ko_KR/btn_set.png") -437px -358px no-repeat; font-size: 0; line-height: 0; text-indent: -10000px; vertical-align: middle; }
+#smart_editor2 .se2_allhelp { display: inline-block; width: 18px; height: 18px; padding: 0; background: url("../img/ko_KR/btn_set.png?130306") -437px -358px no-repeat; font-size: 0; line-height: 0; text-indent: -10000px; vertical-align: middle; }
 
 #smart_editor2 #smart_editor2_content { border: 1px solid #b5b5b5; }
 
@@ -70,17 +70,17 @@ body, #smart_editor2, #smart_editor2 h1, #smart_editor2 h2, #smart_editor2 h3, #
 
 #smart_editor2 .se2_converter li { float: left; }
 
-#smart_editor2 .se2_converter .se2_to_editor { width: 59px; height: 15px; background: url("../img/ko_KR/btn_set.png") 0 -85px no-repeat; vertical-align: top; }
+#smart_editor2 .se2_converter .se2_to_editor { width: 59px; height: 15px; background: url("../img/ko_KR/btn_set.png?130306") 0 -85px no-repeat; vertical-align: top; }
 
-#smart_editor2 .se2_converter .se2_to_html { width: 59px; height: 15px; background: url("../img/ko_KR/btn_set.png") -59px -70px no-repeat; vertical-align: top; }
+#smart_editor2 .se2_converter .se2_to_html { width: 59px; height: 15px; background: url("../img/ko_KR/btn_set.png?130306") -59px -70px no-repeat; vertical-align: top; }
 
-#smart_editor2 .se2_converter .se2_to_text { width: 60px; height: 15px; background: url("../img/ko_KR/btn_set.png") -417px -466px no-repeat; vertical-align: top; }
+#smart_editor2 .se2_converter .se2_to_text { width: 60px; height: 15px; background: url("../img/ko_KR/btn_set.png?130306") -417px -466px no-repeat; vertical-align: top; }
 
-#smart_editor2 .se2_converter .active .se2_to_editor { width: 59px; height: 15px; background: url("../img/ko_KR/btn_set.png") 0 -70px no-repeat; vertical-align: top; }
+#smart_editor2 .se2_converter .active .se2_to_editor { width: 59px; height: 15px; background: url("../img/ko_KR/btn_set.png?130306") 0 -70px no-repeat; vertical-align: top; }
 
-#smart_editor2 .se2_converter .active .se2_to_html { width: 59px; height: 15px; background: url("../img/ko_KR/btn_set.png") -59px -85px no-repeat; vertical-align: top; }
+#smart_editor2 .se2_converter .active .se2_to_html { width: 59px; height: 15px; background: url("../img/ko_KR/btn_set.png?130306") -59px -85px no-repeat; vertical-align: top; }
 
-#smart_editor2 .se2_converter .active .se2_to_text { width: 60px; height: 15px; background: url("../img/ko_KR/btn_set.png") -417px -481px no-repeat; vertical-align: top; }
+#smart_editor2 .se2_converter .active .se2_to_text { width: 60px; height: 15px; background: url("../img/ko_KR/btn_set.png?130306") -417px -481px no-repeat; vertical-align: top; }
 
 /* EDITINGAREA_HTMLSRC */
 #smart_editor2 .off .ico_btn, #smart_editor2 .off .se2_more, #smart_editor2 .off .se2_more2, #smart_editor2 .off .se2_font_family, #smart_editor2 .off .se2_font_size, #smart_editor2 .off .se2_bold, #smart_editor2 .off .se2_underline, #smart_editor2 .off .se2_italic, #smart_editor2 .off .se2_tdel, #smart_editor2 .off .se2_fcolor, #smart_editor2 .off .se2_fcolor_more, #smart_editor2 .off .se2_bgcolor, #smart_editor2 .off .se2_bgcolor_more, #smart_editor2 .off .se2_left, #smart_editor2 .off .se2_center, #smart_editor2 .off .se2_right, #smart_editor2 .off .se2_justify, #smart_editor2 .off .se2_ol, #smart_editor2 .off .se2_ul, #smart_editor2 .off .se2_indent, #smart_editor2 .off .se2_outdent, #smart_editor2 .off .se2_lineheight, #smart_editor2 .off .se2_del_style, #smart_editor2 .off .se2_blockquote, #smart_editor2 .off .se2_summary, #smart_editor2 .off .se2_footnote, #smart_editor2 .off .se2_url, #smart_editor2 .off .se2_emoticon, #smart_editor2 .off .se2_character, #smart_editor2 .off .se2_table, #smart_editor2 .off .se2_find, #smart_editor2 .off .se2_spelling, #smart_editor2 .off .se2_sup, #smart_editor2 .off .se2_sub, #smart_editor2 .off .se2_text_tool_more, #smart_editor2 .off .se2_new, #smart_editor2 .off .selected_color { -ms-filter: alpha(opacity=50); opacity: .5; cursor: default; filter: alpha(opacity=50); }
@@ -140,13 +140,13 @@ body, #smart_editor2, #smart_editor2 h1, #smart_editor2 h2, #smart_editor2 h3, #
 /* TEXT_TOOLBAR : ROUNDING */
 #smart_editor2 ul li.first_child button span.tool_bg, #smart_editor2 ul li.last_child button span.tool_bg, #smart_editor2 ul li.single_child button span.tool_bg { visibility: visible; height: 21px; }
 
-#smart_editor2 ul li.first_child button span.tool_bg { left: -1px; width: 2px; background: url("../img/bg_button_left.gif") no-repeat; }
+#smart_editor2 ul li.first_child button span.tool_bg { left: -1px; width: 3px; background: url("../img/bg_button_left.gif?20121228") no-repeat; }
 
 #smart_editor2 ul li.last_child button span.tool_bg { right: 0px; _right: -1px; width: 2px; background: url("../img/bg_button_right.gif") no-repeat; }
 
 #smart_editor2 ul li.single_child { padding-right: 1px; }
 
-#smart_editor2 ul li.single_child button span.tool_bg { left: 0; background: url("../img/bg_button.gif") no-repeat; width: 22px; }
+#smart_editor2 ul li.single_child button span.tool_bg { left: 0; background: url("../img/bg_button.gif?20121228") no-repeat; width: 22px; }
 
 #smart_editor2 div.se2_text_tool ul li.hover button span.tool_bg { background-position: 0 -21px; }
 

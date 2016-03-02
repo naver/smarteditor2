@@ -19,7 +19,7 @@ nhn.husky.SE2M_Configuration.CustomObject = {
 	sAttributeOfEmpty	: 's_isempty="true"',
 	sAttributeOfOldDB	: 's_olddb="true"',
 	sBlock	 			: '<div class="_block" style="position:absolute;z-index:10000;background-color:#fff;"></div>',
-	sBlokTemplate	  	:  '<div[\\s\\S]*?class=[\'"]?_block[\'"]?[\\s\\S]*?</div>',
+	sBlockTemplate	  	:  '<div[\\s\\S]*?class=[\'"]?_block[\'"]?[\\s\\S]*?</div>',
 	sHighlight 			: '<div class="_highlight" style="position:absolute;width:58px;height:16px;line-height:0;z-index:9999"><img src="' + nhn.husky.SE2M_Configuration.LinkageDomain.sCommonStatic + '/static/img/pencil2.png" alt="" width="58" height="16" style="vertical-align:top"></div>',
 	sHighlightTemplate  :  '<div[\\s\\S]*?class=[\'"]?_highlight[\'"]?[\\s\\S]*?</div>',
 	sHtmlTemplateStartTag : '<!-- se_object_template_start -->',

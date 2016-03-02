@@ -1,4 +1,4 @@
-/**    * SmartEditor2 NHN_Library:SE2.2.1.O9186:SmartEditor2.0-OpenSource    * @version 9186    */    var nSE2Version = 9186;if(typeof window.nhn=='undefined') window.nhn = {};
+/**    * SmartEditor2 NHN_Library:SE2.3.0.O9656:SmartEditor2.0-OpenSource    * @version 9656    */    var nSE2Version = 9656;if(typeof window.nhn=='undefined') window.nhn = {};
 
 /**
  * @fileOverview This file contains a function that takes care of various operations related to find and replace
@@ -3776,6 +3776,16 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 		}
 */
 		this.oApp.exec("ADD_APP_PROPERTY", ["getToolbarButtonByUIName", jindo.$Fn(this.getToolbarButtonByUIName, this).bind()]);
+		
+		//웹접근성 
+		//이 단계에서 oAppContainer가 정의되지 않은 상태라서 this.toolbarArea변수값을 사용하지 못하고 아래와 같이 다시 정의하였음.
+		var elTool = jindo.$$.getSingle(".se2_tool");
+		this.oApp.exec("REGISTER_HOTKEY", ["esc", "FOCUS_EDITING_AREA", [], elTool]);  
+	},
+	
+	//포커스가 툴바에 있는 상태에서 단축키를 누르면 에디팅 영역으로 다시 포커스가 가도록 하는 함수. (웹접근성)  
+	$ON_FOCUS_EDITING_AREA : function() {
+		this.oApp.exec("FOCUS");
 	},
 
 	$ON_TOGGLE_TOOLBAR_ACTIVE_LAYER : function(elLayer, elBtn, sOpenCmd, aOpenArgs, sCloseCmd, aCloseArgs){
@@ -4174,24 +4184,40 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
  */
 nhn.husky.SE2M_EditingModeChanger = jindo.$Class({
 	name : "SE2M_EditingModeChanger",
+	htConversionMode : null,
 	
-	$init : function(elAppContainer){
-		this._assignHTMLElements(elAppContainer);
+	$init : function(elAppContainer, htConversionMode){
+		this._assignHTMLElements(elAppContainer, htConversionMode);
 	},
 
-	_assignHTMLElements : function(elAppContainer){
+	_assignHTMLElements : function(elAppContainer, htConversionMode){
 		elAppContainer = jindo.$(elAppContainer) || document;
 
 		//@ec[
 		this.elWYSIWYGButton = jindo.$$.getSingle("BUTTON.se2_to_editor", elAppContainer);
 		this.elHTMLSrcButton = jindo.$$.getSingle("BUTTON.se2_to_html", elAppContainer);
-		this.elTEXTButton = jindo.$$.getSingle("BUTTON.se2_to_text", elAppContainer);		
+		this.elTEXTButton = jindo.$$.getSingle("BUTTON.se2_to_text", elAppContainer);
+		this.elModeToolbar = jindo.$$.getSingle("DIV.se2_conversion_mode", elAppContainer);		
 		//@ec]
 
 		this.welWYSIWYGButtonLi = jindo.$Element(this.elWYSIWYGButton.parentNode);
 		this.welHTMLSrcButtonLi = jindo.$Element(this.elHTMLSrcButton.parentNode);
-		this.welTEXTButtonLi = jindo.$Element(this.elTEXTButton.parentNode);		
-
+		this.welTEXTButtonLi = jindo.$Element(this.elTEXTButton.parentNode);
+		
+		// [SMARTEDITORSUS-906] Editing Mode 사용 여부 처리 (true:사용함/ false:사용하지 않음)
+		if(typeof(htConversionMode) === 'undefined' || (typeof(htConversionMode.bUseModeChanger) === 'undefined' || htConversionMode.bUseModeChanger === true)) {
+			this.elWYSIWYGButton.style.display = 'block';
+			this.elHTMLSrcButton.style.display = 'block';
+			this.elTEXTButton.style.display = 'block';
+		}else{
+			if(typeof(htConversionMode.bUseVerticalResizer) !== 'undefined' || htConversionMode.bUseVerticalResizer === false) {
+				this.elModeToolbar.style.display = 'none';
+			}else{
+				this.elWYSIWYGButton.style.display = 'none';
+				this.elHTMLSrcButton.style.display = 'none';
+				this.elTEXTButton.style.display = 'none';
+			}
+		}
 	},
 	
 	$ON_MSG_APP_READY : function(){
@@ -4501,6 +4527,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		this.oApp.exec("REGISTER_CONVERTERS", []);
 		this.oApp.exec("CHANGE_EDITING_MODE", [this.sDefaultEditingMode, true]);
 		this.oApp.exec("LOAD_CONTENTS_FIELD", [false]);
+		this.oApp.exec("REGISTER_HOTKEY", ["esc", "CLOSE_LAYER_POPUP", [], document]); 
 		
 		if(!!this.fOnBeforeUnload){
 			window.onbeforeunload = this.fOnBeforeUnload;
@@ -4515,6 +4542,15 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		}
 	},
 	
+	$ON_CLOSE_LAYER_POPUP : function() {
+         this.oApp.exec("ENABLE_ALL_UI");                // 모든 UI 활성화.
+         this.oApp.exec("DESELECT_UI", ["helpPopup"]);       
+         this.oApp.exec("HIDE_ALL_DIALOG_LAYER", []);
+         this.oApp.exec("HIDE_EDITING_AREA_COVER");              // 편집 영역 활성화.
+
+         this.oApp.exec("FOCUS");
+	},  
+ 
 	$AFTER_MSG_APP_READY : function(){
 		this.oApp.exec("UPDATE_RAW_CONTENTS");
 		
@@ -4923,9 +4959,10 @@ nhn.husky.SE_EditingAreaVerticalResizer = jindo.$Class({
 	sCookieNotice : "bHideResizeNotice",
 	
 	nEditingAreaMinHeight : null,	// [SMARTEDITORSUS-677] 편집 영역의 최소 높이
-
-	$init : function(elAppContainer){
-		this._assignHTMLElements(elAppContainer);
+	htConversionMode : null,
+	
+	$init : function(elAppContainer, htConversionMode){
+		this._assignHTMLElements(elAppContainer, htConversionMode);
 	},
 
 	$ON_MSG_APP_READY : function(){
@@ -4996,10 +5033,11 @@ nhn.husky.SE_EditingAreaVerticalResizer = jindo.$Class({
 		this.oResizeGrip.focus();
 	},
 	
-	_assignHTMLElements : function(elAppContainer){
+	_assignHTMLElements : function(elAppContainer, htConversionMode){
 		//@ec[
 		this.oResizeGrip = jindo.$$.getSingle("BUTTON.husky_seditor_editingArea_verticalResizer", elAppContainer);
 		this.elNoticeLayer = jindo.$$.getSingle("DIV.husky_seditor_resize_notice", elAppContainer);
+		this.elModeToolbar = jindo.$$.getSingle("DIV.se2_conversion_mode", elAppContainer);
 		//@ec]
 		
 		this.welConversionMode = jindo.$Element(this.oResizeGrip.parentNode);
@@ -5007,6 +5045,17 @@ nhn.husky.SE_EditingAreaVerticalResizer = jindo.$Class({
 		if(!!this.elNoticeLayer){
 			this.welNoticeLayer = jindo.$Element(this.elNoticeLayer);
 			this.elCloseLayerBtn = jindo.$$.getSingle("BUTTON.bt_clse", this.elNoticeLayer);
+		}
+		
+		// [SMARTEDITORSUS-906] Resizbar 사용 여부 처리 (true:사용함/ false:사용하지 않음)
+		if(typeof(htConversionMode) === 'undefined' || typeof(htConversionMode.bUseVerticalResizer) === 'undefined' || htConversionMode.bUseVerticalResizer === true) {
+			this.oResizeGrip.style.display = 'block';
+		}else{
+			if(typeof(htConversionMode.bUseModeChanger) !== 'undefined' && htConversionMode.bUseModeChanger === false) {
+				this.elModeToolbar.style.display = 'none';
+			}else{
+				this.oResizeGrip.style.display = 'none';
+			}
 		}
 	},
 		
@@ -5592,7 +5641,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			fHandlerSuccess = jindo.$Fn(this.initIframe, this).bind(),
 			fHandlerFail =jindo.$Fn(function(){this.iframe.src = sIFrameSrc;}, this).bind();
 			
-		if(!oAgent.ie || oAgent.version >=9){
+		if(!oAgent.ie || (oAgent.version >=9 && !!document.addEventListener)){
 			iframe.addEventListener("load", fHandlerSuccess, false);
 			iframe.addEventListener("error", fHandlerFail, false);
 		}else{
@@ -6751,7 +6800,7 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 	onIrToDB : function(sHTML){
 		var sContents = sHTML,
 			rxRegEx = /<br(\s[^>]*)?\/?>((?:<\/span>)?<\/p>)/gi,
-			rxRegExWhitespace = /(<p[^>]*>)(?:\s[^>]*)(<\/p>)/gi;
+			rxRegExWhitespace = /(<p[^>]*>)(?:[\s^>]*)(<\/p>)/gi;
 			
 		sContents = sContents.replace(rxRegEx, "&nbsp;$2");
 		sContents = sContents.replace(rxRegExWhitespace, "$1&nbsp;$2");
@@ -6811,7 +6860,7 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		
 		elNode = this._getStyleNode(elWrapper);
 		
-		if(elNode.innerHTML == ""){
+		if(elNode.innerHTML == "" && elNode.nodeName.toLowerCase() != "param"){
 			elNode.innerHTML = unescape("%uFEFF");
 		}
 		
@@ -7734,6 +7783,154 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		e.stop();
 	}
  }).extend(jindo.Component);
+//{
+/**
+ * @fileOverview This file contains Husky plugin that takes care of Accessibility about SmartEditor2.
+ * @name hp_SE2M_Accessibility.js
+ */
+nhn.husky.SE2M_Accessibility = jindo.$Class({
+	name : "SE2M_Accessibility",
+	htAccessOption : nhn.husky.SE2M_Configuration.SE2M_Accessibility,
+	
+	/*
+	 * elAppContainer : mandatory
+	 * sLocale, sEditorType : optional
+	 */
+	$init: function(elAppContainer, sLocale, sEditorType) {
+		this._assignHTMLElements(elAppContainer);
+		
+        if(!!sLocale){
+           this.sLang = sLocale;
+        }   
+            
+        if(!!sEditorType){
+            this.sType = sEditorType;
+        }   
+	},          
+
+	_assignHTMLElements : function(elAppContainer){
+		var oAppContainer = elAppContainer;
+		
+		this.elHelpPopupLayer = jindo.$$.getSingle("DIV.se2_accessibility", oAppContainer);
+		this.welHelpPopupLayer = jindo.$Element(this.elHelpPopupLayer);	
+
+		//close buttons
+		this.oCloseButton = jindo.$$.getSingle("BUTTON.se2_close", this.elHelpPopupLayer);
+		this.oCloseButton2 = jindo.$$.getSingle("BUTTON.se2_close2", this.elHelpPopupLayer);
+		
+		this.nDefaultTop = 150;
+	},
+
+	
+	$ON_MSG_APP_READY : function(){
+		this.oApp.exec("REGISTER_HOTKEY", ["alt+F10", "FOCUS_TOOLBAR_AREA", []]); 
+        this.oApp.exec("REGISTER_HOTKEY", ["alt+COMMA", "FOCUS_BEFORE_ELEMENT", []]);
+        this.oApp.exec("REGISTER_HOTKEY", ["alt+PERIOD", "FOCUS_NEXT_ELEMENT", []]);
+
+        if ((this.sType == 'basic' || this.sType == 'light') && (this.sLang != 'ko_KR'))  {
+        	 	//do nothing
+                return;
+        } else {
+                this.oApp.exec("REGISTER_HOTKEY", ["alt+0", "OPEN_HELP_POPUP", []]);  
+                this.oApp.exec("REGISTER_HOTKEY", ["esc", "CLOSE_HELP_POPUP", []]);  
+        }   
+	},
+	
+	$LOCAL_BEFORE_FIRST : function(sMsg){
+		jindo.$Fn(jindo.$Fn(this.oApp.exec, this.oApp).bind("CLOSE_HELP_POPUP", [this.oCloseButton]), this).attach(this.oCloseButton, "click");
+		jindo.$Fn(jindo.$Fn(this.oApp.exec, this.oApp).bind("CLOSE_HELP_POPUP", [this.oCloseButton2]), this).attach(this.oCloseButton2, "click");
+	
+		//레이어의 이동 범위 설정.
+		var elIframe = this.oApp.getWYSIWYGWindow().frameElement;
+        this.htOffsetPos = jindo.$Element(elIframe).offset();
+        this.nEditorWidth = elIframe.offsetWidth;
+
+        this.htInitialPos = this.welHelpPopupLayer.offset();
+        var htScrollXY = this.oApp.oUtils.getScrollXY();
+
+        this.nLayerWidth = 590;   
+        this.nLayerHeight = 480;   		
+
+        this.htTopLeftCorner = {x:parseInt(this.htOffsetPos.left, 10), y:parseInt(this.htOffsetPos.top, 10)};
+        //[css markup] left:11 top:74로 되어 있음
+	},
+
+	
+	//SE2M_Configuration_General 에서 지정한 에디터 영역 이후의 엘레먼트로 포커스가 이동하도록 한다. 
+	$ON_FOCUS_NEXT_ELEMENT : function() {
+		if (!!this.htAccessOption.sNextElementId) {
+			var sNextElementId = this.htAccessOption.sNextElementId;
+			if (document.getElementById(sNextElementId)) {
+				document.getElementById(sNextElementId).focus();
+			} 
+		}
+	},
+
+	//SE2M_Configuration_General에서 지정한 에디터 영역 이전의 엘레먼트로 포커스가 이동하도록 한다. 
+	$ON_FOCUS_BEFORE_ELEMENT : function() {
+		if (!!this.htAccessOption.sBeforeElementId) {
+			var sBeforeElementId = this.htAccessOption.sBeforeElementId;
+			if (document.getElementById(sBeforeElementId)) {
+				document.getElementById(sBeforeElementId).focus();
+			} 
+		}
+	},
+	
+	$ON_FOCUS_TOOLBAR_AREA : function(){
+		this.oButton = jindo.$$.getSingle("BUTTON.se2_font_family", this.oAppContainer);
+		
+		//IE7에서는 ALT+F10 실행했을 때 포커스가 에디팅 영역에도 가는 현상이 생기므로 브라우저 버전 체크해서 window.focus 넣어줌.   
+		if(jindo.$Agent().navigator().ie && jindo.$Agent().navigator().version == 7) {
+            window.focus();
+		}
+		this.oButton.focus();
+	},
+	
+	$ON_OPEN_HELP_POPUP : function() {
+        this.oApp.exec("DISABLE_ALL_UI", [{aExceptions: ["se2_accessibility"]}]);
+        this.oApp.exec("SHOW_EDITING_AREA_COVER");
+        this.oApp.exec("SELECT_UI", ["se2_accessibility"]);
+
+        this.elHelpPopupLayer.style.top = this.nDefaultTop+"px";
+        this.nCalcX = this.htTopLeftCorner.x + this.oApp.getEditingAreaWidth() - this.nLayerWidth;
+        this.nCalcY = this.htTopLeftCorner.y;
+
+        this.oApp.exec("SHOW_DIALOG_LAYER", [this.elHelpPopupLayer, {
+                elHandle: this.elTitle,
+                nMinX : this.htTopLeftCorner.x + 0,
+                nMinY : this.nDefaultTop + 77,
+                nMaxX : this.nCalcX,
+                nMaxY : this.nCalcY
+        }]);
+	
+        // offset (nTop:Numeric,  nLeft:Numeric)
+        this.welHelpPopupLayer.offset(this.nCalcY , (this.nCalcX)/2);
+
+        //[SMARTEDITORSUS-1327] IE에서 포커스 이슈로 IE에 대해서만 window.focus실행함. 
+        if(jindo.$Agent().navigator().ie) {
+        	window.focus();
+        }
+        
+		var self = this;
+		setTimeout(function(){
+			try{
+				self.oCloseButton2.focus();
+			}catch(e){
+			}
+		},500);
+	},
+	
+	$ON_CLOSE_HELP_POPUP : function() {
+		this.oApp.exec("ENABLE_ALL_UI");		// 모든 UI 활성화.
+		this.oApp.exec("DESELECT_UI", ["helpPopup"]);  
+		this.oApp.exec("HIDE_ALL_DIALOG_LAYER", []);
+		this.oApp.exec("HIDE_EDITING_AREA_COVER");		// 편집 영역 활성화.
+		
+		this.oApp.exec("FOCUS");
+	}
+	
+});
+//}
 //{
 /**
  * @fileOverview This file contains Husky plugin that takes care of changing the background color
@@ -9662,69 +9859,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 	},
 	
 	$ON_REGISTER_CONVERTERS : function(){
-		this.oApp.exec("ADD_CONVERTER_DOM", ["IR_TO_DB", jindo.$Fn(function(oTmpNode){
-			//저장 시점에 자동 링크를 위한 함수.	
-			var oTmpRange = this.oApp.getEmptySelection();
-			var elFirstNode = oTmpRange._getFirstRealChild(oTmpNode);
-			var elLastNode = oTmpRange._getLastRealChild(oTmpNode);
-			var waAllNodes = jindo.$A(oTmpRange._getNodesBetween(elFirstNode, elLastNode));
-			var aAllTextNodes = waAllNodes.filter(function(elNode){return (elNode && elNode.nodeType === 3);}).$value();
-			var a = aAllTextNodes;
-			
-			/*
-			// 텍스트 검색이 용이 하도록 끊어진 텍스트 노드가 있으면 합쳐줌. (화면상으로 ABC라고 보이나 상황에 따라 실제 2개의 텍스트 A, BC로 이루어져 있을 수 있음. 이를 ABC 하나의 노드로 만들어 줌.)
-			// 문제 발생 가능성에 비해서 퍼포먼스나 사이드 이펙트 가능성 높아 일단 주석
-			var aCleanTextNodes = [];
-			for(var i=0, nLen=aAllTextNodes.length; i<nLen; i++){
-				if(a[i].nextSibling && a[i].nextSibling.nodeType === 3){
-					a[i].nextSibling.nodeValue += a[i].nodeValue;
-					a[i].parentNode.removeChild(a[i]);
-				}else{
-					aCleanTextNodes[aCleanTextNodes.length] = a[i];
-				}
-			}
-			*/
-			var aCleanTextNodes = aAllTextNodes;
-			
-			// IE에서 PRE를 제외한 다른 태그 하위에 있는 텍스트 노드는 줄바꿈 등의 값을 변질시킴
-			var elTmpDiv = this.oApp.getWYSIWYGDocument().createElement("DIV");
-			var elParent, bAnchorFound;
-			var sTmpStr = "@"+(new Date()).getTime()+"@";
-			var rxTmpStr = new RegExp(sTmpStr, "g");
-			for(var i=0, nLen=aAllTextNodes.length; i<nLen; i++){
-				// Anchor가 이미 걸려 있는 텍스트이면 링크를 다시 걸지 않음.
-				elParent = a[i].parentNode;
-				bAnchorFound = false;
-				while(elParent){
-					if(elParent.tagName === "A" || elParent.tagName === "PRE"){
-						bAnchorFound = true;
-						break;
-					}
-					elParent = elParent.parentNode;
-				}
-				if(bAnchorFound){
-					continue;
-				}
-				// www.또는 http://으로 시작하는 텍스트에 링크 걸어 줌
-				// IE에서 텍스트 노드 앞쪽의 스페이스나 주석등이 사라지는 현상이 있어 sTmpStr을 앞에 붙여줌.
-				elTmpDiv.innerHTML = "";
-				elTmpDiv.appendChild(a[i].cloneNode(true));
-
-				// IE에서 innerHTML를 이용 해 직접 텍스트 노드 값을 할당 할 경우 줄바꿈등이 깨질 수 있어, 텍스트 노드로 만들어서 이를 바로 append 시켜줌
-				elTmpDiv.innerHTML = (sTmpStr+elTmpDiv.innerHTML).replace(/(&nbsp|\s)?(((?!http:\/\/)www\.(?:(?!\&nbsp;|\s|"|').)+)|(http:\/\/(?:(?!&nbsp;|\s|"|').)+))/ig, this._generateAutoLink);
-
-				// innerHTML 내에 텍스트가 있을 경우 insert 시에 주변 텍스트 노드와 합쳐지는 현상이 있어 div로 위치를 먼저 잡고 하나씩 삽입
-				a[i].parentNode.insertBefore(elTmpDiv, a[i]);
-				a[i].parentNode.removeChild(a[i]);
-				while(elTmpDiv.firstChild){
-					elTmpDiv.parentNode.insertBefore(elTmpDiv.firstChild, elTmpDiv);
-				}
-				elTmpDiv.parentNode.removeChild(elTmpDiv);
-//				alert(a[i].nodeValue);
-			}
-			oTmpNode.innerHTML = oTmpNode.innerHTML.replace(rxTmpStr, "");
-//alert(oTmpNode.innerHTML);
-		}, this).bind()]);
+		this.oApp.exec("ADD_CONVERTER_DOM", ["IR_TO_DB", jindo.$Fn(this.irToDb, this).bind()]);
 	},
 	
 	$LOCAL_BEFORE_FIRST : function(sMsg){
@@ -9971,7 +10106,78 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 			oEvent.stop();
 		}
 	},
-	
+
+	irToDb : function(oTmpNode){
+		//저장 시점에 자동 링크를 위한 함수.
+		//[SMARTEDITORSUS-1207][IE][메일] object 삽입 후 글을 저장하면 IE 브라우저가 죽어버리는 현상   
+		//원인 : 확인 불가. IE 저작권 관련 이슈로 추정
+		//해결 : contents를 가지고 있는 div 태그를 이 함수 내부에서 복사하여 수정 후 call by reference로 넘어온 변수의 innerHTML을 변경	
+		var oCopyNode = oTmpNode.cloneNode(true);
+		var oTmpRange = this.oApp.getEmptySelection();
+		var elFirstNode = oTmpRange._getFirstRealChild(oCopyNode);
+		var elLastNode = oTmpRange._getLastRealChild(oCopyNode);
+		var waAllNodes = jindo.$A(oTmpRange._getNodesBetween(elFirstNode, elLastNode));
+		var aAllTextNodes = waAllNodes.filter(function(elNode){return (elNode && elNode.nodeType === 3);}).$value();
+		var a = aAllTextNodes;
+		
+		/*
+		// 텍스트 검색이 용이 하도록 끊어진 텍스트 노드가 있으면 합쳐줌. (화면상으로 ABC라고 보이나 상황에 따라 실제 2개의 텍스트 A, BC로 이루어져 있을 수 있음. 이를 ABC 하나의 노드로 만들어 줌.)
+		// 문제 발생 가능성에 비해서 퍼포먼스나 사이드 이펙트 가능성 높아 일단 주석
+		var aCleanTextNodes = [];
+		for(var i=0, nLen=aAllTextNodes.length; i<nLen; i++){
+			if(a[i].nextSibling && a[i].nextSibling.nodeType === 3){
+				a[i].nextSibling.nodeValue += a[i].nodeValue;
+				a[i].parentNode.removeChild(a[i]);
+			}else{
+				aCleanTextNodes[aCleanTextNodes.length] = a[i];
+			}
+		}
+		*/
+		var aCleanTextNodes = aAllTextNodes;
+		
+		// IE에서 PRE를 제외한 다른 태그 하위에 있는 텍스트 노드는 줄바꿈 등의 값을 변질시킴
+		var elTmpDiv = this.oApp.getWYSIWYGDocument().createElement("DIV");
+		var elParent, bAnchorFound;
+		var sTmpStr = "@"+(new Date()).getTime()+"@";
+		var rxTmpStr = new RegExp(sTmpStr, "g");
+		for(var i=0, nLen=aAllTextNodes.length; i<nLen; i++){
+			// Anchor가 이미 걸려 있는 텍스트이면 링크를 다시 걸지 않음.
+			elParent = a[i].parentNode;
+			bAnchorFound = false;
+			while(elParent){
+				if(elParent.tagName === "A" || elParent.tagName === "PRE"){
+					bAnchorFound = true;
+					break;
+				}
+				elParent = elParent.parentNode;
+			}
+			if(bAnchorFound){
+				continue;
+			}
+			// www.또는 http://으로 시작하는 텍스트에 링크 걸어 줌
+			// IE에서 텍스트 노드 앞쪽의 스페이스나 주석등이 사라지는 현상이 있어 sTmpStr을 앞에 붙여줌.
+			elTmpDiv.innerHTML = "";
+			elTmpDiv.appendChild(a[i].cloneNode(true));
+
+			// IE에서 innerHTML를 이용 해 직접 텍스트 노드 값을 할당 할 경우 줄바꿈등이 깨질 수 있어, 텍스트 노드로 만들어서 이를 바로 append 시켜줌
+			elTmpDiv.innerHTML = (sTmpStr+elTmpDiv.innerHTML).replace(/(&nbsp|\s)?(((?!http:\/\/)www\.(?:(?!\&nbsp;|\s|"|').)+)|(http:\/\/(?:(?!&nbsp;|\s|"|').)+))/ig, this._generateAutoLink);
+
+			// innerHTML 내에 텍스트가 있을 경우 insert 시에 주변 텍스트 노드와 합쳐지는 현상이 있어 div로 위치를 먼저 잡고 하나씩 삽입
+			a[i].parentNode.insertBefore(elTmpDiv, a[i]);
+			a[i].parentNode.removeChild(a[i]);
+			while(elTmpDiv.firstChild){
+				elTmpDiv.parentNode.insertBefore(elTmpDiv.firstChild, elTmpDiv);
+			}
+			elTmpDiv.parentNode.removeChild(elTmpDiv);
+//			alert(a[i].nodeValue);
+		}
+		elTmpDiv = oTmpRange = elFirstNode = elLastNode = waAllNodes = aAllTextNodes = a = aCleanTextNodes = elParent = null;
+		oCopyNode.innerHTML = oCopyNode.innerHTML.replace(rxTmpStr, "");
+		oTmpNode.innerHTML = oCopyNode.innerHTML;
+		oCopyNode = null;
+//alert(oTmpNode.innerHTML);
+	},
+
 	_getSelectedNode : function(){
 		var aNodes = this.oSelection.getNodes();
 		
@@ -16892,8 +17098,18 @@ nhn.husky.PopUpManager.getFunc = function(oOpenWin, sFunc) {
 nhn.husky.SE2M_ImgSizeRatioKeeper = jindo.$Class({
 	name : "SE2M_ImgSizeRatioKeeper",
 	
+	$init : function(elAppContainer){
+		this.elAppContainer = elAppContainer;
+	},
+	
 	$LOCAL_BEFORE_FIRST : function(){
 		this.wfnResizeEnd = jindo.$Fn(this._onResizeEnd, this);
+		this.bIE = jindo.$Agent().navigator().ie;
+		this.elCheckImgAutoAdjust = jindo.$$.getSingle(".se2_srate", this.elAppContainer);
+		if(!this.bIE){
+			this.$ON_EVENT_EDITING_AREA_KEYDOWN = undefined;
+			this.$ON_EVENT_EDITING_AREA_MOUSEUP = undefined;
+		}
 	},
 
 	$ON_EVENT_EDITING_AREA_KEYDOWN : function(){
@@ -16936,15 +17152,17 @@ nhn.husky.SE2M_ImgSizeRatioKeeper = jindo.$Class({
 		nAfterWidth = this.elImg.clientWidth - (nborder*2);
 		nAfterheight = this.elImg.clientHeight - (nborder*2);
 		
-		nWidthDiff = nAfterWidth -  this.nWidth;
-		
-		//미세한 차이에 크기 변화는 무시. 
-		if( -1 <= nWidthDiff && nWidthDiff <= 1){
-			nRatio = this.nWidth/this.nHeight;
-			nAfterWidth = nRatio * nAfterheight;
-		}else{
-			nRatio = this.nHeight/this.nWidth;
-			nAfterheight = nRatio * nAfterWidth;
+		if(this.elCheckImgAutoAdjust.checked){
+			nWidthDiff = nAfterWidth -  this.nWidth;
+			
+			//미세한 차이에 크기 변화는 무시. 
+			if( -1 <= nWidthDiff && nWidthDiff <= 1){
+				nRatio = this.nWidth/this.nHeight;
+				nAfterWidth = nRatio * nAfterheight;
+			}else{
+				nRatio = this.nHeight/this.nWidth;
+				nAfterheight = nRatio * nAfterWidth;
+			}
 		}
 		
 		this.elImg.style.width = nAfterWidth + "px";
@@ -17869,6 +18087,7 @@ nhn.husky.StringConverterManager = jindo.$Class({
 	$init : function(){
 		this.oConverters = {};
 		this.oConverters_DOM = {};
+		this.oAgent = jindo.$Agent().navigator(); 
 	},
 	
 	$BEFORE_MSG_APP_READY : function(){
@@ -17894,7 +18113,6 @@ nhn.husky.StringConverterManager = jindo.$Class({
 		aConverters = this.oConverters_DOM[sRuleName];
 		if(aConverters){
 			var elContentsHolder = oDocument.createElement("DIV");
-			
 			elContentsHolder.innerHTML = sContents;
 			
 			for(var i=0; i<aConverters.length; i++){
@@ -17902,7 +18120,12 @@ nhn.husky.StringConverterManager = jindo.$Class({
 			}
 			sContents = elContentsHolder.innerHTML; 
 			// 내용물에 EMBED등이 있을 경우 IE에서 페이지 나갈 때 권한 오류 발생 할 수 있어 명시적으로 노드 삭제.
-			elContentsHolder.innerHTML = "";
+			
+			if(!!elContentsHolder.parentNode){
+				elContentsHolder.parentNode.removeChild(elContentsHolder);
+			}
+			elContentsHolder = null;
+			
 			
 			//IE의 경우, sContents를 innerHTML로 넣는 경우 string과 <p>tag 사이에 '\n\'개행문자를 넣어준다. 
 			if( jindo.$Agent().navigator().ie ){

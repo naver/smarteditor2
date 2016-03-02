@@ -46,3 +46,15 @@ nhn.husky.SE2M_Configuration.LinkageDomain = {
 	sCommonStatic : 'http://static.se2.naver.com',
 	sCommonImage : 'http://images.se2.naver.com'
 };
+
+
+/**
+ * [웹접근성]
+ * 단축키 ALT+,  ALT+. 을 이용하여 스마트에디터 영역의 이전/이후 요소로 이동할 수 있다.
+ * sBeforeElementId : 스마트에디터 영역 이전 요소의 id
+ * sNextElementId : 스마트에디터 영역 이후 요소의 id 
+ */
+nhn.husky.SE2M_Configuration.SE2M_Accessibility = {
+    sBeforeElementId : '',
+    sNextElementId : ''
+};

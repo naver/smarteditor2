@@ -234,7 +234,7 @@
 		}
 		
 		if(typeof ev.dataTransfer.files == 'undefined'){
-			alert("HTML5 지원이 정상적으로 이루어지지 않는 브라우저입니다.");
+			alert("HTML5를 지원하지 않는 브라우저입니다.");
 		}else{
 			//변수 선언
 			var wel,
@@ -245,7 +245,7 @@
 			//초기화	
 			files = ev.dataTransfer.files;
 			nCount = files.length;
-			
+						
 			if (!!files && nCount === 0){
 				//파일이 아닌, 웹페이지에서 이미지를 드래서 놓는 경우.
 				alert("정상적인 첨부방식이 아닙니다.");
@@ -334,7 +334,7 @@
     	var tempFile,
     		sUploadURL;
     	
-    	sUploadURL= 'http://test.naver.com/popup/quick_photo/FileUploader_html5.php'; 	//upload URL
+    	sUploadURL= 'file_uploader_html5.php'; 	//upload URL
     	
     	//파일을 하나씩 보내고, 결과를 받음.
     	for(var j=0, k=0; j < nImageInfoCnt; j++) {
@@ -452,7 +452,7 @@
 	 * @return
 	 */
 	function onAjaxError (){
-		alert("[가이드]사진 업로더할 서버URL셋팅이 필요합니다.-onAjaxError"); //설치 가이드 안내 문구임. 실 서비스에서는 삭제. 
+		alert("[가이드]사진 업로더할 서버URL셋팅이 필요합니다.-onAjaxError");
 	}
 
  	/**
@@ -472,7 +472,7 @@
  	 */
  	function callFileUploader (){
  		oFileUploader = new jindo.FileUploader(jindo.$("uploadInputBox"),{
- 			sUrl  : 'http://test.naver.com/Official-trunk/workspace/popup/quick_photo/FileUploader.php',	//샘플 URL입니다.
+ 			sUrl  : location.href.replace(/\/[^\/]*$/, '') + '/file_uploader.php',	//샘플 URL입니다.
  	        sCallback : location.href.replace(/\/[^\/]*$/, '') + '/callback.html',	//업로드 이후에 iframe이 redirect될 콜백페이지의 주소
  	    	sFiletype : "*.jpg;*.png;*.bmp;*.gif",						//허용할 파일의 형식. ex) "*", "*.*", "*.jpg", 구분자(;)	
  	    	sMsgNotAllowedExt : 'JPG, GIF, PNG, BMP 확장자만 가능합니다',	//허용할 파일의 형식이 아닌경우에 띄워주는 경고창의 문구
@@ -508,7 +508,7 @@
  	    		//버튼 비활성화
  	    		goReadyMode();
  	    		oFileUploader.reset();
- 	    		//window.close();
+ 	    		window.close();
  	    	},
  	    	error : function(oCustomEvent) {
  	    		//업로드가 실패했을 때 발생
@@ -531,12 +531,11 @@
 	   	if(bSupportDragAndDropAPI){
 	   		removeEvent();
 	   	}
-	 //  	window.close();
+	   	window.close();
     }
     
 	window.onload = function(){
   		checkDragAndDropAPI();
-  		
   		
   		if(bSupportDragAndDropAPI){
   			$Element("pop_container2").hide();
