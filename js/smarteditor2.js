@@ -1,4 +1,4 @@
-/**    * SmartEditor2 NHN_Library:SE2.3.5.O10318:SmartEditor2.0-OpenSource    * @version 10318    */    var nSE2Version = 10318;if(typeof window.nhn=='undefined') window.nhn = {};
+/**    * SmartEditor2 NHN_Library:SE2.3.6.O10445:SmartEditor2.0-OpenSource    * @version 10445    */    var nSE2Version = 10445;if(typeof window.nhn=='undefined') window.nhn = {};
 
 /**
  * @fileOverview This file contains a function that takes care of various operations related to find and replace
@@ -5209,8 +5209,8 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 		}
 	},
 	
-	$AFTER_CHANGE_EDITING_MODE : function(sMode) {
-		if (sMode == this.sMode) {					
+	$AFTER_CHANGE_EDITING_MODE : function(sMode, bNoFocus) {
+		if (sMode == this.sMode && !bNoFocus) { 
 			var o = new TextRange(this.elEditingArea);
 			o.setSelection(0, 0);
 			
@@ -5419,8 +5419,8 @@ nhn.husky.SE_EditingArea_TEXT = jindo.$Class({
 		}
 	},
 	
-	$AFTER_CHANGE_EDITING_MODE : function(sMode) {
-		if (sMode == this.sMode) {					
+	$AFTER_CHANGE_EDITING_MODE : function(sMode, bNoFocus) {
+		if (sMode == this.sMode && !bNoFocus) {
 			var o = new TextRange(this.elEditingArea);
 			o.setSelection(0, 0);
 		}
@@ -7142,7 +7142,9 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			elLowerNode.innerHTML = unescape("%uFEFF");
 		}
 					
-		elParent = nhn.husky.SE2M_Utils.findAncestorByTagName("P", elLowerNode);
+		var elParentP = nhn.husky.SE2M_Utils.findAncestorByTagName("P", elLowerNode);
+		var elParentLi = nhn.husky.SE2M_Utils.findAncestorByTagName("LI", elLowerNode);
+		elParent = elParentP || elParentLi;
 		
 		oSelection.selectNodeContents(elLowerNode);
 		
@@ -10096,7 +10098,31 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		this.oApp.exec("DESELECT_UI", ["hyperlink"]);
 	},
 	
+	_validateTarget : function() {
+		var oNavigator = jindo.$Agent().navigator(),
+			bReturn = true;
+		
+		if(oNavigator.ie) {
+			jindo.$A(this.oSelection.getNodes(true)).forEach(function(elNode, index, array){
+				if(!!elNode && elNode.nodeType == 1 && elNode.tagName.toLowerCase() == "iframe" && elNode.getAttribute('s_type').toLowerCase() == "db") {
+					bReturn = false;
+					jindo.$A.Break();
+				}
+				jindo.$A.Continue();
+			}, this);
+		}
+		
+		return bReturn;
+	},
+	
 	$ON_APPLY_HYPERLINK : function(){
+		
+		// [SMARTEDITORSUS-1451] 글감에 링크를 적용하지 않도록 처리
+		if(!this._validateTarget()){
+			alert(this.oApp.$MSG("SE_Hyperlink.invalidTarget"));
+			return;
+		}
+		
 		var sURL = this.oLinkInput.value;
 		if(!/^((http|https|ftp|mailto):(?:\/\/)?)/.test(sURL)){
 			sURL = "http://"+sURL;
@@ -10109,14 +10135,14 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		this.oApp.exec("IE_FOCUS", []);
 		
 		if(oAgent.ie){sBlank = "<span style=\"text-decoration:none;\">&nbsp;</span>";}
-		
+
 		if(this._validateURL(sURL)){
 			//if(this.oCbNewWin.checked){
-			if(false){
-				sTarget = "_blank";
-			}else{
+			// if(false){
+				// sTarget = "_blank";
+			// }else{
 				sTarget = "_self";
-			}
+			//}
 			
 			this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", ["HYPERLINK", {sSaveTarget:(this.bModify ? "A" : null)}]);
 			
@@ -10144,11 +10170,11 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 				
 				// createLink 이후에 이번에 생성된 A 태그를 찾을 수 있도록 nSession을 포함하는 더미 링크를 만든다.
 				var nSession = Math.ceil(Math.random()*10000);
-				
+
 				if(sURL == ""){	// unlink
 					this.oApp.exec("EXECCOMMAND", ["unlink"]);
 				}else{			// createLink
-					if(this._isExceptional()){	
+					if(this._isExceptional()){
 						this.oApp.exec("EXECCOMMAND", ["unlink", false, "", {bDontAddUndoHistory: true}]);
 						
 						var sTempUrl = "<a href='" + sURL + "' target="+sTarget+">";
