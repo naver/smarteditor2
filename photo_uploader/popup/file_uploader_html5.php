@@ -10,7 +10,7 @@
 	}
 	
 	$file = new stdClass;
-	$file->name = rawurldecode($headers['file_name']);
+	$file->name = str_replace("\0", "", rawurldecode($headers['file_name']));
 	$file->size = $headers['file_size'];
 	$file->content = file_get_contents("php://input");
 	
@@ -30,7 +30,7 @@
 		if(file_put_contents($newPath, $file->content)) {
 			$sFileInfo .= "&bNewLine=true";
 			$sFileInfo .= "&sFileName=".$file->name;
-			$sFileInfo .= "&sFileURL=/smarteditor/demo/upload/".$file->name;
+			$sFileInfo .= "&sFileURL=upload/".$file->name;
 		}
 		
 		echo $sFileInfo;

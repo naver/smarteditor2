@@ -97,7 +97,7 @@
 
 #smart_editor2 .se2_l_line_height button { width: 105px; height: 19px; margin: 0; padding: 3px 0 2px 0px; background: none; text-align: left; }
 
-#smart_editor2 .se2_l_line_height button span { visibility: visible; overflow: visible; position: relative; width: -13auto; height: auto; margin: 0; padding: 0 0 0 15px; font-size: 12px; line-height: normal; color: #373737; }
+#smart_editor2 .se2_l_line_height button span { visibility: visible; overflow: visible; position: relative; width: auto; height: auto; margin: 0; padding: 0 0 0 15px; font-size: 12px; line-height: normal; color: #373737; }
 
 #smart_editor2 .se2_l_line_height li button.active span { background: url("../img/icon_set.gif") 5px -30px no-repeat; }
 

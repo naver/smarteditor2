@@ -42,6 +42,7 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_HTMLSrc(oHTMLSrc));					// Tab HTML 모드
 	oEditor.registerPlugin(new nhn.husky.SE_EditingArea_TEXT(oTextArea));					// Tab Text 모드
 	oEditor.registerPlugin(new nhn.husky.SE2M_EditingModeChanger(elAppContainer, htConversionMode));	// 모드간 변경(Editor, HTML, Text)
+	oEditor.registerPlugin(new nhn.husky.SE_PasteHandler()); 								// WYSIWYG Paste Handler
 	
 	oEditor.registerPlugin(new nhn.husky.HuskyRangeManager(oWYSIWYGIFrame));
 	oEditor.registerPlugin(new nhn.husky.Utils());
@@ -80,10 +81,6 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 	oEditor.registerPlugin(new nhn.husky.MessageManager(oMessageMap));
 	oEditor.registerPlugin(new nhn.husky.SE2M_QuickEditor_Common(elAppContainer));			// 퀵에디터 공통(표, 이미지)
 	
-	if(jindo.$Agent().navigator().ie){
-		oEditor.registerPlugin(new nhn.husky.SE2M_ImgSizeRatioKeeper());					// 이미지 선택한 이후 마우스로 크기 조정하면 정비율로 변경		
-	}
-		
 	oEditor.registerPlugin(new nhn.husky.SE2B_CSSLoader());									// CSS lazy load
 	oEditor.registerPlugin(new nhn.husky.SE_OuterIFrameControl(elAppContainer, 100));
 	
