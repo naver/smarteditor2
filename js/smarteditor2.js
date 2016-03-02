@@ -1,4 +1,4 @@
-/**    * SmartEditor2 NHN_Library:SE2.3.6.O10445:SmartEditor2.0-OpenSource    * @version 10445    */    var nSE2Version = 10445;if(typeof window.nhn=='undefined') window.nhn = {};
+/**    * SmartEditor2 NHN_Library:SE2.3.7.O10703:SmartEditor2.0-OpenSource    * @version 10703    */    var nSE2Version = 10703;if(typeof window.nhn=='undefined') window.nhn = {};
 
 /**
  * @fileOverview This file contains a function that takes care of various operations related to find and replace
@@ -33,7 +33,23 @@ nhn.FindReplace = jindo.$Class({
 
 		this.bBrowserSupported = true;
 	},
-	
+
+	/**
+	 * 해당노드의 다음 element를 찾는다.
+	 * 찾을 수 없거나 body 이면 body를 리턴 
+	 */
+	_findNextElement : function(elNode){
+		if(!elNode || elNode.tagName == "BODY"){
+			return null;
+		}
+		var elNext = elNode.nextSibling;
+		if(elNext){
+			return (elNext.nodeType == 1 ? elNext : this._findNextElement(elNext));
+		}else{
+			return this._findNextElement(elNode.parentNode);
+		}
+	},
+
 	// 0: found
 	// 1: not found
 	// 2: keyword required
@@ -42,7 +58,6 @@ nhn.FindReplace = jindo.$Class({
 		var bSearchResult, bFreshSearch;
 
 		this.window.focus();
-
 		if(!sKeyword) return 2;
 
 		// try find starting from current cursor position
@@ -84,8 +99,16 @@ nhn.FindReplace = jindo.$Class({
 				if(bCaseMatch) iOption += 4;
 				
 				this.window.focus();
-				this._range = this.document.selection.createRangeCollection().item(0);
-				this._range.collapse(false);
+				if(this.document.selection){
+					this._range = this.document.selection.createRangeCollection().item(0);
+					this._range.collapse(false);
+				}else{	// [SMARTEDITORSUS-1528] IE11인 경우
+					this._range = this.document.body.createTextRange();
+					var elNext = this._findNextElement(this.window.getSelection().focusNode);
+					if(elNext){
+						this._range.moveToElementText(elNext);
+					}
+				}
 				bSearchResult = this._range.findText(sKeyword, 1, iOption);
 	
 				this._range.select();
@@ -107,9 +130,16 @@ nhn.FindReplace = jindo.$Class({
 
 		// IE solution
 		if(this.document.body.createTextRange){
-			this._range = this.document.body.createTextRange();
-			this._range.collapse(true);
-			this._range.select();
+			if(this.document.selection){
+				this._range = this.document.body.createTextRange();
+				this._range.collapse(true);
+				this._range.select();
+			}else if(this.window.getSelection){ // [SMARTEDITORSUS-1528] IE11인 경우
+				var oSelection = this.window.getSelection();
+				oSelection.removeAllRanges();
+				oSelection.selectAllChildren(this.document.body);
+				oSelection.collapseToStart();
+			}
 		}
 	},
 	
@@ -1296,7 +1326,7 @@ nhn.CurrentSelection_FF = function(){
 nhn.CurrentSelection = new (jindo.$Class({
 	$init : function(){
 		var oAgentInfo = jindo.$Agent().navigator();
-		if(oAgentInfo.ie){
+		if(oAgentInfo.ie && document.selection){
 			nhn.CurrentSelection_IE.apply(this);
 		}else{
 			nhn.CurrentSelection_FF.apply(this);
@@ -4591,7 +4621,9 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 			window.onbeforeunload = this.fOnBeforeUnload;
 		}else{
 			window.onbeforeunload = jindo.$Fn(function(){
-				this.oApp.exec("MSG_BEFOREUNLOAD_FIRED");
+				// [SMARTEDITORSUS-1028][SMARTEDITORSUS-1517] QuickEditor 설정 API 개선으로, submit 이후 발생하게 되는 beforeunload 이벤트 핸들링 제거
+				//this.oApp.exec("MSG_BEFOREUNLOAD_FIRED");
+				// --// [SMARTEDITORSUS-1028][SMARTEDITORSUS-1517]
 				//if(this.getContents() != this.elContentsField.value || this.bIsDirty){
 				if(this.getRawContents() != this.sCurrentRawContents || this.bIsDirty){
 					return this.oApp.$MSG("SE_EditingAreaManager.onExit");
@@ -5274,10 +5306,207 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 	},
 	
 	setRawContents : function(sContent) {
+		// [SMARTEDITORSUS-875] HTML 모드에서 코드 가독성 개선
+        sContent = this._beautifyContent(sContent);
+        // --[SMARTEDITORSUS-875]
+		
 		if (typeof sContent !== 'undefined') {
 			this.elEditingArea.value = sContent;
 		}
 	},
+	
+	// [SMARTEDITORSUS-875] HTML 모드에서 코드 가독성 개선
+	_beautifyContent : function(sOriginalContent){
+		// 본문 코드를 읽어온 뒤, 가장 앞 노드를 정규식으로 획득하여 검사한다.
+		// 해당 부분은 열리고 닫히는 태그일 수도 있고, 단독 태그일 수도 있고, 커스텀 태그일 수도 있으며, 태그가 아닐 수도 있다.
+		// 이러한 분기에 의거하여 들여쓰기를 적용한 뒤, 결과 문자열에 붙여넣고,
+		// 붙여넣은 문자열은 읽어온 본문 코드에서 삭제한 후, 
+		// 가장 앞 부분을 판별하는 작업을 반복하여,
+		// 본문 코드가 빈 텍스트("")가 될 때까지 작업을 진행한다.
+		
+		var sResultContent = "", // 본문 코드에 들여쓰기가 적용된 결과 문자열
+		aResult = [],
+		sContent, // 개별 작업 후 결과에 추가되는 단위 문자열
+		nDepth = 0, // 현재 코드의 depth
+		sIndentCharacter = "    ", // space 4칸을 들여쓰기 기본 단위로 설정
+		sIndent, // 실제 들여쓰기로 추가되는 공백으로, 코드의 depth x 들여쓰기
+		sLineBreaker = "\n",
+		isWhiteSpace,
+		aNoDepthTag = ["BR", "IMG", "COLGROUP", "COL"], // 열고 닫히는 형태가 아닌 태그들로, depth와 무관.
+		bDepth, // depth 변경이 없는 br, img인지 판별하는 용도
+		bInit = true, // 첫 번째 작업인 경우 보정에 사용
+		wasSibling = true, // 작업 태그를 기준으로 이전 태그가 형제 depth였는지 판단
+		wasJustOpened = true, // 작업 태그가 닫힌 태그일 때, 직전 태그가 열린 태그라면 depth를 유지해 줘야 함 
+		wasClosed = true, 
+		sMatch, // 판별식과 일치하는 부분
+		sTagName, // 판별식과 일치하는 부분의 태그명
+		
+		openingTagPattern = /^<[A-Za-z]+(([\s]{0})|([\s]+[^>]+))>/, // 열린 태그
+		tagNamePattern = /^<([A-Za-z]+)(([\s]{0})|([\s]+[^>]+))>/, // 태그명
+		closingTagPattern = /^<\/[A-Za-z]+>/, // 닫힌 태그
+		openingAndClosingTagPattern = /^<[^>]+\/>/, // 자체로 열고 닫는 태그
+		commentTagPattern = /^<!--[^<>]+-->/, // 주석이나 커스텀 태그
+		openingCommentTagPattern = /^<!--[^->]+>/, // 열린 주석 태그
+		closingCommentTagPattern = /^<![^->]+-->/,	// 닫힌 주석 태그
+		whiteSpacePattern = /^[\n\r\t\s]+/, // 공백
+		nonTagPattern = /^[^<\n]+/, // 태그 아닌 요소
+		exceptedTagPattern = /^<[^>]+>/, // 어느 조건도 통과하지 않은 예외 태그들
+		appliedPattern; // 결과 문자열 작업시 적용하는 패턴
+		
+		while(sOriginalContent != ""){
+			sIndent = "",
+			sContent = "",
+			sResult = "",
+			sMatch = "",
+			bDepth = true,
+			isWhiteSpace = false;
+			
+			if(openingAndClosingTagPattern.test(sOriginalContent)){ // <tagName />
+				sMatch = sOriginalContent.match(openingAndClosingTagPattern);
+
+				if(!wasSibling){ // 직전 태그가 형제가 아닌, 열려 있는 부모 태그인 경우.
+					nDepth++;
+					wasSibling = true;
+				}
+				
+				wasJustOpened = false;
+				appliedPattern = openingAndClosingTagPattern;
+			}else if(closingCommentTagPattern.test(sOriginalContent)){ // <! text-->
+				sMatch = sOriginalContent.match(closingCommentTagPattern);
+				
+				if(wasJustOpened){
+					wasJustOpened = false;
+				}else{
+					nDepth--;
+				}
+				
+				wasSibling = true;
+				wasClosed = true;
+				appliedPattern = closingCommentTagPattern; 
+			}else if(openingCommentTagPattern.test(sOriginalContent)){ // <!-- text>
+				sMatch = sOriginalContent.match(openingCommentTagPattern);
+			
+				if(!wasClosed || wasJustOpened){
+					if(!wasSibling){
+						nDepth++;
+					}
+				}
+				wasSibling = false;
+				wasJustOpened = true;
+					
+				appliedPattern = openingCommentTagPattern;
+			}else if(openingTagPattern.test(sOriginalContent)){ // <tagName>
+				bDepth = true;
+				
+				sMatch = sOriginalContent.match(openingTagPattern);
+			
+				sTagName = sMatch[0].replace(tagNamePattern, "$1");
+				
+				for(var i = 0, len = aNoDepthTag.length; i < len; i++){
+					if(sTagName.toUpperCase() == aNoDepthTag[i]){ // br, img
+						bDepth = false;
+					}
+				}
+				
+				if(bDepth){ // br, img 태그가 아닌 열린 태그
+					if(!wasClosed || wasJustOpened){
+						if(!wasSibling){
+							nDepth++;
+						}
+					}
+					wasSibling = false;
+					wasJustOpened = true;
+				}else{ // br, img
+					if(!wasSibling){
+						nDepth++;
+						wasSibling = true;
+					}
+					
+					wasJustOpened = false;
+				}
+				
+				appliedPattern = openingTagPattern;
+			}else if(whiteSpacePattern.test(sOriginalContent)){ // 공백문자는 모두 제거한 뒤 depth에 의거하여 공백을 재지정
+				sMatch = sOriginalContent.match(whiteSpacePattern);
+				
+				isWhiteSpace = true;
+				
+				appliedPattern = whiteSpacePattern;
+			}else if(nonTagPattern.test(sOriginalContent)){ // 태그 아님
+				sMatch = sOriginalContent.match(nonTagPattern);
+
+				if(!wasSibling){ // 직전 태그가 형제가 아닌, 열려 있는 부모 태그인 경우.
+					nDepth++;
+					wasSibling = true;
+				}
+				
+				wasJustOpened = false;
+				appliedPattern = nonTagPattern;
+			}else if(commentTagPattern.test(sOriginalContent)){ // <!-- text -->
+				sMatch = sOriginalContent.match(commentTagPattern);
+				
+				if(!wasSibling){
+					nDepth++;
+					wasSibling = true;
+				}
+				
+				wasJustOpened = false;
+				appliedPattern = commentTagPattern;
+			}else if(closingTagPattern.test(sOriginalContent)){ // </tagName>
+				sMatch = sOriginalContent.match(closingTagPattern);
+				
+				if(wasJustOpened){ // 태그가 열리자마자 컨텐츠 없이 닫힘 태그가 이어질 경우 depth 변경 없음
+					wasJustOpened = false;
+				}else{
+					nDepth--;
+				}
+				
+				wasSibling = true;
+				wasClosed = true;
+				appliedPattern = closingTagPattern; 
+			}else{ // <*unknown*>
+				sMatch = sOriginalContent.match(exceptedTagPattern);
+
+				if(!wasSibling){ // 직전 태그가 형제가 아닌, 열려 있는 부모 태그인 경우.
+					nDepth++;
+					wasSibling = true;
+				}
+				
+				wasJustOpened = false;
+				appliedPattern = exceptedTagPattern;
+			}
+
+			// 최초 작업 시 열린 태그가 오는 경우 depth를 보정
+			if(bInit){
+				if(wasJustOpened){
+					nDepth = 0;
+				}
+				bInit = false;
+			}
+			
+			// depth에 의거하여 실제 추가 공백을 산정
+			if(nDepth > 0){
+				for(var i = 0; i < nDepth; i++){
+					sIndent += sIndentCharacter;
+				}
+			} 
+			
+			if(isWhiteSpace){ // 공백문자는 단순제거
+				isWhiteSpace = false;
+				sContent = "";
+			}else{ // 공백문자가 아니라면 (계산된 추가 공백 + 작업 대상 + 줄바꿈)을 적용하여 결과 문자열에 더함 
+				sContent = sIndent + sMatch[0] + sLineBreaker;
+			}
+			
+			aResult.push(sContent);
+			
+			// 분류가 끝난 컨텐츠는 원래 컨텐츠에서 제거
+			sOriginalContent = sOriginalContent.replace(appliedPattern, "");
+		};
+		
+		return aResult.join("");
+	},
+	// --[SMARTEDITORSUS-875]
 	
 	getRawContents : function() {
 		return this.elEditingArea.value;
@@ -5753,10 +5982,11 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		// mousedown on iframe -> focus goes into the iframe doc -> beforedeactivate is fired -> empty selection is saved by the plugin -> empty selection is recovered in RESTORE_IE_SELECTION
 		this._bIERangeReset = true;
 
-		if(jindo.$Agent().navigator().ie){
+		if(this.oApp.oNavigator.ie){
 			jindo.$Fn(
 				function(weEvent){
-					if(this.iframe.contentWindow.document.selection.type.toLowerCase() === 'control' && weEvent.key().keyCode === 8){
+					var oSelection = this.iframe.contentWindow.document.selection;
+					if(oSelection && oSelection.type.toLowerCase() === 'control' && weEvent.key().keyCode === 8){
 						this.oApp.exec("EXECCOMMAND", ['delete', false, false]);
 						weEvent.stop();
 					}
@@ -6119,8 +6349,8 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	$ON_IE_CHECK_EXCEPTION_FOR_SELECTION_PRESERVATION : function(){
 		// 현재 선택된 앨리먼트가 iframe이라면, 셀렉션을 따로 기억 해 두지 않아도 유지 됨으로 RESTORE_IE_SELECTION을 타지 않도록 this._oIERange을 지워준다.
 		// (필요 없을 뿐더러 저장 시 문제 발생)
-		
-        if(this.getDocument().selection.type === "Control"){
+		var oSelection = this.getDocument().selection;
+        if(oSelection && oSelection.type === "Control"){
             this._oIERange = null;
         }
         
@@ -6170,6 +6400,16 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	
 	$ON_CHANGE_EDITING_MODE : function(sMode, bNoFocus){
 		if(sMode === this.sMode){
+			// [SMARTEDITORSUS-1213][IE9, 10] 사진 삭제 후 zindex 1000인 div가 잔존하는데, 그 위로 썸네일 drag를 시도하다 보니 drop이 불가능.
+			var htBrowser = jindo.$Agent().navigator();
+			if(htBrowser.ie && htBrowser.nativeVersion > 8){ 
+				var elFirstChild = jindo.$$.getSingle("DIV.husky_seditor_editing_area_container").childNodes[0];
+				if((elFirstChild.tagName == "DIV") && (elFirstChild.style.zIndex == 1000)){
+					elFirstChild.parentNode.removeChild(elFirstChild);
+				}
+			}
+			// --[SMARTEDITORSUS-1213]
+			
 			this.iframe.style.display = "block";
 			
 			this.oApp.exec("REFRESH_WYSIWYG", []);
@@ -6213,12 +6453,13 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		// [SMARTEDITORSUS-978] IE9에서 removeAllRanges로 제거되지 않아
 		// 이전 IE와 동일하게 empty 방식을 사용하도록 하였으나 doc.selection.type이 None인 경우 에러
 		// Range를 재설정 해주어 selectNone 으로 처리되도록 예외처리
-        if(this.oApp.getWYSIWYGDocument().selection.createRange){
+		var oSelection = this.oApp.getWYSIWYGDocument().selection;
+        if(oSelection && oSelection.createRange){
         	try{
-        		this.oApp.getWYSIWYGDocument().selection.empty();
+        		oSelection.empty();
         	}catch(e){
         		// [SMARTEDITORSUS-1003] IE9 / doc.selection.type === "None"
-        		var oSelection = this.oApp.getSelection();
+        		oSelection = this.oApp.getSelection();
         		oSelection.select();
         		oSelection.oBrowserSelection.selectNone();
         	}
@@ -6855,6 +7096,18 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 	_onKeyDown : function(oEvent){
 		var oKeyInfo = oEvent.key();
 		
+		// [SMARTEDITORSUS-874] FireFox에서 shift + enter로 개행문자 추가할 경우 이슈가 발생하여, enter처럼 동작하게 함
+		if(this.htBrowser.firefox){
+			if(oKeyInfo.enter && oKeyInfo.shift){
+				if(this.sLineBreaker == "BR"){
+					this._insertBR(oEvent);
+				}else{
+					this._wrapBlock(oEvent);
+				}
+			}
+		}
+		// --[SMARTEDITORSUS-874]
+		
 		if(oKeyInfo.shift){
 			return;
 		}
@@ -6963,6 +7216,10 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			oEWrapper,
 			elStyleOnlyNode;
 		
+		// [SMARTEDITORSUS-874] Firefox 에서 발생하는 줄바꿈 문제와 관련
+		bBRIssue = true; // 다양한 enter 키 입력 시점에 따른 처리를 위한 flag
+		// --[SMARTEDITORSUS-874]
+		
 		// line broke by sibling
 		// or
 		// the parent line breaker is just a block container
@@ -7011,6 +7268,18 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 				this.oApp.exec("CHECK_STYLE_CHANGE", []);
 				
 				sBM = oSelection.placeStringBookmark();
+				
+				// [SMARTEDITORSUS-874] 에디터 로딩 직후 enter키 없이 내용을 입력하거나 클립보드에서 텍스트를 붙여넣는 경우에 대응
+				if(this.htBrowser.firefox){
+					bBRIssue = this._dealBRIssue(sBM, 1, bBRIssue);
+					oSelection.moveToStringBookmark(sBM);
+					oSelection.select();
+					oSelection.removeStringBookmark(sBM);	
+					
+					return;
+				}
+				// --[SMARTEDITORSUS-874]
+				
 				setTimeout(jindo.$Fn(function(sBM){
 					var elBookmark = oSelection.getStringBookmark(sBM);
 					if(!elBookmark){return;}
@@ -7029,6 +7298,10 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		// 아래는 기본적으로 브라우저 기본 기능에 맡겨서 처리함
 		if(this.htBrowser.firefox){
 			elBookmark = oSelection.getStringBookmark(sBM, true);
+
+			// [SMARTEDITORSUS-874]
+			bBRIssue = this._dealBRIssue(sBM, 2, bBRIssue);
+			// --[SMARTEDITORSUS-874]
 			
 			if(elBookmark && elBookmark.nextSibling && elBookmark.nextSibling.tagName == "IFRAME"){
 				setTimeout(jindo.$Fn(function(sBM){
@@ -7040,6 +7313,10 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 					oSelection.removeStringBookmark(sBM);
 				}, this).bind(sBM), 0);
 			}else{
+				// [SMARTEDITORSUS-874] 여기까지 줄바꿈 문제가 해결되지 않았다면 최종적으로 이 부분을 거치게 된다.
+				bBRIssue = this._dealBRIssue(sBM, 3, bBRIssue);
+				// --[SMARTEDITORSUS-874]
+				
 				oSelection.removeStringBookmark(sBM);
 			}
 		}else if(this.htBrowser.ie){
@@ -7055,6 +7332,48 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			}
 		
 			oSelection.removeStringBookmark(sBM);
+			
+			// -- [SMARTEDITORSUS-1452]
+			var bAddCursorHolder = (elParentNode.tagName === "DIV" && elParentNode.parentNode.tagName === "LI");
+			if (elParentNode.innerHTML !== "" && elParentNode.innerHTML !== unescape("%uFEFF")) {
+			
+				if (bAddCursorHolder) {
+				
+					setTimeout(jindo.$Fn(function() {
+						var oSelection = this.oApp.getSelection();
+						oSelection.fixCommonAncestorContainer();
+						var elLowerNode = oSelection.commonAncestorContainer;
+						elLowerNode = oSelection._getVeryFirstRealChild(elLowerNode);
+
+						if (elLowerNode && (elLowerNode.innerHTML === "" || elLowerNode.innerHTML === unescape("%uFEFF"))) {
+							elLowerNode.innerHTML = unescape("%uFEFF");
+						}
+					}, this).bind(elParentNode), 0);
+				}
+			} else {
+					
+				if (bAddCursorHolder) {
+					var oSelection = this.oApp.getSelection();
+					oSelection.fixCommonAncestorContainer();
+					var elLowerNode = oSelection.commonAncestorContainer;
+					elLowerNode = oSelection._getVeryFirstRealChild(elLowerNode);
+					jindo.$Element(elLowerNode).leave();
+
+					setTimeout(jindo.$Fn(function() {
+						var oSelection = this.oApp.getSelection();
+						oSelection.fixCommonAncestorContainer();
+						var elLowerNode = oSelection.commonAncestorContainer;
+						elLowerNode = oSelection._getVeryFirstRealChild(elLowerNode);
+
+						if (elLowerNode && (elLowerNode.innerHTML === "" || elLowerNode.innerHTML === unescape("%uFEFF"))) {
+							elLowerNode.innerHTML = unescape("%uFEFF");
+						}
+					}, this).bind(elParentNode), 0);
+				}
+			}
+			// -- [SMARTEDITORSUS-1452]
+
+
 
 			bAddUnderline = (elParentNode.tagName === "U" || nhn.husky.SE2M_Utils.findAncestorByTagName("U", elParentNode) !== null);
 			bAddLineThrough = (elParentNode.tagName === "S" || elParentNode.tagName === "STRIKE" ||
@@ -7073,6 +7392,370 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			oSelection.removeStringBookmark(sBM);
 		}
 	},
+	
+	// [SMARTEDITORSUS-874] Firefox 에서 발생하는 줄바꿈 문제와 관련
+	_dealBRIssue : function(sBM, nMode, bBRIssue){
+		var oSelection = this.oApp.getSelection(),
+		nSelectionLength = oSelection.getNodes().length,
+		elBookmark = oSelection.getStringBookmark(sBM, true),
+		elBeforeBookmark = elBookmark.previousSibling.previousSibling,
+		elStartBookmark = elBookmark.previousSibling,
+		elInsertAfterTarget,
+		elParent = elBookmark.parentNode,
+		aChildren = elParent.childNodes,
+		aPreviousTagsInRow = [],
+		aNextTagsInRow = [],
+		elParagraph = document.createElement("P"),
+		nStartFrom = 3; // 북마크 뒷쪽에서 처리하기 시작하는 지점. 3이면 시작 북마크, 끝 북마크, 북마크 바로 뒤 br을 건너뛰고 시작.
+		
+		if(nMode == 1){
+			var elPreviousSibling = elParent.previousSibling;
+			var elPreviousLastChild = elPreviousSibling.lastChild; 
+			
+			// 에디터 로딩 직후 입력하는 값을 분기 기준으로 함
+			if(elParent.parentNode.childNodes.length == 2){
+				if(elParent.previousSibling.childNodes.length == 1){
+					if(elPreviousLastChild.tagName == "BR"){
+						// enter키 입력. 처리 불필요.
+						bBRIssue = false;
+					}else if(elParent.childNodes.length == 3){
+						// 텍스트 입력 후 enter키 입력. 처리 불필요. 
+						bBRIssue = false;
+					}else{
+						// 클립보드에서 텍스트를 붙여넣었으나, 줄의 맨 끝이나 중간에서 enter 키 입력. 처리 불필요.
+						bBRIssue = false;
+					}
+				}else{
+					// 클립보드에서 텍스트를 붙여넣은 경우
+					if(elPreviousLastChild.tagName == "BR"){ //커서 바로 앞 공백
+						// 빈 라인에서 enter 키 입력
+					}else if(elPreviousLastChild.nodeType && (elPreviousLastChild.textContent == "")){
+						// 텍스트가 포함된 라인의 맨 처음에서 enter 키 입력
+					}else{
+						bBRIssue = false;
+					}
+				}
+			}
+			
+			// enter 입력 위치(bookmark)를 기준으로 앞과 뒤를 분리시킨다.
+			if(bBRIssue){
+				nStartFrom = 0; // bookmark를 id로 찾아서 위치를 파악하기 때문에 초기화 
+
+				// bookmark 앞쪽 처리
+				for(var i = 0, len = aChildren.length; i < len; i++){
+					var elChild = aChildren[i]; 
+					
+					// start bookmark를 만날 때까지 반복
+					if(elChild.tagName == "SPAN" && /husky_bookmark_/.test(elChild.id)){
+						nStartFrom = i + 3;
+						break;
+					}
+					aPreviousTagsInRow.push(elChild);
+				}
+
+				if(aPreviousTagsInRow.length > 0){
+					var elResultParent = elParagraph.cloneNode();
+					for(var i = 0, len = aPreviousTagsInRow.length; i < len; i++){
+						elResultParent.appendChild(aPreviousTagsInRow[i]);
+					}
+					elParent.parentNode.insertBefore(elResultParent, elParent);
+				}
+				
+				// enter 입력이 있었기 때문에 보정을 위한 삽입
+				var elParagraphForEnterKey = elParagraph.cloneNode();
+				var elBR = document.createElement("BR");
+				elParagraphForEnterKey.appendChild(elBR);
+				elParent.parentNode.insertBefore(elParagraphForEnterKey, elParent);
+				
+				// bookmark 뒤쪽 처리
+				var aNextTagsInRow = [];
+				for(var i = nStartFrom, len = aChildren.length; i < len; i++){
+					var elChild = aChildren[i];
+					
+					// bookmark는 제외한다.
+					if(elChild.tagName == "SPAN" && /husky_bookmark_/.test(elChild.id)){
+						continue;
+					}
+					
+					aNextTagsInRow.push(elChild);
+				}
+				
+				if(aNextTagsInRow.length > 0){
+					elResultParent = elParagraph.cloneNode();
+					for(var i = 0, len = aNextTagsInRow.length; i < len; i++){
+						elResultParent.appendChild(aNextTagsInRow[i]);
+					}
+					if(elParent.parentNode.lastChild == elParent){
+						elParent.parentNode.appendChild(elResultParent);
+					}else{
+						elParent.parentNode.insertBefore(elResultParent, elParent.nextSibling);
+					}
+				}
+				
+				bBRIssue = false;
+			}
+		}else if(nMode == 2){
+			if(elBeforeBookmark && elBeforeBookmark.tagName == "BR"){
+				// 이 부분은 enter 키를 한 번이라도 입력한 경우 처리된다.
+				// <br>이 2개 이상 연속되는 경우, 첫 br은 줄바꿈을 위한 br(linebreaker)로 처리한다.
+				// 줄바꿈을 사전에 적용하여 아래의 index를 가지는 이차원 배열에 집어넣어 처리한다.
+				// [줄번호][해당 줄의 내용]
+				var bLineBreaker = false,
+				aPreviousResult = [], // bookmark 앞쪽 처리. 작업 결과는 이차원 배열이다.
+				aPreviousLinebreaker = [],
+				aNextResult = [], // bookmark 뒷쪽 처리. 작업 결과는 이차원 배열이다.
+				aNextLinebreaker = [];
+				
+				// bookmark 앞쪽 처리
+				for(var i = 0, len = aChildren.length; i < len; i++){
+					var elChild = aChildren[i]; 
+
+					if(elChild.tagName != "BR"){
+						aPreviousTagsInRow.push(elChild);
+						
+						bLineBreaker = true;
+					}else{
+						
+						if(bLineBreaker){
+							// 줄바꿈을 위한 첫 번째 br
+							// linebreaker를 만나기 전까지의 컨텐츠들을 한 line으로 묶는다.
+							aPreviousResult.push(aPreviousTagsInRow);
+							aPreviousTagsInRow = [];
+
+							// linebreaker를 별도로 처리하지 않으면 올바르지 않게 인식된다.
+							aPreviousLinebreaker.push(elChild);
+							bLineBreaker = false;
+						}else{
+							// 에디터에서 enter 키만 가지고 작업한 경우를 제외하고는, 비정상적인 br태그가 삽입된다. 이를 포함시켜 준다.
+							aPreviousResult.push([elChild]);
+						}
+					}
+					
+					// 시작 bookmark 앞에서 이 작업은 종료된다.
+					if(elChild == elBeforeBookmark){
+						break;
+					}
+				}
+				
+				// 결과물이 들어간 이차원 배열로 작업
+				var aRemoveFromPreviousResult = []; 
+				for(var i = 0, len = aPreviousResult.length; i < len; i++){
+					var elResultParent = elParagraph.cloneNode();
+					var aSecondaryResult = aPreviousResult[i];
+					
+					for(var j = 0, len2 = aSecondaryResult.length; j < len2; j++){
+						elResultParent.appendChild(aSecondaryResult[j]);
+					}
+					elParent.parentNode.insertBefore(elResultParent, elParent);
+				}
+				
+				// linebreaker로 분류되었던 br 태그들을 제거해 줘야 비정상적인 추가 줄바꿈을 방지할 수 있다.
+				for(var i = 0, len = aPreviousLinebreaker.length; i < len; i++){
+					elParent.removeChild(aPreviousLinebreaker[i]);
+				}
+
+				// bookmark 뒤쪽 처리
+				for(var i = nStartFrom, len = aChildren.length; i < len; i++){
+					var elChild = aChildren[i]; 
+					
+					if(elChild.tagName != "BR"){
+						aNextTagsInRow.push(elChild);
+						
+						bLineBreaker = true;
+					}else{
+						if(bLineBreaker){
+							aNextResult.push(aNextTagsInRow);
+							aNextTagsInRow = [];
+							
+							aNextLinebreaker.push(elChild);
+							bLineBreaker = false;
+						}else{
+							aNextResult.push([elChild]);
+						}
+					}
+				}
+				
+				var aRemoveFromNextResult = []; 
+				elInsertAfterTarget = elParent;
+				for(var i = 0, len = aNextResult.length; i < len; i++){
+					var elResultParent = elParagraph.cloneNode();
+					var aSecondaryResult = aNextResult[i];
+					
+					for(var j = 0, len2 = aSecondaryResult.length; j < len2; j++){
+						elResultParent.appendChild(aSecondaryResult[j]);
+					}
+
+					// bookmark가 포함된 P 태그 뒤로 연속해서 밀어넣기 위한 insertAfter
+					if(elInsertAfterTarget.parentNode.lastChild == elInsertAfterTarget){
+						elInsertAfterTarget.parentNode.appendChild(elResultParent);
+					}else{
+						elInsertAfterTarget.parentNode.insertBefore(elResultParent, elInsertAfterTarget.nextSibling);
+					}
+					elInsertAfterTarget = elResultParent;
+				}
+				
+				// linebreaker로 분류되었던 br 태그들을 제거
+				for(var i = 0, len = aNextLinebreaker.length; i < len; i++){
+					elParent.removeChild(aNextLinebreaker[i]);
+				}
+				
+				bBRIssue = false;
+			}
+		}else if(nMode == 3){
+			if(bBRIssue){
+				var isEmptyTextNode = false;
+				
+				// 내용이 있는 line의 맨 앞에서 enter를 누를 경우, 간혹 아무 내용이 없는 텍스트 노드가 bookmark 앞에 위치하여 처리가 필요하다.
+				if(nSelectionLength == 0){
+					if(elBeforeBookmark && elBeforeBookmark.nodeType && (elBeforeBookmark.textContent == "")){
+						isEmptyTextNode = true;
+					}else{
+						isEmptyTextNode = false;
+					}
+
+					if(isEmptyTextNode){
+						// 이 부분은 다른 곳과 다르게 일차원 배열을 사용한다.
+						// 텍스트 노드를 포함한 bookmark 앞쪽 처리
+						for(var i = 0, len = aChildren.length; i < len; i++){
+							var elChild = aChildren[i]; 
+							aPreviousTagsInRow.push(elChild);
+							
+							// 시작 bookmark 앞에서 이 작업은 종료된다.
+							if(elChild == elBeforeBookmark){
+								break;
+							}
+						}
+						
+						var elResultParent = elParagraph.cloneNode();
+						
+						for(var i = 0, len = aPreviousTagsInRow.length; i < len; i++){
+							elResultParent.appendChild(aPreviousTagsInRow[i]);
+						}
+						elParent.parentNode.insertBefore(elResultParent, elParent);
+						
+						// bookmark 뒤쪽 처리
+						// linebreaker용 br도 제외시키고 시작하기 때문에 nStartFrom을 보정
+						for(var i = (nStartFrom + 1), len = aChildren.length; i < len; i++){
+							var elChild = aChildren[i]; 
+							aNextTagsInRow.push(elChild);
+						}
+
+						elResultParent = elParagraph.cloneNode();
+						for(var i = 0, len = aNextTagsInRow.length; i < len; i++){
+							elResultParent.appendChild(aNextTagsInRow[i]);
+						}
+
+						// insertAfter
+						elInsertAfterTarget = elParent;
+						if(elInsertAfterTarget.parentNode.lastChild == elInsertAfterTarget){
+							elInsertAfterTarget.parentNode.appendChild(elResultParent);
+						}else{
+							elInsertAfterTarget.parentNode.insertBefore(elResultParent, elInsertAfterTarget.nextSibling);
+							elInsertAfterTarget = elResultParent;
+						}
+					}else if(elBeforeBookmark && elBeforeBookmark.tagName != "BR" && elBookmark.nextSibling && (elBookmark.nextSibling.tagName == "BR")){
+						// 빈 텍스트노드가 앞에 있지 않은 경우 이 곳에서 처리한다.
+						var bLineBreaker = false;
+						var aPreviousResult = [];
+						var aPreviousLinebreaker = [];
+						var aNextResult = [];
+						var aNextLinebreaker = [];
+						
+						// bookmark 앞쪽 처리
+						for(var i = 0, len = aChildren.length; i < len; i++){
+							var elChild = aChildren[i]; 
+							
+							if(elChild.tagName != "BR"){
+								aPreviousTagsInRow.push(elChild);
+								
+								bLineBreaker = true;
+							}else{
+								if(bLineBreaker){
+									aPreviousResult.push(aPreviousTagsInRow);
+									aPreviousTagsInRow = [];
+
+									aPreviousLinebreaker.push(elChild);
+									bLineBreaker = false;
+								}else{
+									aPreviousResult.push([elChild]);
+								}
+							}
+							
+							if(elChild == elBeforeBookmark){
+								break;
+							}
+						}
+						
+						var aRemoveFromPreviousResult = []; 
+						for(var i = 0, len = aPreviousResult.length; i < len; i++){
+							var elResultParent = elParagraph.cloneNode();
+							var aSecondaryResult = aPreviousResult[i];
+							
+							for(var j = 0, len2 = aSecondaryResult.length; j < len2; j++){
+								elResultParent.appendChild(aSecondaryResult[j]);
+							}
+							elParent.parentNode.insertBefore(elResultParent, elParent);
+						}
+						
+						// linebreaker로 분류되었던 br 태그들을 제거
+						for(var i = 0, len = aPreviousLinebreaker.length; i < len; i++){
+							elParent.removeChild(aPreviousLinebreaker[i]);
+						}
+						
+						// bookmark 뒤쪽 처리
+						for(var i = nStartFrom, len = aChildren.length; i < len; i++){
+							var elChild = aChildren[i]; 
+							
+							if(elChild.tagName != "BR"){
+								aNextTagsInRow.push(elChild);
+								
+								bLineBreaker = true;
+							}else{
+								if(bLineBreaker){
+									if(aNextTagsInRow.length > 0){
+										aNextResult.push(aNextTagsInRow);
+										aNextTagsInRow = [];
+									}
+
+									aNextLinebreaker.push(elChild);
+									bLineBreaker = false;
+								}else{
+									aNextResult.push([elChild]);
+								}
+								
+							}
+						}
+						
+						var aRemoveFromNextResult = []; 
+						elInsertAfterTarget = elParent;
+						for(var i = 0, len = aNextResult.length; i < len; i++){
+							var elResultParent = elParagraph.cloneNode();
+							var aSecondaryResult = aNextResult[i];
+							
+							for(var j = 0, len2 = aSecondaryResult.length; j < len2; j++){
+								elResultParent.appendChild(aSecondaryResult[j]);
+							}
+							
+							// insertAfter
+							if(elInsertAfterTarget.parentNode.lastChild == elInsertAfterTarget){
+								elInsertAfterTarget.parentNode.appendChild(elResultParent);
+							}else{
+								elInsertAfterTarget.parentNode.insertBefore(elResultParent, elInsertAfterTarget.nextSibling);
+							}
+							elInsertAfterTarget = elResultParent;
+						}
+						
+						for(var i = 0, len = aNextLinebreaker.length; i < len; i++){
+							elParent.removeChild(aNextLinebreaker[i]);
+						}
+					}
+				}
+			}
+		}
+		
+		return bBRIssue;
+	},
+	// --[SMARTEDITORSUS-874]
 	
 	// [IE9 standard mode] 엔터 후의 상/하단 P 태그를 확인하여 BOM, 공백(&nbsp;) 추가
 	_addExtraCursorHolder : function(elUpperNode){
@@ -8303,7 +8986,7 @@ nhn.husky.SE2M_BGColor = jindo.$Class({
 		sColorCode = elButton.title;
 		
 		if(welColorParent.hasClass("husky_se2m_color_palette")){				// 템플릿 색상 적용
-			this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [sColorCode,false]);
+			this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [sColorCode, nhn.husky.SE2M_Configuration.SE2M_ColorPalette.bAddRecentColorFromDefault]);
 		}else if(welColorParent.hasClass("husky_se2m_color_palette_recent")){	// 최근 색상 적용
 			this.oApp.exec("COLOR_PALETTE_APPLY_COLOR", [sColorCode,true]);
 		}
@@ -8596,13 +9279,20 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		this.oApp.exec("FOCUS");
 		this._bOnlyCursorChanged = false;		
 		oSelection = this.oApp.getSelection();
-				
+			
 		if(/^insertorderedlist|insertunorderedlist$/i.test(sCommand)){
 			this._getDocumentBR();
 		}
 		
 		if(/^justify*/i.test(sCommand)){
 			this._removeSpanAlign();
+			
+			// [SMARTEDITORSUS-1452]의 Side-effect로 수정 : 여러 줄의 컨텐츠 중 아무 내용도 없는 줄에 커서가 있을 때 정렬이 비정상적으로 동작
+			var htBrowser = jindo.$Agent().navigator();
+			if(!htBrowser.safari){
+				this._addCursorHolder();	
+			}
+			// --[SMARTEDITORSUS-1452]
 		}
 		
 		if(sCommand.match(/^bold|underline|italic|strikethrough|superscript|subscript$/i)){
@@ -8636,7 +9326,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			
 			this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", [sCommand, this.oUndoOption]);
 		}
-		if(this.oNavigator.ie){
+		if(this.oNavigator.ie && this.oApp.getWYSIWYGDocument().selection){
 			if(this.oApp.getWYSIWYGDocument().selection.type === "Control"){
 				oSelection = this.oApp.getSelection();
 				oSelection.select();
@@ -8673,18 +9363,19 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			case "outdent":
             	this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", [sCommand]);
             	
-				var sBookmark = oSelection.placeStringBookmark();
+				// bookmark 설정
+				var sBookmark = oSelection.placeStringBookmark();				
 
 				if(sCommand === "indent"){
 					this.oApp.exec("SET_LINE_STYLE", [null, jindo.$Fn(this._indentMargin, this).bind(), {bDoNotSelect : true, bDontAddUndoHistory : true}]);
 				}else{
 					this.oApp.exec("SET_LINE_STYLE", [null, jindo.$Fn(this._outdentMargin, this).bind(), {bDoNotSelect : true, bDontAddUndoHistory : true}]);
 				}
-
+		
 				oSelection.moveToStringBookmark(sBookmark);
 				oSelection.select();
-				oSelection.removeStringBookmark(sBookmark);
-				
+				oSelection.removeStringBookmark(sBookmark); //bookmark 삭제
+						
                 setTimeout(jindo.$Fn(function(sCommand){
                 	this.oApp.exec("RECORD_UNDO_AFTER_ACTION", [sCommand]);	
                 }, this).bind(sCommand), 25);
@@ -8706,10 +9397,72 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 				break;
 				
 			default:
+				// [SMARTEDITORSUS-1143] IE9, IE10에 존재하는 '빈 텍스트 노드'에도 폰트 스타일이 적용되면 레이아웃이 깨지는 문제가 발생 
+				// jindo.$Element#child 는 빈 텍스트 노드를 가져오지 않기 때문에 HuskyRange 메서드로 처리
+				if(this.oNavigator.ie && this.oNavigator.nativeVersion > 8){
+					var welBody = $Element(this.oEditingArea.body);
+					var elEmptyTextNode = welBody.$value().previousSibling;
+					
+					// 빈 텍스트 노드를 걸러내기 위한 패턴
+					var whiteSpaceStartPattern = /^\s/;
+					var nonEmptyTextPattern = /\S/g;
+					
+					var oSelection = this.oApp.getSelection();
+//					var oIESelection = this.oEditingArea.selection.createRange();
+					
+					if(oSelection == ""){
+						this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
+					}else{
+						// 우선 폰트 스타일을 적용 후, '빈 텍스트 노드' 처리
+						this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
+						
+						var aNode = oSelection.getNodes();
+						var aStyleTag = ["STRONG", "U", "EM", "STRIKE"];
+						
+						if(aNode.length > 0){
+							for(index in aNode){
+								var elChildNode = aNode[index];
+								
+								// selection 에 포함된 '빈 텍스트 노드' 에도 적용되어 버린 폰트 스타일을 제거한다.
+								if((whiteSpaceStartPattern.test(elChildNode.nodeValue)) && (!nonEmptyTextPattern.test(elChildNode.nodeValue)) && (elChildNode.nodeType == 3)){ // 빈 텍스트 노드
+									var elChildNodeClone = elChildNode.cloneNode();
+									
+									// 폰트 스타일이 적용되면, 해당 스타일 태그가 '빈 텍스트 노드'를 부모로서 감싸고 있다.
+									var elParentNode = elChildNode.parentNode;
+									
+									for(index in aStyleTag){
+										if(elParentNode.tagName == aStyleTag[index]){
+											elParentNode.removeChild(elChildNode);
+											
+											var elGrandparentNode = elParentNode.parentNode;
+											
+											// insertAfter()
+											if(elGrandparentNode.lastChild == elParentNode){
+												elGrandparentNode.appendChild(elChildNodeClone);
+											}else{
+												elGrandparentNode.insertBefore(elChildNodeClone, elParentNode.nextSibling);
+											}
+											
+											if(elParentNode.childNodes.length == 0){
+												elGrandparentNode.removeChild(elParentNode);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}else{
+					this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
+				}
+				// --[SMARTEDITORSUS-1143]
+				
 				//if(this.oNavigator.firefox){
 					//this.oEditingArea.execCommand("styleWithCSS", bUserInterface, false);
 				//}
-				this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
+				// [SMARTEDITORSUS-1143] IE9, IE10에 존재하는 '빈 텍스트 노드' 관련 이슈로 분기처리 
+				//this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
+				// --[SMARTEDITORSUS-1143]
 			}
 		}
 		
@@ -8744,6 +9497,19 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		}
 
 		this.oApp.exec("CHECK_STYLE_CHANGE", []);
+	},
+	
+	
+	// [SMARTEDITORSUS-1452] 정력방식 변경시  공백문자(%uFEFF)를 넣어줌
+	_addCursorHolder:function(){
+		var oSelection = this.oApp.getSelection();	
+				oSelection.fixCommonAncestorContainer();
+				var elLowerNode = oSelection.commonAncestorContainer;
+				if(elLowerNode.nodeType != 3){
+					elLowerNode.innerHTML += unescape("%uFEFF");
+					oSelection.selectNodeContents(elLowerNode);	
+				}
+				
 	},
 	
 	_removeSpanAlign : function(){
@@ -8961,6 +9727,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			elTmp.appendChild(elDiv);
 			return;
 		}
+		
 		nCurMarginLeft = parseInt(elDiv.style.marginLeft, 10);
 		
 		if(!nCurMarginLeft){
@@ -9664,7 +10431,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		var elLi, aFontFamily;
 		for(var i=0; i<this.aLIFontNames.length; i++){
 			elLi = this.aLIFontNames[i];
-			aFontFamily = this._getFontFamilyFromLI(elLi).split(",");
+			aFontFamily = this._getFontFamilyFromLI(elLi).toLowerCase().split(",");
 			for(var h=0; h < aFontFamily.length;h++){
 				if( !!aFontFamily[h] && jindo.$S(aFontFamily[h].replace(/['"]/ig, "")).trim().$value() == sFontName){
 					return elLi;
@@ -10262,7 +11029,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		}
 
 		// [SMARTEDITORSUS-612] 이미지 선택 후 링크 추가했을 때 링크가 걸리지 않는 문제
-		if(this.oApp.getWYSIWYGDocument().selection.type === "None"){
+		if(this.oApp.getWYSIWYGDocument().selection && this.oApp.getWYSIWYGDocument().selection.type === "None"){
 			bImg = jindo.$A(this.oSelection.getNodes()).some(function(value, index, array){
 				if(value.nodeType === 1 && value.tagName === "IMG"){
 					return true;
@@ -10563,7 +11330,7 @@ nhn.husky.SE2M_LineStyler = jindo.$Class({
 		this.oApp.exec("ADD_APP_PROPERTY", ["getLineStyle", jindo.$Fn(this.getLineStyle, this).bind()]);
   	},
 
-	//@lazyload_js SE2M_TOGGLE_LINEHEIGHT_LAYER,SET_LINE_STYLE[
+	//SMARTEDITORSUS-987 SE2M_TOGGLE_LINEHEIGHT_LAYER,SET_LINE_STYLE 동적 로딩 제거
 	$ON_SE2M_TOGGLE_LINEHEIGHT_LAYER : function(){
 		this.oApp.exec("ADD_APP_PROPERTY", ["getLineStyle", jindo.$Fn(this.getLineStyle, this).bind()]);
 	},
@@ -10858,7 +11625,6 @@ nhn.husky.SE2M_LineStyler = jindo.$Class({
 		
 		return div;
  	}
-	//@lazyload_js]
  });
 //}
 //{
@@ -12328,9 +13094,7 @@ nhn.husky.SE2M_SCharacter = jindo.$Class({
 	
 	$ON_INSERT_SCHARACTERS : function(){
 		this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", ["INSERT SCHARACTER"]);
-		this.oSelection.pasteHTML(this.oTextField.value);
-		this.oSelection.collapseToEnd();
-		this.oSelection.select();
+		this.oApp.exec("PASTE_HTML", [this.oTextField.value]);
 		this.oApp.exec("FOCUS");
 		this.oApp.exec("RECORD_UNDO_AFTER_ACTION", ["INSERT SCHARACTER"]);
 		
@@ -13755,10 +14519,14 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 
 		var bAllMatched = true;
 		for(var i = 1, nLen = this.aSelectedCells.length; i < nLen; i++){
-			if(sBackgroundColor != this.aSelectedCells[i].getAttribute(this.TMP_BGC_ATTR)){
-				bAllMatched = false;
-				break;
+			// [SMARTEDITORSUS-1552] 드래그로 셀을 선택하는 중 elCell이 없는 경우 오류 발생
+			if(this.aSelectedCells[i]){
+				if(sBackgroundColor != this.aSelectedCells[i].getAttribute(this.TMP_BGC_ATTR)){
+					bAllMatched = false;
+					break;
+				}
 			}
+			// --[SMARTEDITORSUS-1552]
 		}
 		if(bAllMatched){
 			this.elBtnBGPalette.style.backgroundColor = sBackgroundColor;
@@ -14126,7 +14894,7 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		}
 
 		this._reassignCellSizes(this.elSelectionStartTable);
-
+		
 		this.htMap = this._getCellMapping(this.elSelectionStartTable);
 
 		var htPos = this._getBasisCellPosition(elLastCell);
@@ -14231,7 +14999,7 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		}
 
 		this._reassignCellSizes(this.elSelectionStartTable);
-
+		
 		this.htMap = this._getCellMapping(this.elSelectionStartTable);
 		this.htSelectionEPos.y += nNewRows;
 
@@ -14449,8 +15217,11 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 	},
 
 	_coverResizeLayer : function(){
-		this.elResizeCover.style.position = "absolute";
-
+		// [SMARTEDITORSUS-1504] 에디터 전체 크기보다 창이 작아졌을 때 elResizeGrid가 최대화된 elResizeCover으로부터 벗어나는 이슈가 있음
+		//this.elResizeCover.style.position = "absolute";
+		this.elResizeCover.style.position = "fixed";
+		// --[SMARTEDITORSUS-1504]
+		
 		var size = jindo.$Document().clientSize();
 		this.elResizeCover.style.width = size.width - this.nPageLeftRightMargin + "px";
 		this.elResizeCover.style.height = size.height - this.nPageTopBottomMargin + "px";
@@ -14484,37 +15255,103 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		for(var n = 0; n < 2; n++){
 			for(var i = 0; i < allCells[n].length; i++){
 				var elCell = allCells[n][i];
-
 				var welCell = jindo.$Element(elCell);
 				
-				var nPaddingLeft = this.parseIntOr0(welCell.css("paddingLeft"));
+				var htBrowser = jindo.$Agent().navigator();
+				
+				// [SMARTEDITORSUS-1427][SMARTEDITORSUS-1431][SMARTEDITORSUS-1491][SMARTEDITORSUS-1504] IE9, 10에서 Jindo.$Element#css 가 빈 속성값을 1px로 가져오는 문제점이 있어 대체
+				/*var nPaddingLeft = this.parseIntOr0(welCell.css("paddingLeft"));
 				var nPaddingRight = this.parseIntOr0(welCell.css("paddingRight"));
 				var nPaddingTop = this.parseIntOr0(welCell.css("paddingTop"));
 				var nPaddingBottom = this.parseIntOr0(welCell.css("paddingBottom"));
-
 				var nBorderLeft = this.parseBorder(welCell.css("borderLeftWidth"), welCell.css("borderLeftStyle"));
 				var nBorderRight = this.parseBorder(welCell.css("borderRightWidth"), welCell.css("borderRightStyle"));
 				var nBorderTop = this.parseBorder(welCell.css("borderTopWidth"), welCell.css("borderTopStyle"));
-				var nBorderBottom = this.parseBorder(welCell.css("borderBottomWidth"), welCell.css("borderBottomStyle"));
+				var nBorderBottom = this.parseBorder(welCell.css("borderBottomWidth"), welCell.css("borderBottomStyle"));*/
+				
+				var nPaddingLeft, nPaddingRight, nPaddingTop, nPaddingBottom;
+				var nBorderLeft, nBorderRight, nBorderTop, nBorderBottom;
+				// --[SMARTEDITORSUS-1427][SMARTEDITORSUS-1431][SMARTEDITORSUS-1491][SMARTEDITORSUS-1504]
 				
 				var nOffsetWidth, nOffsetHeight;
-				var htBrowser = jindo.$Agent().navigator();
-			
-				if(htBrowser.ie && htBrowser.nativeVersion >= 9){
+				
+				// [SMARTEDITORSUS-1504] 기존 구현 방식은 inherit된 스타일을 가져오지 못하는 문제와 함께, 일부 브라우저의 소수점 값을 버림하는 문제가 있다.
+				var isIEUnder9 = false;
+
+				// 매번 발생하는 리사이징 오차를 최소하기 위하여, 2회차부터는 1회차에 적용되는 style 값을 가져온다.
+				var bResizingGapShouldBeMinimized = false;
+				
+				if(htBrowser.ie){
+					if(htBrowser.nativeVersion <= 8){
+						// IE7, IE8
+						isIEUnder9 = true;
+						
+						bResizingGapShouldBeMinimized = true;
+					}
+				}
+				
+				if(!isIEUnder9){
+					// getComputedStyle()로 inherit된 스타일을 획득. IE 8 이하에서는 지원되지 않는다.  
+					nPaddingLeft = parseFloat(getComputedStyle(elCell).paddingLeft, 10);
+					nPaddingRight = parseFloat(getComputedStyle(elCell).paddingRight, 10);
+					nPaddingTop = parseFloat(getComputedStyle(elCell).paddingTop, 10);
+					nPaddingBottom = parseFloat(getComputedStyle(elCell).paddingBottom, 10);
+					
+					// 최초 리사이징 직전 width attribute에서 style의 width로 이행하는 과정에서 미세보정이 있기 때문에 크기가 조금 변한다.
+					nBorderLeft = parseFloat(getComputedStyle(elCell).borderLeftWidth, 10);
+					nBorderRight = parseFloat(getComputedStyle(elCell).borderRightWidth, 10)
+					nBorderTop = parseFloat(getComputedStyle(elCell).borderTopWidth, 10);
+					nBorderBottom = parseFloat(getComputedStyle(elCell).borderBottomWidth, 10);
+				}else{
+					// [SMARTEDITORSUS-1427][SMARTEDITORSUS-1431][SMARTEDITORSUS-1491]
+					nPaddingLeft = this.parseIntOr0(elCell.style.paddingLeft);
+					nPaddingRight = this.parseIntOr0(elCell.style.paddingRight);
+					nPaddingTop = this.parseIntOr0(elCell.style.paddingTop);
+					nPaddingBottom = this.parseIntOr0(elCell.style.paddingBottom);
+					// --[SMARTEDITORSUS-1427][SMARTEDITORSUS-1431][SMARTEDITORSUS-1491]
+					
+					// 기존 로직을 사용. IE의 경우 bug로 분류하여 1px를 획득하도록 설정되어 있다.
+					nBorderLeft = this.parseBorder(welCell.css("borderLeftWidth"), welCell.css("borderLeftStyle"));
+					nBorderRight = this.parseBorder(welCell.css("borderRightWidth"), welCell.css("borderRightStyle"));
+					nBorderTop = this.parseBorder(welCell.css("borderTopWidth"), welCell.css("borderTopStyle"));
+					nBorderBottom = this.parseBorder(welCell.css("borderBottomWidth"), welCell.css("borderBottomStyle"));
+				}
+				
+				nOffsetWidth = elCell.offsetWidth - (nPaddingLeft + nPaddingRight + nBorderLeft + nBorderRight) + "px";
+				nOffsetHeight = elCell.offsetHeight - (nPaddingTop + nPaddingBottom + nBorderTop + nBorderBottom) + "px";
+				
+				if(bResizingGapShouldBeMinimized){
+					var nWidth = jindo.$Element(elCell).attr("width");
+					var nHeight = jindo.$Element(elCell).attr("height");
+					
+					 // width와 height attribute는 최초 1회에 제거된다. 즉 2회차부터 해당하며, 동적으로 변하는 style의 width, height 값을 그대로 사용할 수 있다.
+					if(!nWidth && !nHeight){
+						nOffsetWidth = elCell.style.width;
+						nOffsetHeight = elCell.style.height;
+					}
+				}
+				
+				/*if(htBrowser.ie && (htBrowser.nativeVersion >= 9 && htBrowser.nativeVersion <= 10)){
 					// IE9, IE10
-					nOffsetWidth = elCell.offsetWidth + "px";
+					// [SMARTEDITORSUS-1427][SMARTEDITORSUS-1431][SMARTEDITORSUS-1491] IE9, 10에서 Jindo.$Element#css 관련 문제에 대응하면 다른 브라우저와 동일한 수식 적용 가능
+					//nOffsetWidth = elCell.offsetWidth + "px";
+					//nOffsetHeight = elCell.offsetHeight - (nPaddingTop + nPaddingBottom + nBorderTop + nBorderBottom) + "px";
+					nOffsetWidth = elCell.offsetWidth - (nPaddingLeft + nPaddingRight + nBorderLeft + nBorderRight) + "px";
 					nOffsetHeight = elCell.offsetHeight - (nPaddingTop + nPaddingBottom + nBorderTop + nBorderBottom) + "px";
+					// --[SMARTEDITORSUS-1427][SMARTEDITORSUS-1431][SMARTEDITORSUS-1491]
 				}else{
 					// Firefox, Chrome, IE7, IE8
 					nOffsetWidth = elCell.offsetWidth - (nPaddingLeft + nPaddingRight + nBorderLeft + nBorderRight) + "px";
 					nOffsetHeight = elCell.offsetHeight - (nPaddingTop + nPaddingBottom + nBorderTop + nBorderBottom) + "px";
-				}
+				}*/
+				// --[SMARTEDITORSUS-1504]
 				
 				aAllCellsWithSizeInfo[numCells++] = [elCell, nOffsetWidth, nOffsetHeight];
 			}
 		}
 		for(var i = 0; i < numCells; i++){
 			var aCellInfo = aAllCellsWithSizeInfo[i];
+
 			aCellInfo[0].removeAttribute("width");
 			aCellInfo[0].removeAttribute("height");
 
@@ -14534,7 +15371,11 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 	_mousedown_ResizeCover : function(oEvent){
 		this.bResizing = true;
 		this.nStartHeight = oEvent.pos().clientY;
-
+		
+		// [SMARTEDITORSUS-1504] 표 테두리를 누를 때마다 글양식이 2px씩 세로로 길어지는 문제가 있는데, 이를 위한 flag
+		this.bResizingCover = true;
+		// --[SMARTEDITORSUS-1504]
+		
 		this.wfnMousemove_ResizeCover.attach(this.elResizeCover, "mousemove");
 		this.wfnMouseup_ResizeCover.attach(document, "mouseup");
 
@@ -14543,6 +15384,11 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 
 		this.nStartHeight = oEvent.pos().clientY;
 		this.nStartWidth = oEvent.pos().clientX;
+		
+		// [SMARTEDITORSUS-1504] 표 리사이즈용 gripper의 배치를 WYSIWYG 편집 영역 위치 기반으로 개선 
+		this.nClientXDiff = this.nStartWidth - this.htResizing.htEPos.clientX;
+		this.nClientYDiff = this.nStartHeight - this.htResizing.htEPos.clientY; 
+		// --[SMARTEDITORSUS-1504]
 		
 		this._reassignCellSizes(this.htResizing.elTable);
 		
@@ -14560,16 +15406,35 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 	},
 
 	_mousemove_ResizeCover : function(oEvent){
+		// [SMARTEDITORSUS-1504] 표 모서리 Drag 사용성 개선
+		// - 최초 리사이징 후 해당 위치에서 바로 마우스를 눌러 Drag 가능
+		if(jindo.$Agent().navigator().chrome || jindo.$Agent().navigator().safari){
+			if(this.htResizing.nPreviousResizeMode != undefined && this.htResizing.nPreviousResizeMode != 0){
+				if(this.htResizing.nResizeMode != this.htResizing.nPreviousResizeMode){
+					this.htResizing.nResizeMode = this.htResizing.nPreviousResizeMode;
+					this._showResizer();
+				}
+			}
+		}
+		// --[SMARTEDITORSUS-1504]
+		
 		var nHeightChange = oEvent.pos().clientY - this.nStartHeight;
 		var nWidthChange = oEvent.pos().clientX - this.nStartWidth;
 
 		var oEventPos = oEvent.pos();
 
-		if(this.htResizing.nResizeMode == 1){
+		// [SMARTEDITORSUS-1504] 표 리사이즈용 gripper의 배치를 WYSIWYG 편집 영역 위치 기반으로 개선
+		/*if(this.htResizing.nResizeMode == 1){
 			this.elResizeGrid.style.left = oEventPos.pageX - this.parseIntOr0(this.elResizeGrid.style.width)/2 + "px";
 		}else{
 			this.elResizeGrid.style.top = oEventPos.pageY - this.parseIntOr0(this.elResizeGrid.style.height)/2 + "px";
+		}*/
+		if(this.htResizing.nResizeMode == 1){
+			this.elResizeGrid.style.left = oEvent.pos().clientX - this.nClientXDiff - this.parseIntOr0(this.elResizeGrid.style.width)/2 + "px";
+		}else{
+			this.elResizeGrid.style.top = oEvent.pos().clientY - this.nClientYDiff - this.parseIntOr0(this.elResizeGrid.style.height)/2 + "px";
 		}
+		// --[SMARTEDITORSUS-1504]
 	},
 
 	_mouseup_ResizeCover : function(oEvent){
@@ -14589,6 +15454,7 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		}
 		if(this.htResizing.nResizeMode == 1){
 			nWidthChange = oEvent.pos().clientX - this.nStartWidth;
+			
 			if(this.htAllAffectedCells.nMinBefore != -1 && nWidthChange < -1*this.htAllAffectedCells.nMinBefore){
 				nWidthChange = -1 * this.htAllAffectedCells.nMinBefore + this.MIN_CELL_WIDTH;
 			}
@@ -14597,14 +15463,34 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 			}
 		}
 		
+		// [SMARTEDITORSUS-1504] FireFox는 소수점으로 size가 나오는데, parseInt는 소수점 이하를 버림
+		var htBrowser = jindo.$Agent().navigator();
+		var isIEUnder9 = false;
+		
+		if(htBrowser.ie){
+			if(htBrowser.nativeVersion <= 8){
+				// IE7, IE8
+				isIEUnder9 = true;
+			}
+		}
+		
 		var aCellsBefore = this.htAllAffectedCells.aCellsBefore;
 		for(var i = 0; i < aCellsBefore.length; i++){
 			var elCell = aCellsBefore[i];
-
-			var width = this.parseIntOr0(elCell.style.width) + nWidthChange;
+			
+			var width, height;
+			if(!isIEUnder9){
+				width = parseFloat(elCell.style.width, 10) + nWidthChange;
+				height = parseFloat(elCell.style.height, 10) + nHeightChange;
+			}else{
+				width = this.parseIntOr0(elCell.style.width) + nWidthChange;
+				height = this.parseIntOr0(elCell.style.height) + nHeightChange;
+			}
+			
+			//var width = this.parseIntOr0(elCell.style.width) + nWidthChange;
 			elCell.style.width = Math.max(width, this.MIN_CELL_WIDTH) + "px";
-
-			var height = this.parseIntOr0(elCell.style.height) + nHeightChange;
+			
+			//var height = this.parseIntOr0(elCell.style.height) + nHeightChange;
 			elCell.style.height = Math.max(height, this.MIN_CELL_HEIGHT) + "px";
 		}
 			
@@ -14612,12 +15498,26 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		for(var i = 0; i < aCellsAfter.length; i++){
 			var elCell = aCellsAfter[i];
 
-			var width = this.parseIntOr0(elCell.style.width) - nWidthChange;
+			var width, height;
+			if(!isIEUnder9){
+				width = parseFloat(elCell.style.width, 10) - nWidthChange;
+				height = parseFloat(elCell.style.height, 10) - nHeightChange;
+			}else{
+				width = this.parseIntOr0(elCell.style.width) - nWidthChange;
+				height = this.parseIntOr0(elCell.style.height) - nHeightChange;
+			}
+			
+			//var width = this.parseIntOr0(elCell.style.width) - nWidthChange;
 			elCell.style.width = Math.max(width, this.MIN_CELL_WIDTH) + "px";
 			
-			var height = this.parseIntOr0(elCell.style.height) - nHeightChange;
+			//var height = this.parseIntOr0(elCell.style.height) - nHeightChange;
 			elCell.style.height = Math.max(height, this.MIN_CELL_HEIGHT) + "px";
 		}
+		// --[SMARTEDITORSUS-1504]
+		
+		// [SMARTEDITORSUS-1504] 표 테두리를 누를 때마다 글양식이 2px씩 세로로 길어지는 문제가 있는데, 이를 위한 flag
+		this.bResizingCover = false;
+		// --[SMARTEDITORSUS-1504]
 	},
 
 	$ON_CLOSE_QE_LAYER : function(){
@@ -14707,33 +15607,74 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 			nAdjustedDraggableCellEdge2 = this.htResizing.nBorderSize + this.nDraggableCellEdge;
 		}
 		
-		// top border of the cell is selected
+		// [SMARTEDITORSUS-1504] 경계선 판별에 사용
+		var elCellWidth = this.htResizing.elCell.clientWidth,  
+		elCellHeight = this.htResizing.elCell.clientHeight;
+		
+		nRightBorderCriteria = elCellWidth - this.htResizing.htEPos.offsetX,
+		nBottomBorderCriteria = elCellHeight - this.htResizing.htEPos.offsetY;
+		// --[SMARTEDITORSUS-1504]
+		
+ 		// top border of the cell is selected
 		if(this.htResizing.htEPos.offsetY <= nAdjustedDraggableCellEdge1){
 			// top border of the first cell can't be dragged
 			if(this.htResizing.elCell.parentNode.previousSibling){
 				this.htResizing.nVA = -1;
-				this.htResizing.nResizeMode = 2;
+				
+				// [SMARTEDITORSUS-1504] 표 리사이즈용 gripper 배치 개선
+				//this.htResizing.nResizeMode = 2;
+				this.htResizing.nResizeMode = 4;
+				// --[SMARTEDITORSUS-1504]
 			}
 		}
 		// bottom border of the cell is selected
-		if(this.htResizing.elCell.offsetHeight-nAdjustedDraggableCellEdge2 <= this.htResizing.htEPos.offsetY){
+		// [SMARTEDITORSUS-1504] 표 모서리 Drag 사용성 개선
+		//if(this.htResizing.elCell.offsetHeight-nAdjustedDraggableCellEdge2 <= this.htResizing.htEPos.offsetY){
+		if(nBottomBorderCriteria <= nAdjustedDraggableCellEdge2){
 			this.htResizing.nBorderTopPos = this.htResizing.elCell.offsetHeight + nAdjustedDraggableCellEdge1 - 1;
 			this.htResizing.nResizeMode = 2;
 		}
-
+		// --[SMARTEDITORSUS-1504]
+		
 		// left border of the cell is selected
 		if(this.htResizing.htEPos.offsetX <= nAdjustedDraggableCellEdge1){
 			// left border of the first cell can't be dragged
-			if(this.htResizing.elCell.previousSibling){
+			// [SMARTEDITORSUS-1504] 표 리사이즈용 gripper 배치 개선
+			// 일반 표는 아래 if문을 거치지 않지만, 글양식의 경우 가장 좌측 cell의 previousSibling이 textNode이기 때문에 if문에 부합하는 문제가 있었다.
+			/*if(this.htResizing.elCell.previousSibling){
 				this.htResizing.nHA = -1;
+				
 				this.htResizing.nResizeMode = 0;
+			}*/
+			
+			// 가장 좌측의 cell은 그 offsetLeft가 table의 scrollLeft와 같다.
+			if(this.htResizing.elTable.scrollLeft != this.htResizing.elCell.offsetLeft){
+				this.htResizing.nHA = -1;
+				
+				this.htResizing.nResizeMode = 3;
 			}
+			// --[SMARTEDITORSUS-1504]
 		}
 		// right border of the cell is selected
-		if(this.htResizing.elCell.offsetWidth - nAdjustedDraggableCellEdge2 <= this.htResizing.htEPos.offsetX){
+		// [SMARTEDITORSUS-1504] 표 모서리 Drag 사용성 개선
+		//if(this.htResizing.elCell.offsetWidth - nAdjustedDraggableCellEdge2 <= this.htResizing.htEPos.offsetX){
+		if(nRightBorderCriteria <= nAdjustedDraggableCellEdge1){
 			this.htResizing.nBorderLeftPos = this.htResizing.elCell.offsetWidth + nAdjustedDraggableCellEdge1 - 1;
 			this.htResizing.nResizeMode = 1;
 		}
+		// --[SMARTEDITORSUS-1504]
+		
+		// [SMARTEDITORSUS-1504] 표 모서리 Drag 사용성 개선
+		if(jindo.$Agent().navigator().chrome || jindo.$Agent().navigator().safari){
+			if(!this.htResizing.elPreviousCell){
+				this.htResizing.elPreviousCell = this.htResizing.elCell;
+			}else{
+				if(this.htResizing.elCell != this.htResizing.elPreviousCell){
+					this.htResizing.elPreviousCell = this.htResizing.elCell;
+				}
+			}
+		}
+		// --[SMARTEDITORSUS-1504]
 		
 		if(this.htResizing.nResizeMode === 0){return false;}
 		
@@ -14741,14 +15682,16 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 	},
 	
 	_showCellResizeGrip : function(){
-		if(this.htResizing.nResizeMode == 1){
+		// [SMARTEDITORSUS-1504] gripper가 WYSIWYG 편집영역 위치정보에 기반하여 배치되도록 변경
+		/*if(this.htResizing.nResizeMode == 1){
 			this.elResizeCover.style.cursor = "col-resize";
 		}else{
 			this.elResizeCover.style.cursor = "row-resize";
 		}
 
-		this._showResizer();
-		if(this.htResizing.nResizeMode == 1){
+		this._showResizer();*/
+		// 만약 iframe 내부에 gripper를 생성한다면, 커서 위치를 기반으로 생성해 주면 됨
+		/*if(this.htResizing.nResizeMode == 1){
 			this._setResizerSize((this.htResizing.nBorderSize + this.nDraggableCellEdge) * 2, this.parseIntOr0(jindo.$Element(this.elIFrame).css("height")));
 			jindo.$Element(this.elResizeGrid).offset(this.htFrameOffset.top, this.htFrameOffset.left + this.htResizing.htEPos.clientX - this.parseIntOr0(this.elResizeGrid.style.width)/2 - this.htResizing.htEPos.offsetX + this.htResizing.nBorderLeftPos);
 		}else{
@@ -14756,7 +15699,44 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 			var elIFrameWidth = this.oApp.elEditingAreaContainer.offsetWidth + "px";
 			this._setResizerSize(this.parseIntOr0(elIFrameWidth), (this.htResizing.nBorderSize + this.nDraggableCellEdge) * 2);
 			jindo.$Element(this.elResizeGrid).offset(this.htFrameOffset.top + this.htResizing.htEPos.clientY - this.parseIntOr0(this.elResizeGrid.style.height)/2 - this.htResizing.htEPos.offsetY + this.htResizing.nBorderTopPos, this.htFrameOffset.left);
+		}*/
+		if(this.htResizing.nResizeMode == 1 || this.htResizing.nResizeMode == 3){
+			this.elResizeCover.style.cursor = "col-resize";
+		}else if(this.htResizing.nResizeMode == 2 || this.htResizing.nResizeMode == 4){
+			this.elResizeCover.style.cursor = "row-resize";
 		}
+
+		this._showResizer();
+		
+		// gripper는 대상 셀에서 어느 경계 위에 커서가 위치했느냐에 기반하여 배치
+		if(this.htResizing.nResizeMode == 1){ // 오른쪽 경계
+			this._setResizerSize((this.htResizing.nBorderSize + this.nDraggableCellEdge) * 2, this.parseIntOr0(jindo.$Element(this.elIFrame).css("height")));
+			this.elResizeGrid.style.top = "0px";
+			this.elResizeGrid.style.left = this.htResizing.elCell.clientWidth + this.htResizing.htEPos.clientX - this.htResizing.htEPos.offsetX - this.parseIntOr0(this.elResizeGrid.style.width)/2 + "px";
+		}else if(this.htResizing.nResizeMode == 2){ // 아래쪽 경계
+			//가변폭을 지원하기 때문에 매번 현재 Container의 크기를 구해와서 Grip을 생성해야 한다.
+			var elIFrameWidth = this.oApp.elEditingAreaContainer.offsetWidth + "px";
+			this._setResizerSize(this.parseIntOr0(elIFrameWidth), (this.htResizing.nBorderSize + this.nDraggableCellEdge) * 2);
+			this.elResizeGrid.style.top = this.htResizing.elCell.clientHeight + this.htResizing.htEPos.clientY - this.htResizing.htEPos.offsetY - this.parseIntOr0(this.elResizeGrid.style.height)/2 + "px";
+			this.elResizeGrid.style.left = "0px";
+		}else if(this.htResizing.nResizeMode == 3){ // 왼쪽 경계
+			this._setResizerSize((this.htResizing.nBorderSize + this.nDraggableCellEdge) * 2, this.parseIntOr0(jindo.$Element(this.elIFrame).css("height")));
+			this.elResizeGrid.style.top = "0px";
+			this.elResizeGrid.style.left = + this.htResizing.htEPos.clientX - this.htResizing.htEPos.offsetX - this.parseIntOr0(this.elResizeGrid.style.width)/2 + "px";
+			
+			// 이후 작업들은 오른쪽 경계를 기준으로 일괄처리
+			this.htResizing.nResizeMode = 1;
+		}else if(this.htResizing.nResizeMode == 4){ //위쪽 경계
+			//가변폭을 지원하기 때문에 매번 현재 Container의 크기를 구해와서 Grip을 생성해야 한다.
+			var elIFrameWidth = this.oApp.elEditingAreaContainer.offsetWidth + "px";
+			this._setResizerSize(this.parseIntOr0(elIFrameWidth), (this.htResizing.nBorderSize + this.nDraggableCellEdge) * 2);
+			this.elResizeGrid.style.top = this.htResizing.htEPos.clientY - this.htResizing.htEPos.offsetY - this.parseIntOr0(this.elResizeGrid.style.height)/2 + "px";
+			this.elResizeGrid.style.left = "0px";
+			
+			// 이후 작업들은 아래쪽 경계를 기준으로 일괄처리
+			this.htResizing.nResizeMode = 2;
+		}
+		 // --[SMARTEDITORSUS-1504]
 	},
 	
 	_getAllAffectedCells : function(basis_x, basis_y, iResizeMode, oTable){
@@ -14822,7 +15802,13 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 			this.elResizeGrid = this.elTmp.firstChild;
 			this.elResizeCover = this.elResizeGrid.firstChild;
 		}catch(e){}
-		document.body.appendChild(this.elResizeGrid);
+		
+		// [SMARTEDITORSUS-1504] gripper를 WYSIWYG 편집 영역 위치 정보에 기반하여 배치하도록 개선
+		//document.body.appendChild(this.elResizeGrid);
+		// document.body 대신 WYSIWYG 편집 영역을 둘러싼 container div에 추가
+		var oContainer = jindo.$$.getSingle(".husky_seditor_editing_area_container");
+		oContainer.appendChild(this.elResizeGrid);
+		// --[SMARTEDITORSUS-1504]
 	},
 	
 	_selectAll_Row : function(){
@@ -15005,6 +15991,11 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		// |...+---+---+...|
 		// |...|.6.|.5.|...|
 		// +---+---+---+---+
+		
+		// [SMARTEDITORSUS-991] IE는 insertionPt의 previousSibling에도 배경색을 적용해줘야 할 필요가 있음.
+		var htBrowser = jindo.$Agent().navigator();
+		// --[SMARTEDITORSUS-991]
+		
 		for(var y = 0, nYLen = this.htMap[0].length; y < nYLen; y++){
 			elCurTR = aTR[y];
 			for(var x = this.htSelectionEPos.x; x >= this.htSelectionSPos.x; x--){
@@ -15039,6 +16030,18 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 					}
 				}
 				elCurTR.insertBefore(elCellClone, elInsertionPt);
+				
+				// [SMARTEDITORSUS-991] IE는 insertionPt의 previousSibling에도 style을 적용해줘야 할 필요가 있음.
+				// IE의 경우 DOM 구조 상 빈 텍스트 노드를 하나 추가해 줘야 한다.
+				if(htBrowser.ie && htBrowser.nativeVersion >= 9){
+					var elEmptyTextNode = elInsertionPt.cloneNode();
+					elCurTR.insertBefore(elEmptyTextNode, elCellClone);
+					
+					var elPreviousSibling = elInsertionPt.previousSibling;
+					
+					elPreviousSibling.style.backgroundColor = elCellClone.style.backgroundColor;
+				}
+				// --[SMARTEDITORSUS-991]
 			}
 		}
 		// remove the insertion marker from the original cells
@@ -15074,9 +16077,62 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		var aTRs = jindo.$$(">TR", elTBody, {oneTimeOffCache:true});
 		var elInsertionPt = aTRs[this.htSelectionEPos.y + 1] || null;
 
+		// [SMARTEDITORSUS-991] IE는 insertionPt의 previousSibling에도 배경색을 적용해줘야 할 필요가 있음.
+		var htBrowser = jindo.$Agent().navigator();
+		// --[SMARTEDITORSUS-991]
+		
 		for(var y = this.htSelectionSPos.y; y <= this.htSelectionEPos.y; y++){
 			elRowClone = this._getTRCloneWithAllTD(y);
+
+			// [SMARTEDITORSUS-991] IE의 DOM 구조 상 빈 텍스트 노드를 각 노드 사이에 포함시켜 줘야 한다. 
+			if(htBrowser.ie && htBrowser.nativeVersion >= 9){
+				// elRowClone의 td 사이사이에 빈 텍스트 노드를 포함시킨 새로운 tr을 생성
+				var elAdjustedRowClone = document.createElement("tr");
+				
+				var aRowClone = elRowClone.childNodes;
+				
+				// 짝수 인덱스에는 기존 elRowClone을, 홀수 인덱스에는 빈 텍스트 노드를 삽입
+				for(var i = 0, len = aRowClone.length; i < len; i++){
+					var elEmptyTextNode = aTRs[this.htSelectionEPos.y].nextSibling.cloneNode();
+
+					elAdjustedRowClone.appendChild(aRowClone[i].cloneNode());
+					elAdjustedRowClone.appendChild(elEmptyTextNode);
+				}
+				
+				// IE용으로 보정된 elRowClone 준비
+				elRowClone = elAdjustedRowClone;
+			}
+			// --[SMARTEDITORSUS-991]
+			
 			elTBody.insertBefore(elRowClone, elInsertionPt);
+			
+			// [SMARTEDITORSUS-991] IE는 insertionPt의 previousSibling에도 추가로 배경색을 적용해줘야 할 필요가 있음.
+			if(htBrowser.ie && htBrowser.nativeVersion >= 9){
+				// IE의 경우 tr 사이에도 빈 텍스트 노드를 하나 추가해 줘야 한다.
+				var elEmptyTextNode = aTRs[this.htSelectionEPos.y].nextSibling.cloneNode();
+				elTBody.insertBefore(elEmptyTextNode, elInsertionPt);
+				
+				// 스타일을 적용시켜 줄 대상 tr
+				var elPreviousSiblingParent = this.htMap[0][y].parentNode;
+				
+				var aOriginalPreviousSibling = elPreviousSiblingParent.childNodes;
+				var aPreviousSibling = [];
+				for(var i = 0, len = aOriginalPreviousSibling.length; i < len; i++){
+					aPreviousSibling.push(aOriginalPreviousSibling[i]);
+				}
+				
+				// 배경색을 복사하기 위해 준비
+				var aRowClone = elRowClone.childNodes;
+
+				// 빈 텍스트 노드를 포함하고 있기 때문에 실제 엘리먼트는 짝수 인덱스에만 존재.
+				for(var i = 0, len = aRowClone.length / 2; i < len; i++){
+					var elCloneTD = aRowClone[i * 2];
+					var elPreviousTD = aPreviousSibling[i * 2];
+					
+					elPreviousTD.style.backgroundColor = elCloneTD.style.backgroundColor;
+				}
+			}
+			// --[SMARTEDITORSUS-991]
 		}
 
 		var nSelectionWidth = this.htSelectionEPos.x - this.htSelectionSPos.x + 1;
@@ -15276,17 +16332,35 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		var welCell, elCell;
 		for(var i = 0; i < this.aSelectedCells.length; i++){
 			elCell = this.aSelectedCells[i];
-			welCell = jindo.$Element(elCell);
-			welCell.addClass(this.CELL_SELECTION_CLASS);
-			if(elCell.style.backgroundColor){
-				elCell.setAttribute(this.TMP_BGC_ATTR, elCell.style.backgroundColor);
-				welCell.css("backgroundColor", "");
+
+			// [SMARTEDITORSUS-1552] 드래그로 셀을 선택하는 중 elCell이 없는 경우 오류 발생
+			if(elCell){
+				// [SMARTEDITORSUS-1498][SMARTEDITORSUS-1549] 선택된 모든 셀에서 드래그가 발생하지 못하게 방지(FF, Chrome)
+				if(elCell.ondragstart == null){
+					elCell.ondragstart = function(){
+						return false;
+					};
+				}
+				// --[SMARTEDITORSUS-1498][SMARTEDITORSUS-1549]
+					
+				welCell = jindo.$Element(elCell);
+				welCell.addClass(this.CELL_SELECTION_CLASS);
+				
+				// [SMARTEDITORSUS-1498][SMARTEDITORSUS-1549] 선택된 모든 셀에서 드래그가 발생하지 못하게 방지(FF, Chrome)
+				welCell.addClass("undraggable");
+				// --[SMARTEDITORSUS-1498][SMARTEDITORSUS-1549]
+				
+				if(elCell.style.backgroundColor){
+					elCell.setAttribute(this.TMP_BGC_ATTR, elCell.style.backgroundColor);
+					welCell.css("backgroundColor", "");
+				}
+				
+				if(elCell.style.backgroundImage) {
+					elCell.setAttribute(this.TMP_BGIMG_ATTR, elCell.style.backgroundImage);
+					welCell.css("backgroundImage", "");
+				}
 			}
-			
-			if(elCell.style.backgroundImage) {
-				elCell.setAttribute(this.TMP_BGIMG_ATTR, elCell.style.backgroundImage);
-				welCell.css("backgroundImage", "");
-			}
+			// --[SMARTEDITORSUS-1552]
 		}
 	},
 
@@ -15295,18 +16369,28 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		
 		for(var i = 0; i < this.aSelectedCells.length; i++){
 			elCell = this.aSelectedCells[i];
-			welCell = jindo.$Element(elCell);
-			welCell.removeClass(this.CELL_SELECTION_CLASS);
-			//배경색
-			if(elCell.getAttribute(this.TMP_BGC_ATTR)){
-				elCell.style.backgroundColor = elCell.getAttribute(this.TMP_BGC_ATTR);
-				elCell.removeAttribute(this.TMP_BGC_ATTR);
+
+			// [SMARTEDITORSUS-1552] 드래그로 셀을 선택하는 중 elCell이 없는 경우 오류 발생
+			if(elCell){
+				welCell = jindo.$Element(elCell);
+				welCell.removeClass(this.CELL_SELECTION_CLASS);
+				
+				// [SMARTEDITORSUS-1498][SMARTEDITORSUS-1549] 선택된 모든 셀에서 드래그가 발생하지 못하게 방지(FF, Chrome)
+				welCell.removeClass("undraggable");
+				// --[SMARTEDITORSUS-1498][SMARTEDITORSUS-1549]
+				
+				//배경색
+				if(elCell.getAttribute(this.TMP_BGC_ATTR)){
+					elCell.style.backgroundColor = elCell.getAttribute(this.TMP_BGC_ATTR);
+					elCell.removeAttribute(this.TMP_BGC_ATTR);
+				}
+				//배경이미지 
+				if(elCell.getAttribute(this.TMP_BGIMG_ATTR)) {
+					welCell.css("backgroundImage",elCell.getAttribute(this.TMP_BGIMG_ATTR));
+					elCell.removeAttribute(this.TMP_BGIMG_ATTR);
+				}
 			}
-			//배경이미지 
-			if(elCell.getAttribute(this.TMP_BGIMG_ATTR)) {
-				welCell.css("backgroundImage",elCell.getAttribute(this.TMP_BGIMG_ATTR));
-				elCell.removeAttribute(this.TMP_BGIMG_ATTR);
-			}
+			// --[SMARTEDITORSUS-1552]
 		}
 	},
 
@@ -15783,6 +16867,15 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 		var oKeyInfo = oEvent.key();
 		//Backspace : 8, Delete :46
 		if (oKeyInfo.keyCode == 8 || oKeyInfo.keyCode == 46 ) {
+			// [SMARTEDITORSUS-1213][IE9, 10] 사진 삭제 후 zindex 1000인 div가 잔존하는데, 그 위로 썸네일 drag를 시도하다 보니 drop이 불가능.
+			var htBrowser = jindo.$Agent().navigator();
+			if(htBrowser.ie && htBrowser.nativeVersion > 8){ 
+				var elFirstChild = jindo.$$.getSingle("DIV.husky_seditor_editing_area_container").childNodes[0];
+				if((elFirstChild.tagName == "DIV") && (elFirstChild.style.zIndex == 1000)){
+					elFirstChild.parentNode.removeChild(elFirstChild);
+				}
+			}
+			// --[SMARTEDITORSUS-1213]
 			this.oApp.exec("CLOSE_QE_LAYER", [oEvent]);
 		}
 	},
@@ -15794,11 +16887,15 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 			timeout : 1,
 			onload: function(rp) {
 				var result = rp.json().result;
-				if (!!result && !!result.length) {
-					self.setData(result[result.length - 1]);
+				// [SMARTEDITORSUS-1028][SMARTEDITORSUS-1517] QuickEditor 설정 API 개선
+				//if (!!result && !!result.length) {
+				if (!!result && !!result.text_data) {
+					//self.setData(result[result.length - 1]);
+					self.setData(result.text_data);
 				} else {
 					self.setData("{table:'full',img:'full',review:'full'}");
 				}
+				// --[SMARTEDITORSUS-1028][SMARTEDITORSUS-1517]
 			},
 			
 			onerror : function() {
@@ -15858,7 +16955,8 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 	
 	//@lazyload_js OPEN_QE_LAYER[
 	$ON_MSG_BEFOREUNLOAD_FIRED : function(){
-		if (!this._environmentData || !this._bUseConfig) {
+		// [SMARTEDITORSUS-1028][SMARTEDITORSUS-1517] QuickEditor 설정 API 개선으로, submit 이후 발생하게 되는 beforeunload 이벤트 핸들링 제거
+		/*if (!this._environmentData || !this._bUseConfig) {
 			return;
 		}
 		
@@ -15868,7 +16966,8 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 		}).request({
 			text_key :"qeditor_fold",
 			text_data : "{table:'"+this._environmentData["table"]["type"]+"',img:'"+this._environmentData["img"]["type"]+"',review:'"+this._environmentData["review"]["type"]+"'}" 
-		});
+		});*/
+		// --[SMARTEDITORSUS-1028][SMARTEDITORSUS-1517]
 	},
 	/**
 	 * openType을 저장하는 함수.
@@ -15876,6 +16975,18 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 	 * @param {Boolean} bBol
 	 */
 	setOpenType : function(sType,bBol){
+		// [SMARTEDITORSUS-1213] 작성된 컨텐츠 수정 화면에서 사진이 로드되자마자 바로 사진을 클릭하면 QuickEditor를 띄우는 데 문제가 있음 
+		if(typeof(this._environmentData) == "undefined" || this._environmentData == null){
+			this._environmentData = {};
+		}
+		if(typeof(this._environmentData[sType]) == "undefined" || this._environmentData[sType] == null){
+			this._environmentData[sType] = {};
+		}
+		if(typeof(this._environmentData[sType].isOpen) == "undefined" || this._environmentData[sType].isOpen == null){
+			this._environmentData[sType].isOpen = true;
+		}
+		// --[SMARTEDITORSUS-1213]
+		
 		this._environmentData[sType].isOpen = bBol;
 	},
 	/**
@@ -15989,6 +17100,21 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 		}else{
 			this._environmentData[sType].type = "full";
 		}
+		
+		// [SMARTEDITORSUS-1028][SMARTEDITORSUS-1517] QuickEditor 설정 API 개선으로, submit 이후 발생하게 되는 beforeunload 이벤트 대신 호출 시점 변경
+		// QuickEditor를 접고 펼칠 때마다 API 통신을 거치기 때문에 submit이나 beforeunload에 구애받지 않고 안정적인 데이터 저장 가능
+		if (!this._environmentData || !this._bUseConfig) {
+			return;
+		}
+		
+		jindo.$Ajax(this._sAddTextAjaxUrl,{
+			type : "jsonp",
+			onload: function(){}
+		}).request({
+			text_key :"qeditor_fold",
+			text_data : "{table:'"+this._environmentData["table"]["type"]+"',img:'"+this._environmentData["img"]["type"]+"',review:'"+this._environmentData["review"]["type"]+"'}" 
+		});
+		// --[SMARTEDITORSUS-1028][SMARTEDITORSUS-1517]
 		
 //		this.positionCopy(beforeX,beforeY,this._environmentData[sType].type);
 				
@@ -16986,60 +18112,6 @@ nhn.husky.DialogLayerManager = jindo.$Class({
 	}
 	//@lazyload_js]
 });
-nhn.husky.ErrorCollector = jindo.$Class({
-        name : "ErrorCollector",
-
-        $init : function() {
-        },
-
-        $ON_MSG_APP_READY: function() {
-        },
-        
-        $ON_FIRE_ERROR: function(message, el) {
-            if( typeof message == 'object' & typeof message.description == 'string') {
-                message = message + " : " + message.description;
-            }
-            var line = message.lineNumber;
-
-            if(!el) el = document.location;
-            if(!line) line = 0;
-
-            if(el) {
-                var tmp = 'http://smarteditor.naver.com/';
-                tmp += el;
-                el = tmp;
-            }
-
-            JEagleEyeClientForSE2.sendError(message, el, line);    
-        }   
-});
-nhn.husky.JDUtil = jindo.$Class({
-        name : "JDUtil",
-
-        $init : function() {
-        },
-
-        $ON_MSG_APP_READY: function() {
-        },
-        
-        $ON_FIRE_ERROR: function(message, el) {
-            if( typeof message == 'object' & typeof message.description == 'string') {
-                message = message + " : " + message.description;
-            }
-            var line = message.lineNumber;
-
-            if(!el) el = document.location;
-            if(!line) line = 0;
-
-            if(el) {
-                var tmp = 'http://smarteditor.naver.com/';
-                tmp += el;
-                el = tmp;
-            }
-
-            JEagleEyeClientForSE2.sendError(message, el, line);    
-        }   
-});
 //{
 /**
  * @fileOverview This file contains 
@@ -17964,22 +19036,28 @@ getFilteredHashTable({
 		elStyle.setAttribute("rel", "stylesheet");
 		elStyle.setAttribute("href", url);
 		if(fnCallback){
-			elStyle.onreadystatechange = function(){
-				if(elStyle.readyState != "complete"){
-					return;
-				}
-				
-				// [SMARTEDITORSUS-308] [IE9] 응답이 304인 경우
-				//	onreadystatechage 핸들러에서 readyState 가 complete 인 경우가 두 번 발생
-				//	LINK 엘리먼트의 속성으로 콜백 실행 여부를 플래그로 남겨놓아 처리함
-				if(elStyle.getAttribute("_complete")){
-					return;
-				}
-
-				elStyle.setAttribute("_complete", true);
-				
-				fnCallback();
-			};
+			if ('onload' in elStyle) {
+				elStyle.onload = function(){
+					fnCallback();
+				};
+			} else {
+				elStyle.onreadystatechange = function(){
+					if(elStyle.readyState != "complete"){
+						return;
+					}
+					
+					// [SMARTEDITORSUS-308] [IE9] 응답이 304인 경우
+					//	onreadystatechage 핸들러에서 readyState 가 complete 인 경우가 두 번 발생
+					//	LINK 엘리먼트의 속성으로 콜백 실행 여부를 플래그로 남겨놓아 처리함
+					if(elStyle.getAttribute("_complete")){
+						return;
+					}
+					
+					elStyle.setAttribute("_complete", true);
+					
+					fnCallback();
+				};
+			}
 		}
 		elHead.appendChild (elStyle); 
 	},
@@ -18077,6 +19155,7 @@ getFilteredHashTable({
 		var o  = {};
 		var re = /\s*<(\/?[\w:\-]+)((?:\s+[\w:\-]+\s*=\s*(?:"(?:\\"|[^"])*"|'(?:\\'|[^'])*'))*)\s*((?:\/>)|(?:><\/\1>|\s*))|\s*<!\[CDATA\[([\w\W]*?)\]\]>\s*|\s*>?([^<]*)/ig;
 		var re2= /^[0-9]+(?:\.[0-9]+)?$/;
+		var re3= /^\s+$/g;
 		var ec = {"&amp;":"&","&nbsp;":" ","&quot;":"\"","&lt;":"<","&gt;":">"};
 		var fg = {tags:["/"],stack:[o]};
 		var es = function(s){ 
@@ -18149,7 +19228,7 @@ getFilteredHashTable({
 				}
 			} else if (typeof $4 == "string" && $4) {
 				cdata = $4;
-			} else if (typeof $5 == "string" && $5) {
+			} else if (typeof $5 == "string" && $5.replace(re3, "")) { // [SMARTEDITORSUS-1525] 닫는 태그인데 공백문자가 들어있어 cdata 값을 덮어쓰는 경우 방지 
 				cdata = es($5);
 			}
 			
