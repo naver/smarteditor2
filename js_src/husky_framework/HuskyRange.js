@@ -2145,7 +2145,7 @@ nhn.BrowserSelectionImpl_IE = function(){
 			var oRgTextsUpToThePoint = oRgOrigPoint.duplicate();
 			oRgTextsUpToThePoint.setEndPoint("StartToStart", oRgTextStart);
 
-			var textCount = oRgTextsUpToThePoint.text.length;
+			var textCount = oRgTextsUpToThePoint.text.replace(/[\r\n]/g,"").length;
 
 			while(textCount > oCurTextNode.nodeValue.length && oCurTextNode.nextSibling){
 				textCount -= oCurTextNode.nodeValue.length;

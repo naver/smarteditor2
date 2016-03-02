@@ -248,10 +248,28 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 		}
 	},
 	
+	// [SMARTEDITORSUS-851] align, text-align을 fix해야 할 대상 노드를 찾음
+	_getAlignNode : function(elNode){
+		if(elNode.tagName && (elNode.tagName === "P" || elNode.tagName === "DIV")){
+			return elNode;
+		}
+		
+		elNode = elNode.parentNode;
+		
+		while(elNode && elNode.tagName){
+			if(elNode.tagName === "P" || elNode.tagName === "DIV"){
+				return elNode;
+			}
+			
+			elNode = elNode.parentNode;
+		}
+	},
+	
 	_fixAlign : function(sAlign){
 		var oSelection = this.oApp.getSelection(),
-			aNodes = oSelection.getNodes(),
-			elNode = null;
+			aNodes = [],
+			elNode = null,
+			elParentNode = null;
 			
 		var removeTableAlign = !this.oNavigator.ie ? function(){} : function(elNode){
 			if(elNode.tagName && elNode.tagName === "TABLE"){
@@ -262,39 +280,29 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			
 			return false;
 		};
-			
-		if(aNodes.length === 1 && aNodes[0].nodeType === 3){ // [SMARTEDITORSUS-704] 텍스트노드 하나만 선택된 경우
-			elNode = aNodes[0].parentNode;
-			
-			while(elNode && elNode.tagName){
-				if((elNode.tagName === "P" || elNode.tagName === "DIV") && elNode.align !== elNode.style.textAlign){
-					elNode.style.textAlign = sAlign;
-					elNode.setAttribute("align", sAlign);
-					
-					break;
-				}
-				
-				elNode = elNode.parentNode;
-			}
-			
-			return;
+		
+		if(oSelection.collapsed){
+			aNodes[0] = oSelection.startContainer;	// collapsed인 경우에는 getNodes의 결과는 []
+		}else{
+			aNodes = oSelection.getNodes();
 		}
 		
 		for(var i=0, nLen=aNodes.length; i<nLen; i++){
 			elNode = aNodes[i];
 			
-			if(elNode.nodeType !== 1){
+			if(elNode.nodeType === 3){
+				elNode = elNode.parentNode;
+			}
+			
+			if(elParentNode && (elNode === elParentNode || jindo.$Element(elNode).isChildOf(elParentNode))){
 				continue;
 			}
 			
-			if(removeTableAlign(elNode)){	// IE
-				continue;
-			}
+			elParentNode = this._getAlignNode(elNode);
 			
-			// [SMARTEDITORSUS-704] align 속성과 text-align 속성의 값을 맞춰줌
-			if((elNode.tagName === "P" || elNode.tagName === "DIV") && elNode.align !== elNode.style.textAlign){
-				elNode.style.textAlign = sAlign;
-				elNode.setAttribute("align", sAlign);
+			if(elParentNode && elParentNode.align !== elParentNode.style.textAlign){ // [SMARTEDITORSUS-704] align 속성과 text-align 속성의 값을 맞춰줌
+				elParentNode.style.textAlign = sAlign;
+				elParentNode.setAttribute("align", sAlign);
 			}
 		}
 	},

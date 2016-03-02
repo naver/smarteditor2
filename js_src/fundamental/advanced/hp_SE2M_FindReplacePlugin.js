@@ -7,8 +7,8 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 	name : "SE2M_FindReplacePlugin",
 	oEditingWindow : null,
 	oFindReplace :  null,
-	oUILayer : null,
 	bFindMode : true,
+	bLayerShown : false,
 
 	$init : function(){
 		this.nDefaultTop = 20;
@@ -20,14 +20,16 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 		this.oApp.exec("REGISTER_HOTKEY", ["ctrl+f", "SHOW_FIND_LAYER", []]);
 		this.oApp.exec("REGISTER_HOTKEY", ["ctrl+h", "SHOW_REPLACE_LAYER", []]);
 		
-		this.oApp.exec("REGISTER_UI_EVENT", ["findAndReplace", "click", "SHOW_FIND_REPLACE_LAYER"]);
+		this.oApp.exec("REGISTER_UI_EVENT", ["findAndReplace", "click", "TOGGLE_FIND_REPLACE_LAYER"]);
 	},
+	
 	$ON_SHOW_ACTIVE_LAYER : function(){
-		this.oApp.exec( "HIDE_DIALOG_LAYER", [this.elDropdownLayer]);
+		this.oApp.exec("HIDE_DIALOG_LAYER", [this.elDropdownLayer]);
 	},
-	//@lazyload_js SHOW_FIND_LAYER,SHOW_REPLACE_LAYER,SHOW_FIND_REPLACE_LAYER:N_FindReplace.js[
+	
+	//@lazyload_js TOGGLE_FIND_REPLACE_LAYER,SHOW_FIND_LAYER,SHOW_REPLACE_LAYER,SHOW_FIND_REPLACE_LAYER:N_FindReplace.js[
 	_assignHTMLElements : function(){
-		oAppContainer = this.oApp.htOptions.elAppContainer;
+		var oAppContainer = this.oApp.htOptions.elAppContainer;
 
 		this.oApp.exec("LOAD_HTML", ["find_and_replace"]);
 //		this.oEditingWindow = jindo.$$.getSingle("IFRAME", oAppContainer);
@@ -59,7 +61,6 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 		this.oReplaceAllButton = jindo.$$.getSingle("BUTTON.husky_se2m_replace_all", this.elDropdownLayer);
 		
 		this.aCloseButtons = jindo.$$("BUTTON.husky_se2m_cancel", this.elDropdownLayer);
-		
 	},
 
 	$LOCAL_BEFORE_FIRST : function(sMsg){
@@ -68,7 +69,8 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 		this.oFindReplace = new nhn.FindReplace(this.oEditingWindow);
 
 		for(var i=0; i<this.aCloseButtons.length; i++){
-			var func = jindo.$Fn(this.oApp.exec, this.oApp).bind("HIDE_DIALOG_LAYER", [this.elDropdownLayer]);
+			// var func = jindo.$Fn(this.oApp.exec, this.oApp).bind("HIDE_DIALOG_LAYER", [this.elDropdownLayer]);
+			var func = jindo.$Fn(this.oApp.exec, this.oApp).bind("HIDE_FIND_REPLACE_LAYER", [this.elDropdownLayer]);
 			jindo.$Fn(func, this).attach(this.aCloseButtons[i], "click");
 		}
 		
@@ -95,7 +97,7 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 		var htScrollXY = this.oApp.oUtils.getScrollXY();
 //		this.welDropdownLayer.offset(this.htOffsetPos.top-htScrollXY.y, this.htOffsetPos.left-htScrollXY.x);
 		this.welDropdownLayer.offset(this.htOffsetPos.top, this.htOffsetPos.left);
-		this.htTopLeftCorner = {x:parseInt(this.elDropdownLayer.style.left), y:parseInt(this.elDropdownLayer.style.top)};
+		this.htTopLeftCorner = {x:parseInt(this.elDropdownLayer.style.left, 10), y:parseInt(this.elDropdownLayer.style.top, 10)};
 		
 		// offset width가 IE에서 css lazy loading 때문에 제대로 잡히지 않아 상수로 설정
 		//this.nLayerWidth = this.elDropdownLayer.offsetWidth;
@@ -104,10 +106,22 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 		
 		//this.nLayerWidth = Math.abs(parseInt(this.elDropdownLayer.style.marginLeft))+20;
 		this.elDropdownLayer.style.display = "none";
-
+	},
+	
+	// [SMARTEDITORSUS-728] 찾기/바꾸기 레이어 오픈 툴바 버튼 active/inactive 처리 추가
+	$ON_TOGGLE_FIND_REPLACE_LAYER : function(){
+		if(!this.bLayerShown) {
+			this.oApp.exec("SHOW_FIND_REPLACE_LAYER");
+		} else {
+			this.oApp.exec("HIDE_FIND_REPLACE_LAYER");
+		}
 	},
 	
 	$ON_SHOW_FIND_REPLACE_LAYER : function(){
+		this.bLayerShown = true;
+		this.oApp.exec("DISABLE_ALL_UI", [{aExceptions: ["findAndReplace"]}]);
+		this.oApp.exec("SELECT_UI", ["findAndReplace"]);
+		
 		this.oApp.exec("HIDE_ALL_DIALOG_LAYER", []);
 		this.elDropdownLayer.style.top = this.nDefaultTop+"px";
 		
@@ -123,7 +137,14 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 		}]);
 		this.oApp.exec('MSG_NOTIFY_CLICKCR', ['findreplace']);
 	},
-		
+	
+	$ON_HIDE_FIND_REPLACE_LAYER : function() {
+		this.oApp.exec("ENABLE_ALL_UI");
+		this.oApp.exec("DESELECT_UI", ["findAndReplace"]);
+		this.oApp.exec("HIDE_ALL_DIALOG_LAYER", []);
+		this.bLayerShown = false;
+	},
+	
 	$ON_FIND_REPLACE_LAYER_SHOWN : function(){
 		this.oApp.exec("POSITION_TOOLBAR_LAYER", [this.elDropdownLayer]);
 		if(this.bFindMode){
@@ -133,6 +154,7 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 		}else{
 			this.oReplaceInput_Original.value = "_clear_";
 			this.oReplaceInput_Original.value = "";
+			this.oReplaceInput_Replacement.value = "";
 			this.oReplaceInput_Original.focus();
 		}
 
@@ -243,7 +265,7 @@ nhn.husky.SE2M_FindReplacePlugin = jindo.$Class({
 		var iReplaceAllResult = this.oFindReplace.replaceAll(sOriginal, sReplacement, false);
 		this.oApp.exec("RECORD_UNDO_AFTER_ACTION", ["REPLACE ALL", {sSaveTarget:"BODY"}]);
 
-		if(iReplaceAllResult == 0){
+		if(iReplaceAllResult === 0){
 			alert(this.oApp.$MSG("SE_FindReplace.replaceKeywordNotFound"));
 			oSelection.select();
 			this.oApp.exec("FOCUS");

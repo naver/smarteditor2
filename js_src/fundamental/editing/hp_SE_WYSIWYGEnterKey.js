@@ -111,10 +111,11 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 	
 	// [IE] 빈 노드 내에 커서를 표시하기 위한 처리 (_addSpace 사용)
 	_addCursorHolderSpace : function(elWrapper){
-		var elStyleOnlyNode = this._getStyleOnlyNode(elWrapper);
-		var elNode = this._addSpace(elWrapper);
+		var elNode;
 		
-		elNode = elStyleOnlyNode || elNode;
+		this._addSpace(elWrapper);
+		
+		elNode = this._getStyleNode(elWrapper);
 		
 		if(elNode.innerHTML == ""){
 			elNode.innerHTML = unescape("%uFEFF");

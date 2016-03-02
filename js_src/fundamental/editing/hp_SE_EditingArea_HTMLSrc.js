@@ -7,6 +7,8 @@
 nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 	name : "SE_EditingArea_HTMLSrc",
 	sMode : "HTMLSrc",
+	bAutoResize : false,	// [SMARTEDITORSUS-677] 해당 편집모드의 자동확장 기능 On/Off 여부
+	nMinHeight : null,		// [SMARTEDITORSUS-677] 편집 영역의 최소 높이
 	
 	$init : function(sTextArea) { 
 		this.elEditingArea = jindo.$(sTextArea);
@@ -15,6 +17,12 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 	$BEFORE_MSG_APP_READY : function() {
 		this.oNavigator = jindo.$Agent().navigator();
 		this.oApp.exec("REGISTER_EDITING_AREA", [this]);
+	},
+	
+	$ON_MSG_APP_READY : function() {
+		if(!!this.oApp.getEditingAreaHeight){
+			this.nMinHeight = this.oApp.getEditingAreaHeight();	// [SMARTEDITORSUS-677] 편집 영역의 최소 높이를 가져와 자동 확장 처리를 할 때 사용
+		}
 	},
 
 	$ON_CHANGE_EDITING_MODE : function(sMode) {
@@ -37,6 +45,27 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 		}
 	},
 	
+	/**
+	 * [SMARTEDITORSUS-677] HTML 편집 영역 자동 확장 처리 시작
+	 */ 
+	startAutoResize : function(){
+		var htOption = {
+			nMinHeight : this.nMinHeight,
+			wfnCallback : jindo.$Fn(this.oApp.checkResizeGripPosition, this).bind()
+		};
+				
+		this.bAutoResize = true;
+		this.AutoResizer = new nhn.husky.AutoResizer(this.elEditingArea, htOption);
+		this.AutoResizer.bind();
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] HTML 편집 영역 자동 확장 처리 종료
+	 */ 
+	stopAutoResize : function(){
+		this.AutoResizer.unbind();
+	},
+	
 	getIR : function() { 
 		var sIR = this.getRawContents();		
 		if (this.oApp.applyConverter) {
@@ -47,12 +76,16 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 	},
 
 	setIR : function(sIR) {
+		if(sIR.toLowerCase() === "<br>" || sIR.toLowerCase() === "<p>&nbsp;</p>" || sIR.toLowerCase() === "<p><br></p>"){
+			sIR="";
+		}
+		
 		var sContent = sIR;
 		if (this.oApp.applyConverter) {
 			sContent = this.oApp.applyConverter("IR_TO_" + this.sMode, sContent, this.oApp.getWYSIWYGDocument());
 		}
 		
-		this.setRawContents(sContent);	
+		this.setRawContents(sContent);
 	},
 	
 	setRawContents : function(sContent) {

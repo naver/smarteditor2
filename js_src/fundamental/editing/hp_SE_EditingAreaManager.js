@@ -96,6 +96,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	elContentsField : null,
 	
 	bIsDirty : false,
+	bAutoResize : false, // [SMARTEDITORSUS-677] 에디터의 자동확장 기능 On/Off 여부
 	
 	$init : function(sDefaultEditingMode, elContentsField, oDimension, fOnBeforeUnload, elAppContainer){
 		this.sDefaultEditingMode = sDefaultEditingMode;
@@ -214,6 +215,12 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	
 	$AFTER_MSG_APP_READY : function(){
 		this.oApp.exec("UPDATE_RAW_CONTENTS");
+		
+		if(!!this.oApp.htOptions[this.name] && this.oApp.htOptions[this.name].bAutoResize){
+			this.bAutoResize = this.oApp.htOptions[this.name].bAutoResize;
+		}
+		
+		this.startAutoResize();	// [SMARTEDITORSUS-677] 편집영역 자동 확장 옵션이 TRUE이면 자동확장 시작
 	},
 	
 	$ON_LOAD_CONTENTS_FIELD : function(bDontAddUndo){
@@ -245,6 +252,9 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		if(!this.oEditingMode[sMode]){
 			return false;
 		}
+		
+		this.stopAutoResize();	// [SMARTEDITORSUS-677] 해당 편집 모드에서의 자동확장을 중지함
+		
 		this._oPrevActivePlugin = this.oActivePlugin;
 		this.oActivePlugin = this.oEditingMode[sMode];
 	},
@@ -259,6 +269,8 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 			this._setEditingAreaDimension();
 		}
 		//this.oApp.exec("DISABLE_UI", [this.oActivePlugin.sMode]);
+		
+		this.startAutoResize();	// [SMARTEDITORSUS-677] 변경된 편집 모드에서의 자동확장을 시작
 
 		if(!bNoFocus){
 			this.oApp.delayedExec("FOCUS", [], 0);
@@ -329,11 +341,46 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	$ON_MSG_EDITING_AREA_RESIZE_STARTED : function(){
 		this._fitElementInEditingArea(this.elEditingAreaContainer);
 
+		this.oApp.exec("STOP_AUTORESIZE_EDITING_AREA");	// [SMARTEDITORSUS-677] 사용자가 편집영역 사이즈를 변경하면 자동확장 기능 중지
 		this.oApp.exec("SHOW_EDITING_AREA_COVER");
 		this.elEditingAreaContainer.style.overflow = "hidden";
 //		this.elResizingBoard.style.display = "block";
 
 		this.iStartingHeight = parseInt(this.elEditingAreaContainer.style.height, 10);
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] 편집영역 자동확장 기능을 중지함
+	 */
+	$ON_STOP_AUTORESIZE_EDITING_AREA : function(){
+		if(!this.bAutoResize){
+			return;
+		}
+		
+		this.stopAutoResize();
+		this.bAutoResize = false;
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] 해당 편집 모드에서의 자동확장을 시작함
+	 */
+	startAutoResize : function(){
+		if(!this.bAutoResize || !this.oActivePlugin || typeof this.oActivePlugin.startAutoResize != "function"){
+			return;
+		}
+		
+		this.oActivePlugin.startAutoResize();
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] 해당 편집 모드에서의 자동확장을 중지함
+	 */
+	stopAutoResize : function(){
+		if(!this.bAutoResize || !this.oActivePlugin || typeof this.oActivePlugin.stopAutoResize != "function"){
+			return;
+		}
+		
+		this.oActivePlugin.stopAutoResize();
 	},
 	
 	$ON_RESIZE_EDITING_AREA: function(ipNewWidth, ipNewHeight){

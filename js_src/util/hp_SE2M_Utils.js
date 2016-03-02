@@ -114,6 +114,9 @@ toStringSamePropertiesOfArray(a, "b", ", ");
 makeArray("test"); ==> ["test"]
 	 */	
 	makeArray : function(v) {
+		if (v === null || typeof v === "undefined"){
+			return [];
+		}
 		if (v instanceof Array) {
 			return v;
 		}
@@ -684,6 +687,97 @@ getFilteredHashTable({
 		return jindo.$Json(o);
 	}
 };
+
+/**
+ * nhn.husky.AutoResizer
+ * 	HTML모드와 TEXT 모드의 편집 영역인 TEXTAREA에 대한 자동확장 처리
+ */
+nhn.husky.AutoResizer = jindo.$Class({
+	welHiddenDiv : null,
+	welCloneDiv : null,
+	elContainer : null,
+	$init : function(el, htOption){
+		var aCopyStyle = [
+				'lineHeight', 'textDecoration', 'letterSpacing',
+				'fontSize', 'fontFamily', 'fontStyle', 'fontWeight',
+				'textTransform', 'textAlign', 'direction', 'wordSpacing', 'fontSizeAdjust',
+				'paddingTop', 'paddingLeft', 'paddingBottom', 'paddingRight', 'width'
+			],
+			i = aCopyStyle.length,
+			oCss = {
+				"position" : "absolute",
+				"top" : -9999,
+				"left" : -9999,
+				"opacity": 0,
+				"overflow": "hidden",
+				"wordWrap" : "break-word"
+			};
+		
+		this.nMinHeight = htOption.nMinHeight;
+		this.wfnCallback = htOption.wfnCallback;
+		
+		this.elContainer = el.parentNode;
+		this.welTextArea = jindo.$Element(el);	// autoresize를 적용할 TextArea
+		this.welHiddenDiv = jindo.$Element('<div>');
+
+		this.wfnResize = jindo.$Fn(this._resize, this);
+
+		this.sOverflow = this.welTextArea.css("overflow");
+		this.welTextArea.css("overflow", "hidden");
+
+		while(i--){
+			oCss[aCopyStyle[i]] = this.welTextArea.css(aCopyStyle[i]);
+		}
+		
+		this.welHiddenDiv.css(oCss);
+		
+		this.nLastHeight = this.welTextArea.height();
+	},
+	bind : function(){
+		this.welCloneDiv = jindo.$Element(this.welHiddenDiv.$value().cloneNode(false));
+		
+		this.wfnResize.attach(this.welTextArea, "keyup");
+		this.welCloneDiv.appendTo(this.elContainer);
+		
+		this._resize();
+	},
+	unbind : function(){
+		this.wfnResize.detach(this.welTextArea, "keyup");
+		this.welTextArea.css("overflow", this.sOverflow);
+		
+		if(this.welCloneDiv){
+			this.welCloneDiv.leave();
+		}
+	},
+	_resize : function(){
+		var sContents = this.welTextArea.$value().value,
+			bExpand = false,
+			nHeight;
+
+		if(sContents === this.sContents){
+			return;
+		}
+		
+		this.sContents = sContents.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/ /g, '&nbsp;').replace(/\n/g, '<br>');
+		this.sContents += "<br>";	// 마지막 개행 뒤에 <br>을 더 붙여주어야 늘어나는 높이가 동일함
+		
+		this.welCloneDiv.html(this.sContents);
+		nHeight = this.welCloneDiv.height();
+		
+		if(nHeight < this.nMinHeight){
+			nHeight = this.nMinHeight;
+		}
+
+		this.welTextArea.css("height", nHeight + "px");
+		this.elContainer.style.height = nHeight + "px";
+		
+		if(this.nLastHeight < nHeight){
+			bExpand = true;
+		}
+
+		this.wfnCallback(bExpand);
+	}
+});
 
 /**
  * 문자를 연결하는 '+' 대신에 java와 유사하게 처리하도록 문자열 처리하도록 만드는 object

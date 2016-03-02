@@ -54,7 +54,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		 *		-->	<td style="background-color:#ffef00" width="245">&nbsp;</td>
 		 */
 		var aNoBorderTable = [];
-		var aTables = jindo.$$('table[class=__se_tbl]', oTmpNode);
+		var aTables = jindo.$$('table[class=__se_tbl]', oTmpNode, {oneTimeOffCache:true});
 		
 		// 테두리가 없음 속성의 table (임의로 추가한 attr_no_border_tbl 속성이 있는 table 을 찾음)
 		jindo.$A(aTables).forEach(function(oValue, nIdx, oArray) {
@@ -96,7 +96,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		 *		-->	<td style="border:1px dashed #c7c7c7; border-top:0; border-right:0; background-color:#ffef00" width="245"><p>&nbsp;</p></td>
 		 */
 		var aNoBorderTable = [];
-		var aTables = jindo.$$('table[class=__se_tbl]', oTmpNode);
+		var aTables = jindo.$$('table[class=__se_tbl]', oTmpNode, {oneTimeOffCache:true});
 		
 		// 테두리가 없음 속성의 table (임의로 추가한 attr_no_border_tbl 속성이 있는 table 을 찾음)
 		jindo.$A(aTables).forEach(function(oValue, nIdx, oArray) {
@@ -231,8 +231,8 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		this.oApp.registerBrowserEvent(this.elBtn_apply, "click", "TABLE_INSERT");
 		this.oApp.registerBrowserEvent(this.elBtn_cancel, "click", "HIDE_ACTIVE_LAYER");
 
-		this.oApp.exec("TABLE_SET_BORDER_COLOR", ["#cccccc"]);
-		this.oApp.exec("TABLE_SET_BGCOLOR", ["#ffffff"]);
+		this.oApp.exec("TABLE_SET_BORDER_COLOR", [/#[0-9A-Fa-f]{6}/.test(this.elText_borderColor.value) ? this.elText_borderColor.value : "#cccccc"]);
+		this.oApp.exec("TABLE_SET_BGCOLOR", [/#[0-9A-Fa-f]{6}/.test(this.elText_BGColor.value) ? this.elText_BGColor.value : "#ffffff"]);
 		
 		// 1: manual style
 		// 2: template style

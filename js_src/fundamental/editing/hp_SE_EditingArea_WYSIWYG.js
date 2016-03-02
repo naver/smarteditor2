@@ -50,7 +50,12 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	sMode : "WYSIWYG",
 	iframe : null,
 	doc : null,
+	
 	bStopCheckingBodyHeight : false, 
+	bAutoResize : false,	// [SMARTEDITORSUS-677] 해당 편집모드의 자동확장 기능 On/Off 여부
+	
+	nBodyMinHeight : 0,
+	nScrollbarWidth : 0,
 	
 	iLastUndoRecorded : 0,
 //	iMinUndoInterval : 50,
@@ -154,13 +159,251 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			//this.getDocument().execCommand('styleWithCSS', false, false);
 			//this.document.execCommand("insertBrOnReturn", false, false);
 		}
-
+		
 		// DTD가 quirks가 아닐 경우 body 높이 100%가 제대로 동작하지 않아서 타임아웃을 돌며 높이를 수동으로 계속 할당 해 줌 
 		// body 높이가 제대로 설정 되지 않을 경우, 보기에는 이상없어 보이나 마우스로 텍스트 선택이 잘 안된다든지 하는 이슈가 있음
 		this.fnSetBodyHeight = jindo.$Fn(this._setBodyHeight, this).bind();
+		this.fnCheckBodyChange = jindo.$Fn(this._checkBodyChange, this).bind();
+
 		this.fnSetBodyHeight();
+		
+		this._setScrollbarWidth();
 	},
 	
+	/**
+	 * 스크롤바의 사이즈 측정하여 설정
+	 */
+	_setScrollbarWidth : function(){
+		var oDocument = this.getDocument();
+		var elScrollDiv = oDocument.createElement("div");
+		
+		elScrollDiv.style["width"] = "100px";
+		elScrollDiv.style["height"] = "100px";
+		elScrollDiv.style["overflow"] = "scroll";
+		elScrollDiv.style["position"] = "absolute";
+		elScrollDiv.style["top"] = "-9999px";
+				
+		oDocument.body.appendChild(elScrollDiv);
+
+		this.nScrollbarWidth = elScrollDiv.offsetWidth - elScrollDiv.clientWidth;
+		
+		oDocument.body.removeChild(elScrollDiv);
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] 붙여넣기나 내용 입력에 대한 편집영역 자동 확장 처리
+	 */ 
+	$AFTER_EVENT_EDITING_AREA_KEYUP : function(oEvent){		
+		if(!this.bAutoResize){
+			return;
+		}
+		
+		var oKeyInfo = oEvent.key();
+
+		if((oKeyInfo.keyCode >= 33 && oKeyInfo.keyCode <= 40) || oKeyInfo.alt || oKeyInfo.ctrl || oKeyInfo.keyCode == 16){
+			return;
+		}
+		
+		this._setAutoResize();
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] 붙여넣기나 내용 입력에 대한 편집영역 자동 확장 처리
+	 */
+	$AFTER_PASTE_HTML : function(){
+		if(!this.bAutoResize){
+			return;
+		}
+		
+		this._setAutoResize();
+	},
+
+	/**
+	 * [SMARTEDITORSUS-677] WYSIWYG 편집 영역 자동 확장 처리 시작
+	 */ 
+	startAutoResize : function(){
+		this.oApp.exec("STOP_CHECKING_BODY_HEIGHT");
+		this.bAutoResize = true;
+
+		jindo.$Element(this.getDocument().body).css({
+			"overflow" : "hidden",	// IE7에서 Body가 늘어날 때 스크롤이 보였다 사라졌다 하지 않도록 함
+			"overflowY" : "hidden"
+			//"wordWrap" : "break-word"
+		});
+		
+		this._setAutoResize();
+		this.nCheckBodyInterval = setInterval(this.fnCheckBodyChange, 500);
+		
+		this.oApp.exec("START_FLOAT_TOOLBAR");	// set scroll event
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] WYSIWYG 편집 영역 자동 확장 처리 종료
+	 */ 
+	stopAutoResize : function(){
+		this.bAutoResize = false;
+		clearInterval(this.nCheckBodyInterval);
+
+		this.oApp.exec("STOP_FLOAT_TOOLBAR");	// remove scroll event
+		
+		jindo.$Element(this.getDocument().body).css({
+			"overflow" : "visible",
+			"overflowY" : "visible"
+		});
+		
+		this.oApp.exec("START_CHECKING_BODY_HEIGHT");
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] 편집 영역 Body가 변경되었는지 주기적으로 확인
+	 */ 
+	_checkBodyChange : function(){
+		if(!this.bAutoResize){
+			return;
+		}
+		
+		var nBodyLength = this.getDocument().body.innerHTML.length;
+		
+		if(nBodyLength !== this.nBodyLength){
+			this.nBodyLength = nBodyLength;
+			
+			this._setAutoResize();
+		}
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] 자동 확장 처리에서 적용할 Resize Body Height를 구함
+	 */ 
+	_getResizeHeight : function(){
+		var elBody = this.getDocument().body,
+			nBodyHeight,
+			aCopyStyle = ['width', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'textTransform', 'wordSpacing'];
+
+		if(!this.oApp.oNavigator.firefox && !this.oApp.oNavigator.safari){
+			if(this.oApp.oNavigator.ie && this.oApp.oNavigator.version === 8 && document.documentMode === 8){
+				jindo.$Element(elBody).css("height", "0px");
+			}
+			
+			nBodyHeight = parseInt(elBody.scrollHeight, 10);
+
+			if(nBodyHeight < this.nBodyMinHeight){
+				nBodyHeight = this.nBodyMinHeight;
+			}
+		
+			return nBodyHeight;
+		}
+		
+		// Firefox && Safari	
+		if(!this.elDummy){
+			this.elDummy = document.createElement('div');
+			this.elDummy.className = "se2_input_wysiwyg";
+
+			this.oApp.elEditingAreaContainer.appendChild(this.elDummy);
+
+			this.elDummy.style.cssText = 'position:absolute !important; left:-9999px !important; top:-9999px !important; z-index: -9999 !important; overflow: auto !important;';	
+			this.elDummy.style.height = this.nBodyMinHeight + "px";
+		}
+		
+		var welBody = jindo.$Element(elBody),
+	    	i = aCopyStyle.length,
+	    	oCss = {};
+	    
+		while(i--){
+			oCss[aCopyStyle[i]] = welBody.css(aCopyStyle[i]);
+		}
+		
+		if(oCss.lineHeight.indexOf("px")){
+			oCss.lineHeight = (parseInt(oCss.lineHeight, 10)/parseInt(oCss.fontSize, 10));
+		}
+
+		jindo.$Element(this.elDummy).css(oCss);
+				
+		this.elDummy.innerHTML = elBody.innerHTML;
+		nBodyHeight = this.elDummy.scrollHeight;
+		
+		return nBodyHeight;
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-677] WYSIWYG 자동 확장 처리
+	 */ 
+	_setAutoResize : function(){		
+		var elBody = this.getDocument().body,
+			welBody = jindo.$Element(elBody),
+			nBodyHeight,
+			nContainerHeight,
+			oCurrentStyle,
+			nStyleSize,
+			bExpand = false,
+			oBrowser = this.oApp.oNavigator;
+		
+		this.nTopBottomMargin = this.nTopBottomMargin || (parseInt(welBody.css("marginTop"), 10) + parseInt(welBody.css("marginBottom"), 10));
+		this.nBodyMinHeight = this.nBodyMinHeight || (this.oApp.getEditingAreaHeight() - this.nTopBottomMargin);
+
+		if((oBrowser.ie && oBrowser.nativeVersion >= 9) || oBrowser.chrome){	// 내용이 줄어도 scrollHeight가 줄어들지 않음
+			welBody.css("height", "0px");
+			this.iframe.style.height = "0px";
+		}
+
+		nBodyHeight = this._getResizeHeight();
+
+		if(oBrowser.ie){
+			// 내용 뒤로 공간이 남아 보일 수 있으나 추가로 Container높이를 더하지 않으면
+			// 내용 가장 뒤에서 Enter를 하는 경우 아래위로 흔들려 보이는 문제가 발생
+			if(nBodyHeight > this.nBodyMinHeight){
+				oCurrentStyle = this.oApp.getCurrentStyle();
+				nStyleSize = parseInt(oCurrentStyle.fontSize, 10) * oCurrentStyle.lineHeight;
+
+				if(nStyleSize < this.nTopBottomMargin){
+					nStyleSize = this.nTopBottomMargin;
+				}
+
+				nContainerHeight = nBodyHeight + nStyleSize;
+				nContainerHeight += 10;
+				
+				bExpand = true;
+			}else{
+				nBodyHeight = this.nBodyMinHeight;
+				nContainerHeight = this.nBodyMinHeight + this.nTopBottomMargin;
+			}
+		// }else if(oBrowser.safari){	// -- 사파리에서 내용이 줄어들지 않는 문제가 있어 Firefox 방식으로 변경함
+			// // [Chrome/Safari] 크롬이나 사파리에서는 Body와 iframe높이서 서로 연관되어 늘어나므로,
+			// // nContainerHeight를 추가로 더하는 경우 setTimeout 시 무한 증식되는 문제가 발생할 수 있음
+			// nBodyHeight = nBodyHeight > this.nBodyMinHeight ? nBodyHeight - this.nTopBottomMargin : this.nBodyMinHeight;
+			// nContainerHeight = nBodyHeight + this.nTopBottomMargin;
+		}else{
+			// [FF] nContainerHeight를 추가로 더하였음. setTimeout 시 무한 증식되는 문제가 발생할 수 있음
+			if(nBodyHeight > this.nBodyMinHeight){
+				oCurrentStyle = this.oApp.getCurrentStyle();
+				nStyleSize = parseInt(oCurrentStyle.fontSize, 10) * oCurrentStyle.lineHeight;
+
+				if(nStyleSize < this.nTopBottomMargin){
+					nStyleSize = this.nTopBottomMargin;
+				}
+
+				nContainerHeight = nBodyHeight + nStyleSize;
+				
+				bExpand = true;
+			}else{
+				nBodyHeight = this.nBodyMinHeight;
+				nContainerHeight = this.nBodyMinHeight + this.nTopBottomMargin;
+			}
+		}
+		
+		if(!oBrowser.firefox){
+			welBody.css("height", nBodyHeight + "px");
+		}
+
+		this.iframe.style.height = nContainerHeight + "px";				// 편집영역 IFRAME의 높이 변경
+		this.oApp.welEditingAreaContainer.height(nContainerHeight);		// 편집영역 IFRAME을 감싸는 DIV 높이 변경
+		
+		this.oApp.checkResizeGripPosition(bExpand);
+	},
+	
+	/**
+	 * 스크롤 처리를 위해 편집영역 Body의 사이즈를 확인하고 설정함
+	 * 편집영역 자동확장 기능이 Off인 경우에 주기적으로 실행됨
+	 */ 
 	_setBodyHeight : function(){
 		if( this.bStopCheckingBodyHeight ){ // 멈춰야 하는 경우 true, 계속 체크해야 하면 false
 			// 위지윅 모드에서 다른 모드로 변경할 때 "document는 css를 사용 할수 없습니다." 라는 error 가 발생.
@@ -191,12 +434,32 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		// body 에 내용이 없어져도 scrollHeight 가 줄어들지 않아 height 를 강제로 0 으로 설정
 		
 		nScrollHeight = parseInt(elBody.scrollHeight, 10);
+
 		nNewBodyHeight = (nScrollHeight > nContainerOffset ? nScrollHeight - nMarginTopBottom : nMinBodyHeight);
 		// nMarginTopBottom 을 빼지 않으면 스크롤이 계속 늘어나는 경우가 있음 (참고 [BLOGSUS-17421])
 
+		if(this._isHorizontalScrollbarVisible()){
+			nNewBodyHeight -= this.nScrollbarWidth;
+		}
+		
 		welBody.css("height", nNewBodyHeight + "px");
 		
 		setTimeout(this.fnSetBodyHeight, 500);
+	},
+	
+	/**
+	 * 가로 스크롤바 생성 확인
+	 */
+	_isHorizontalScrollbarVisible : function(){
+		var oDocument = this.getDocument();
+		
+		if(oDocument.documentElement.clientWidth < oDocument.documentElement.scrollWidth){
+			//oDocument.body.clientWidth < oDocument.body.scrollWidth ||
+			
+			return true;
+		}
+		
+		return false;
 	},
 	
 	/**
@@ -468,18 +731,79 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			oSelection.select();
 		}else if(!!oSelection.collapsed && !sId) {
 			this.oApp.exec("FOCUS");
-		}else if( !!sId ){
-			setTimeout(jindo.$Fn(function(){
-				//위치 이동
-				var el = this.oApp.getWYSIWYGDocument().getElementById(sId);  
-				if( el !== null ){
-					el.scrollIntoView(false);
-				}
-				//포커스
-				this.getDocument().body.focus();
-			}, this).bind(), 300);	
+		}else if(!!sId){
+			setTimeout(jindo.$Fn(function(el){
+				this._scrollIntoView(el);
+				this.oApp.exec("FOCUS");
+			}, this).bind(this.getDocument().getElementById(sId)), 300);
+		}
+	},
+	
+	/* 
+	 * 엘리먼트의 top, bottom 값을 반환
+	 */
+	_getElementVerticalPosition : function(el){
+	    var nTop = 0,
+	    	elParent = el,
+	    	htPos = {nTop : 0, nBottom : 0};
+	    
+	    if(!el){
+	    	return htPos;
+	    }
+
+	    while(elParent) {
+	        nTop += elParent.offsetTop;
+	        elParent = elParent.offsetParent;
+	    }
+
+	    htPos.nTop = nTop;
+	    htPos.nBottom = nTop + jindo.$Element(el).height();
+	    
+	    return htPos;
+	},
+	
+	/* 
+	 * Window에서 현재 보여지는 영역의 top, bottom 값을 반환
+	 */
+	_getVisibleVerticalPosition : function(){
+		var oWindow, oDocument, nVisibleHeight,
+			htPos = {nTop : 0, nBottom : 0};
+		
+		oWindow = this.getWindow();
+		oDocument = this.getDocument();
+		nVisibleHeight = oWindow.innerHeight ? oWindow.innerHeight : oDocument.documentElement.clientHeight || oDocument.body.clientHeight;
+		
+		htPos.nTop = oWindow.pageYOffset || oDocument.documentElement.scrollTop;
+		htPos.nBottom = htPos.nTop + nVisibleHeight;
+		
+		return htPos;
+	},
+	
+	/* 
+	 * 엘리먼트가 WYSIWYG Window의 Visible 부분에서 완전히 보이는 상태인지 확인 (일부만 보이면 false)
+	 */
+	_isElementVisible : function(htElementPos, htVisiblePos){					
+		return (htElementPos.nTop >= htVisiblePos.nTop && htElementPos.nBottom <= htVisiblePos.nBottom);
+	},
+	
+	/* 
+	 * [SMARTEDITORSUS-824] [SMARTEDITORSUS-828] 자동 스크롤 처리
+	 */
+	_scrollIntoView : function(el){
+		var htElementPos = this._getElementVerticalPosition(el),
+			htVisiblePos = this._getVisibleVerticalPosition(),
+			nScroll = 0;
+				
+		if(this._isElementVisible(htElementPos, htVisiblePos)){
+			return;
+		}
+				
+		if((nScroll = htElementPos.nBottom - htVisiblePos.nBottom) > 0){
+			this.getWindow().scrollTo(0, htVisiblePos.nTop + nScroll);	// Scroll Down
+			return;
 		}
 		
+		this.getWindow().scrollTo(0, htElementPos.nTop);	// Scroll Up
 	},
 	
 	$BEFORE_MSG_EDITING_AREA_RESIZE_STARTED  : function(){
