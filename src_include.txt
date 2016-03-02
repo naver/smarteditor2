@@ -1,44 +1,53 @@
-�ڹٽ�ũ��Ʈ�� ���� ���� �Ͻð��� �� ���, 
-<script type="text/javascript" src="js/Husky.SE_Basic.js" charset="utf-8"></script>
+자바스크립트 소스를 직접 수정하고자 할 경우는 SmartEditor2Skin.html 소스를 아래의 과정으로 수정한 후 자바스크립트 소스를 수정합니다.
 
-������ ����ð� �Ʒ� ���ε��� �����ؼ� �ٿ��ֱ� �Ͻø� �˴ϴ�.
-<script type="text/javascript" src="js_src/cssquery.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/HuskyCore.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/HuskyRange.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/shortcut.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/N_FindReplace.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/N_DraggableLayer.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_CorePlugin.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_Utils.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_HuskyRangeManager.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_Hotkey.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_DialogLayerManager.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_ActiveLayerManager.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_StringConverterManager.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_MessageManager.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_Toolbar.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_EditingAreaManager.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_EditingArea_HTMLSrc.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_EditingArea_WYSIWYG.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_EditingAreaVerticalResizer.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_OuterIFrameControl.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_ExecCommand.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_WYSIWYGEnterKey.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_WYSIWYGStyler.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_WYSIWYGStyleGetter.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_FontSizeWithSelectUI.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_FontNameWithSelectUI.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_LineHeight.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_LineHeightWithSelectUI.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_ColorPalette.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_FontColor.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_BGColor.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_Quote.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_SCharacter.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_UndoRedo.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_FindReplacePlugin.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_Hyperlink.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_Table.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/hp_SE_EditingModeToggler.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/husky_SE_Lang_KR.js" charset="utf-8"></script>
-<script type="text/javascript" src="js_src/SEditor.js" charset="utf-8"></script>
+1) SmartEditor2Skin.html 소스에서 아래의 부분을 삭제합니다.
+<script src='js/loader-min.js' charset='utf-8'></script>
+
+2) 다음의 라인들을 복사하여 붙여넣습니다.
+<script type="text/javascript" src="./js_src/fundamental/advanced/N_FindReplace.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/advanced/SE2M_TableTemplate.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/husky_framework/HuskyCore.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/husky_framework/HuskyRange.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/husky_framework/hp_CorePlugin.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/husky_framework/hp_HuskyRangeManager.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/common/base/hp_SE2M_Toolbar.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/editing/hp_SE_EditingAreaManager.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/editing/hp_SE_EditingArea_WYSIWYG.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/editing/hp_SE_EditingArea_HTMLSrc.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/editing/hp_SE_EditingArea_TEXT.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/editing/hp_SE_EditingAreaVerticalResizer.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/editing/hp_SE_WYSIWYGEnterKey.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/editing/hp_SE2M_EditingModeChanger.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_ExecCommand.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE_WYSIWYGStyler.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE_WYSIWYGStyleGetter.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_FontSizeWithLayerUI.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_LineStyler.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_LineHeightWithLayerUI.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_ColorPalette.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_FontColor.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_BGColor.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_Hyperlink.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/hp_SE2M_FontNameWithLayerUI.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/base/colorpicker.js" charset="utf-8"></script> 
+<script type="text/javascript" src="./js_src/fundamental/advanced/hp_SE2M_SCharacter.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/advanced/hp_SE2M_FindReplacePlugin.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/advanced/hp_SE2M_Quote.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/advanced/hp_SE2M_TableCreator.js" charset="utf-8"></script>		
+<script type="text/javascript" src="./js_src/fundamental/advanced/hp_SE2M_TableBlockStyler.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/fundamental/advanced/hp_SE2M_TableEditor.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/quick_editor/hp_SE2M_QuickEditor_Common.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/shortcut/shortcut.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/shortcut/hp_Hotkey.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/util/hp_Utils.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/util/hp_DialogLayerManager.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/util/hp_ActiveLayerManager.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/util/hp_StringConverterManager.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/util/hp_MessageManager.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/util/hp_LazyLoader.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/util/hp_SE2M_Utils.js"></script>
+<script type="text/javascript" src="./js_src/util/hp_SE2M_ImgSizeRatioKeeper.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/service/hp_SE2B_CSSLoader.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/service/husky_SE2B_Lang_KR.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/service/hp_SE2B_Customize_ToolBar.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js_src/service/hp_SE_OuterIFrameControl.js" charset="utf-8"></script>

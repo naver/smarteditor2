@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>네이버 :: Smart Editor 2 &#8482;</title>
+<script type="text/javascript">document.domain = "naver.com";</script>
+<script type="text/javascript" src="./js/HuskyEZCreator.js" charset="utf-8"></script>
+</head>
+<body>
+<form action="sample.php" method="post">
+	<textarea name="ir1" id="ir1" rows="10" cols="100" style="width:766px; height:412px; display:none;"></textarea>
+	<p>
+		<input type="button" onclick="pasteHTML();" value="본문에 내용 넣기" />
+		<input type="button" onclick="showHTML();" value="본문 내용 가져오기" />
+		<input type="button" onclick="submitContents(this);" value="서버로 내용 전송" />
+	</p>
+</form>
+
+<script type="text/javascript">
+var oEditors = [];
+nhn.husky.EZCreator.createInIFrame({
+	oAppRef: oEditors,
+	elPlaceHolder: "ir1",
+	sSkinURI: "SmartEditor2Skin.html",
+	fCreator: "createSEditor2"
+});
+
+function pasteHTML() {
+	var sHTML = "<span style='color:#FF0000;'>이미지도 같은 방식으로 삽입합니다.<\/span>";
+	oEditors.getById["ir1"].exec("PASTE_HTML", [sHTML]);
+}
+
+function showHTML() {
+	var sHTML = oEditors.getById["ir1"].getIR();
+	alert(sHTML);
+}
+	
+function submitContents(elClickedObj) {
+	oEditors.getById["ir1"].exec("UPDATE_CONTENTS_FIELD", []);	// 에디터의 내용이 textarea에 적용됩니다.
+	
+	// 에디터의 내용에 대한 값 검증은 이곳에서 document.getElementById("ir1").value를 이용해서 처리하면 됩니다.
+	
+	try {
+		elClickedObj.form.submit();
+	} catch(e) {}
+}
+</script>
+
+</body>
+</html>

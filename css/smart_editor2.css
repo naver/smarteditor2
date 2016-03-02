@@ -1,0 +1,262 @@
+﻿@charset "utf-8";
+/* NHN WebStandard 2Team (http://html.nhndesign.com/) HHJ 090226 KJM */
+
+/* Common */
+body,#smart_editor2,#smart_editor2 p,#smart_editor2 h1,#smart_editor2 h2,#smart_editor2 h3,#smart_editor2 h4,#smart_editor2 h5,#smart_editor2 h6,#smart_editor2 ul,#smart_editor2 ol,#smart_editor2 li,#smart_editor2 dl,#smart_editor2 dt,#smart_editor2 dd,#smart_editor2 table,#smart_editor2 th,#smart_editor2 td,#smart_editor2 form,#smart_editor2 fieldset,#smart_editor2 legend,#smart_editor2 input,#smart_editor2 textarea,#smart_editor2 button,#smart_editor2 select{margin:0;padding:0}
+body,#smart_editor2,#smart_editor2 h1,#smart_editor2 h2,#smart_editor2 h3,#smart_editor2 h4,#smart_editor2 h5,#smart_editor2 h6,#smart_editor2 input,#smart_editor2 textarea,#smart_editor2 select,#smart_editor2 table,#smart_editor2 button{font-family:'돋움',Dotum,AppleGothic,sans-serif;font-size:12px;color:#666}
+#smart_editor2 span,#smart_editor2 em{font-size:12px}
+#smart_editor2 em,#smart_editor2 address{font-style:normal}
+#smart_editor2 img,#smart_editor2 fieldset{border:0}
+#smart_editor2 hr{display:none}
+#smart_editor2 h3{display:block}
+#smart_editor2 ol,#smart_editor2 ul{list-style:none}
+#smart_editor2 button{margin:0;padding:0;border:0;background:none;font-size:11px;vertical-align:top;overflow:hidden;cursor:pointer}
+#smart_editor2 button span,#smart_editor2 button em{visibility:hidden;overflow:hidden;font-size:0;line-height:0}
+#smart_editor2 legend,#smart_editor2 .blind{visibility:hidden;overflow:hidden;position:absolute;width:0;height:0;font-size:0;line-height:0}
+#smart_editor2 .input_ty1{height:14px;margin:0;padding:4px 2px 0 4px;border:1px solid #c7c7c7;font-size:11px;color:#666}
+#smart_editor2 a:link,#smart_editor2 a:visited,#smart_editor2 a:active,#smart_editor2 a:focus{color:#666;text-decoration:none}
+#smart_editor2 a:hover{color:#666;text-decoration:underline}
+/* Layout */
+#smart_editor2 .se2_header{margin:10px 0 29px 0}
+#smart_editor2 .se2_bi{float:left;width:93px;height:20px;margin:0;padding:0;background:url(../img/btn_set.png) -343px -358px no-repeat;font-size:0;line-height:0;text-indent:-10000px;vertical-align:middle}
+#smart_editor2 .se2_allhelp{display:inline-block;width:18px;height:18px;padding:0;background:url(../img/btn_set.png) -437px -358px no-repeat;font-size:0;line-height:0;text-indent:-10000px;vertical-align:middle}
+#smart_editor2 #smart_editor2_content{border:1px solid #b5b5b5}
+/* icon tool */
+#smart_editor2 .se2_tool{overflow:visible;position:relative;z-index:20;height:30px;background:#fbfcfc url(../img/bg_tool2.gif) repeat-x;*zoom:1}
+#smart_editor2 .se2_icon_tool{z-index:60;position:absolute;right:0;top:0;width:auto;height:34px;white-space:nowrap}
+#smart_editor2 .se2_itool1{float:left;border-left:1px solid #e0dedf;white-space:nowrap}
+#smart_editor2 .se2_itool2,#smart_editor2 .se2_itool3{float:left;border-left:1px solid #e0dedf;white-space:nowrap}
+#smart_editor2 .se2_itool4{float:left;position:absolute;top:0;right:0;margin:0;padding:0}
+#smart_editor2 .se2_itool4 .se2_mn{border-left:1px solid #e0dedf}
+#smart_editor2 .se2_icon_tool li{float:left;position:relative;z-index:60}
+#smart_editor2 .se2_icon_tool .se2_mn.hover{background:#e0dedf}
+#smart_editor2 .se2_icon_tool .se2_itool3 .se2_mn.active{background:#d5d5d5}
+/* icon tool : txt */
+#smart_editor2 .se2_mntxt{display:inline-block;visibility:visible;position:static;width:auto;height:29px;font-weight:normal;font-size:11px;line-height:29px;*line-height:28px;_line-height:29px;color:#444;letter-spacing:-1px;vertical-align:middle}
+#smart_editor2 .se2_more .se2_mntxt,#smart_editor2 .se2_more2 .se2_mntxt{visibility:hidden;overflow:hidden;font-size:0;line-height:0}
+/* icon tool : btn */
+#smart_editor2 .se2_wty2,#smart_editor2 .se2_wty3,#smart_editor2 .se2_wty4,#smart_editor2 .se2_wty2_ic,#smart_editor2 .se2_wty3_ic,#smart_editor2 .se2_wty4_ic,#smart_editor2 .se2_wty7{height:29px;margin:0 0;background:url(../img/btn_set.png) -187px -463px no-repeat;text-align:center}
+#smart_editor2 .se2_attach_db{margin:0}
+#smart_editor2 .se2_wreview{margin:0}
+#smart_editor2 .se2_mfirst{margin:0 1px 0 0}
+#smart_editor2 .se2_mlast{margin:0 0 0 1px}
+/* icon tool : btn size */
+#smart_editor2 .se2_wty2{width:36px}
+#smart_editor2 .se2_wty3{width:40px}
+#smart_editor2 .se2_wty4{width:58px}
+#smart_editor2 .se2_wty2_ic{width:47px}
+#smart_editor2 .se2_wty3_ic{width:60px}
+#smart_editor2 .se2_wty4_ic{width:69px}
+#smart_editor2 .se2_wty7{width:76px}
+#smart_editor2 .se2_more{width:11px;height:32px;background:url(../img/btn_set.png) 0 -463px no-repeat}
+#smart_editor2 .se2_more2{width:14px;height:32px;background:url(../img/btn_set.png) -305px -463px no-repeat}
+/* icon tool : hover */
+#smart_editor2 .hover .se2_wty2,#smart_editor2 .hover .se2_wty3,#smart_editor2 .hover .se2_wty4,#smart_editor2 .hover .se2_wty2_ic,#smart_editor2 .hover .se2_wty3_ic,#smart_editor2 .hover .se2_wty4_ic,#smart_editor2 .hover .se2_wty7{background:#e8e8e8}
+#smart_editor2 .hover .se2_attach_db,#smart_editor2 .hover .se2_wreview{background:#f1f1f1}
+#smart_editor2 .hover .hover .se2_attach_db,#smart_editor2 .hover .hover .se2_wreview{background:#e8e8e8}
+#smart_editor2 .hover .se2_more{background-position:-12px -463px}
+#smart_editor2 .hover .se2_more2{background-position:-320px -463px}
+/* icon tool : active */
+#smart_editor2 .active .se2_item{background:url(../img/btn_set.png) -48px -463px no-repeat}
+#smart_editor2 span.active .se2_wty7{background:url(../img/btn_set.png) -109px -463px no-repeat}
+#smart_editor2 .active .se2_more{background-position:0px -463px}
+#smart_editor2 .active .se2_more2{background-position:-335px -463px}
+#smart_editor2 .active .active .se2_more{background-position:-24px -463px}
+/* icon tool : off */
+#smart_editor2 .off .se2_wty2,#smart_editor2 .off .se2_wty3,#smart_editor2 .off .se2_wty4,#smart_editor2 .off .se2_wty2_ic,#smart_editor2 .off .se2_wty3_ic,#smart_editor2 .off .se2_wty4_ic,#smart_editor2 .off .se2_wty7,#smart_editor2 .se2_itool4 .off .se2_more,#smart_editor2 .se2_itool4 .off .se2_more2,#smart_editor2 .off .se2_font_family,#smart_editor2 .off .se2_font_size,#smart_editor2 .off .se2_bold,#smart_editor2 .off .se2_underline,#smart_editor2 .off .se2_italic,#smart_editor2 .off .se2_tdel,#smart_editor2 .off .se2_fcolor,#smart_editor2 .off .se2_fcolor_more,#smart_editor2 .off .se2_bgcolor,#smart_editor2 .off .se2_bgcolor_more,#smart_editor2 .off .se2_left,#smart_editor2 .off .se2_center,#smart_editor2 .off .se2_right,#smart_editor2 .off .se2_justify,#smart_editor2 .off .se2_ol,#smart_editor2 .off .se2_ul,#smart_editor2 .off .se2_indent,#smart_editor2 .off .se2_outdent,#smart_editor2 .off .se2_lineheight,#smart_editor2 .off .se2_del_style,#smart_editor2 .off .se2_sup, #smart_editor2 .off .se2_sub,#smart_editor2 .off .se2_blockquote,#smart_editor2 .off .se2_url,#smart_editor2 .off .se2_character,#smart_editor2 .off .se2_table,#smart_editor2 .off .se2_find,#smart_editor2 .off .se2_spelling,#smart_editor2 .off .se2_text_tool_more,#smart_editor2 .off .se2_new{-ms-filter:alpha(opacity=50);opacity:.5;cursor:default;filter:alpha(opacity=50)}
+/* icon set */
+#smart_editor2 .se2_icon_tool .se2_new{display:block;visibility:visible;position:absolute;top:4px;right:2px;width:8px;height:8px;background:url(../img/icon_set.gif) 0 -669px no-repeat}
+#smart_editor2 .se2_hide_itool .se2_new{top:6px;right:3px}
+#smart_editor2 .se2_icon_tool .se2_itool4 .se2_new{right:12px}
+#smart_editor2 .se2_icon_tool .se2_icon{display:inline-block;visibility:visible;overflow:visible;position:static;width:15px;height:29px;margin:-3px 3px 3px 0;background:url(../img/icon_set.gif) no-repeat;line-height:29px;vertical-align:middle}
+#smart_editor2 .se2_photo .se2_icon{background-position:0 -965px}
+#smart_editor2 .se2_file .se2_icon{background-position:-18px -1000px}
+/* icon tool : collapse */
+#smart_editor2 .se2_hide_itool{display:none;z-index:70;width:64px;border:1px solid #fff;background:#fafafa}
+#smart_editor2 .se2_hide_itool li{float:none}
+#smart_editor2 .active .se2_hide_itool{display:block}
+#smart_editor2 .se2_hide_itool .se2_mntxt{height:20px;margin:0 0 0 7px;line-height:20px;color:#333;letter-spacing:-1px}
+#smart_editor2 .se2_hide_itool .se2_mn.hover{background:#ebebeb}
+#smart_editor2 .se2_hide_itool .se2_wty2,#smart_editor2 .se2_hide_itool .se2_wty3,#smart_editor2 .se2_hide_itool .se2_wty4,#smart_editor2 .se2_hide_itool .se2_wty2_ic,#smart_editor2 .se2_hide_itool .se2_wty3_ic,#smart_editor2 .se2_hide_itool .se2_wty4_ic{display:block;width:99%;height:21px;margin:0;background:none;text-align:left}
+/* text tool */
+#smart_editor2 .se2_text_tool{clear:both;z-index:30;height:26px;padding:4px 0 0 3px}
+#smart_editor2 .se2_font_type,#smart_editor2 .se2_font_style,#smart_editor2 .se2_paragraph,#smart_editor2 .se2_etc{_display:inline;float:left;margin:0 3px 0 0;padding:0;white-space:nowrap}
+#smart_editor2 .se2_text_tool li{_display:inline;float:left;position:relative;z-index:30}
+#smart_editor2 .se2_text_tool button{width:21px;height:21px;margin:0;padding:0;background:url(../img/text_tool_set2.png) no-repeat;vertical-align:top}
+#smart_editor2 .se2_text_tool button span{visibility:hidden;overflow:hidden;position:absolute;top:0;left:0;width:0;height:0}
+/* text tool : 폰트명 */
+#smart_editor2 .se2_text_tool .se2_font_type li{margin-left:3px}
+#smart_editor2 .se2_text_tool .se2_font_family{width:70px;height:21px;margin:0;padding:0;background-position:0 0;text-align:left}
+#smart_editor2 .se2_text_tool .se2_font_family span,#smart_editor2 .se2_text_tool .se2_font_size span{display:inline-block;visibility:visible;overflow:hidden;position:static;width:52px;height:20px;padding:0 0 0 6px;font-size:12px;line-height:20px;*line-height:22px;color:#333;*zoom:1}
+#smart_editor2 .se2_text_tool .hover .se2_font_family{background-position:0 -42px}
+#smart_editor2 .se2_text_tool .active .se2_font_family{background-position:0 -63px}
+/* text tool : 크기 */
+#smart_editor2 .se2_text_tool .se2_font_size{width:45px;height:21px;margin:0;padding:0;background-position:-70px 0;text-align:left}
+#smart_editor2 .se2_text_tool .se2_font_size span{width:30px}
+#smart_editor2 .se2_text_tool .hover .se2_font_size{background-position:-70px -42px}
+#smart_editor2 .se2_text_tool .active .se2_font_size{background-position:-70px -63px}
+/* text tool : 스타일 */
+#smart_editor2 .se2_text_tool .se2_font_style{width:189px}
+#smart_editor2 .se2_text_tool .se2_bold{width:22px;background-position:-115px 0}
+#smart_editor2 .se2_text_tool .se2_underline{background-position:-137px 0}
+#smart_editor2 .se2_text_tool .se2_italic{background-position:-158px 0}
+#smart_editor2 .se2_text_tool .se2_tdel{background-position:-179px 0}
+#smart_editor2 .se2_text_tool .se2_fcolor{width:20px;background-position:-200px 0}
+#smart_editor2 .se2_text_tool .se2_fcolor_more{width:11px;background-position:-220px 0}
+#smart_editor2 .se2_text_tool .se2_bgcolor{width:20px;background-position:-231px 0}
+#smart_editor2 .se2_text_tool .se2_bgcolor_more{width:11px;background-position:-251px 0}
+#smart_editor2 .se2_text_tool .se2_font_style .se2_pair.active{z-index:50}
+#smart_editor2 .se2_text_tool .se2_sup{background-position:-686px 0}
+#smart_editor2 .se2_text_tool .se2_sub{background-position:-707px 0}
+/* text tool : 스타일 hover */
+#smart_editor2 .se2_text_tool .hover .se2_bold{background-position:-115px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_underline{background-position:-137px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_italic{background-position:-158px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_tdel{background-position:-179px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_fcolor{width:20px;background-position:-200px -21px}
+#smart_editor2 .se2_text_tool .hover .se2_fcolor_more{width:11px;background-position:-220px -21px}
+#smart_editor2 .se2_text_tool .hover .se2_bgcolor{width:20px;background-position:-231px -21px}
+#smart_editor2 .se2_text_tool .hover .se2_bgcolor_more{width:11px;background-position:-251px -21px}
+#smart_editor2 .se2_text_tool .hover .se2_sup{background-position:-686px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_sub{background-position:-707px -42px}
+/* text tool : 스타일 active */
+#smart_editor2 .se2_text_tool .active .se2_bold{background-position:-115px -63px}
+#smart_editor2 .se2_text_tool .active .se2_underline{background-position:-137px -63px}
+#smart_editor2 .se2_text_tool .active .se2_italic{background-position:-158px -63px}
+#smart_editor2 .se2_text_tool .active .se2_tdel{background-position:-179px -63px}
+#smart_editor2 .se2_text_tool .active .se2_sup{background-position:-686px -63px}
+#smart_editor2 .se2_text_tool .active .se2_sub{background-position:-707px -63px}
+/* text tool : 컬러 1st hover */
+#smart_editor2 .se2_pair .hover .se2_fcolor{width:20px;background-position:-200px -42px}
+#smart_editor2 .se2_pair .hover .se2_fcolor_more{width:11px;background-position:-220px -42px}
+#smart_editor2 .se2_pair .hover .se2_bgcolor{width:20px;background-position:-231px -42px}
+#smart_editor2 .se2_pair .hover .se2_bgcolor_more{width:11px;background-position:-251px -42px}
+/* text tool : 컬러 2nd hover */
+#smart_editor2 .se2_text_tool .active .se2_fcolor{width:20px;background-position:-200px -21px}
+#smart_editor2 .se2_text_tool .active .se2_fcolor_more{width:11px;background-position:-220px -21px}
+#smart_editor2 .se2_text_tool .active .se2_bgcolor{width:20px;background-position:-231px -21px}
+#smart_editor2 .se2_text_tool .active .se2_bgcolor_more{width:11px;background-position:-251px -21px}
+/* text tool : 컬러 active */
+#smart_editor2 .se2_text_tool .se2_pair .active .se2_fcolor{width:20px;background-position:-200px -63px}
+#smart_editor2 .se2_text_tool .se2_pair .active .se2_fcolor_more{width:11px;background-position:-220px -63px}
+#smart_editor2 .se2_text_tool .se2_pair .active .se2_bgcolor{width:20px;background-position:-231px -63px}
+#smart_editor2 .se2_text_tool .se2_pair .active .se2_bgcolor_more{width:11px;background-position:-251px -63px}
+/* text tool : paragraph */
+#smart_editor2 .se2_text_tool .se2_paragraph{width:106px}
+#smart_editor2 .se2_text_tool .se2_left{width:22px;background-position:-262px 0}
+#smart_editor2 .se2_text_tool .se2_center{background-position:-284px 0}
+#smart_editor2 .se2_text_tool .se2_right{background-position:-305px 0}
+#smart_editor2 .se2_text_tool .se2_justify{background-position:-326px 0}
+#smart_editor2 .se2_text_tool .se2_ol{width:22px;background-position:-368px 0}
+#smart_editor2 .se2_text_tool .se2_ul{background-position:-390px 0}
+#smart_editor2 .se2_text_tool .se2_indent{background-position:-411px 0}
+#smart_editor2 .se2_text_tool .se2_outdent{background-position:-432px 0}
+#smart_editor2 .se2_text_tool .se2_lineheight{background-position:-347px 0}
+/* text tool : paragraph  hover */
+#smart_editor2 .se2_text_tool .hover .se2_left{background-position:-262px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_center{background-position:-284px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_right{background-position:-305px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_justify{background-position:-326px -42px}
+#smart_editor2 .se2_text_tool .active .hover .se2_ol{background-position:-368px -42px}
+#smart_editor2 .se2_text_tool .active .hover .se2_ul{background-position:-390px -42px}
+#smart_editor2 .se2_text_tool .active .hover .se2_indent{background-position:-411px -42px}
+#smart_editor2 .se2_text_tool .active .hover .se2_outdent{background-position:-432px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_lineheight{background-position:-347px -42px}
+/* text tool : paragraph  active */
+#smart_editor2 .se2_text_tool .active .se2_left{background-position:-262px -63px}
+#smart_editor2 .se2_text_tool .active .se2_center{background-position:-284px -63px}
+#smart_editor2 .se2_text_tool .active .se2_right{background-position:-305px -63px}
+#smart_editor2 .se2_text_tool .active .se2_justify{background-position:-326px -63px}
+#smart_editor2 .se2_text_tool .active .active .se2_ol{background-position:-368px -63px}
+#smart_editor2 .se2_text_tool .active .active .se2_ul{background-position:-390px -63px}
+#smart_editor2 .se2_text_tool .active .active .se2_indent{background-position:-411px -63px}
+#smart_editor2 .se2_text_tool .active .active .se2_outdent{background-position:-432px -63px}
+#smart_editor2 .se2_text_tool .active .se2_lineheight{background-position:-347px -63px}
+/* text tool : etc */
+#smart_editor2 .se2_text_tool .se2_etc_text_2{width:43px}
+#smart_editor2 .se2_text_tool .se2_etc_text_3{width:127px}
+#smart_editor2 .se2_text_tool .se2_blockquote{width:22px;background-position:-495px 0}
+#smart_editor2 .se2_text_tool .se2_url{width:22px;background-position:-538px 0}
+#smart_editor2 .se2_text_tool .se2_character{background-position:-581px 0}
+#smart_editor2 .se2_text_tool .se2_table{background-position:-602px 0}
+#smart_editor2 .se2_text_tool .se2_find{background-position:-623px 0}
+/* text tool : etc hover */
+#smart_editor2 .se2_text_tool .hover .se2_blockquote{width:22px;background-position:-495px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_url{width:22px;background-position:-538px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_character{background-position:-581px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_table{background-position:-602px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_find{background-position:-623px -42px}
+#smart_editor2 .se2_text_tool .hover .se2_spelling{background-position:-644px -42px}
+/* text tool : etc active */
+#smart_editor2 .se2_text_tool .active .se2_blockquote{width:22px;background-position:-495px -63px}
+#smart_editor2 .se2_text_tool .active .se2_url{width:22px;background-position:-538px -63px}
+#smart_editor2 .se2_text_tool .active .se2_character{background-position:-581px -63px}
+#smart_editor2 .se2_text_tool .active .se2_table{background-position:-602px -63px}
+#smart_editor2 .se2_text_tool .active .se2_find{background-position:-623px -63px}
+#smart_editor2 .se2_text_tool .active .se2_spelling{background-position:-644px -63px}
+/* text tool : 접힘메뉴 */
+#smart_editor2 .se2_text_tool_view_more .se2_text_tool_more{width:13px;height:21px;background-position:0px -21px}
+#smart_editor2 .hover .se2_text_tool_more{width:13px;height:21px;background-position:-13px -21px}
+#smart_editor2 .active .se2_text_tool_more{width:13px;height:21px;background-position:-26px -21px}
+#smart_editor2 .se2_sub_text_tool{display:none;position:absolute;top:20px;left:0;z-index:40;width:auto;height:29px;padding:0 4px 0 0;border:1px solid #b5b5b5;border-top:1px solid #9a9a9a;background:#f4f4f4}
+#smart_editor2 .active .se2_sub_text_tool{display:block}
+#smart_editor2 .se2_sub_text_tool .se2_etc{float:left;height:25px;margin:0;padding:4px 0 0 4px}
+/* text tool : 접힘규칙 */
+#smart_editor2 .se2_sub_step1{width:90px}
+#smart_editor2 .se2_sub_step2{width:199px}
+/* text tool : 접힘규칙 no요약글 */
+#smart_editor2 .se2_sub_step2_1{width:178px}
+/* text tool : 접힘 */
+#smart_editor2 .se2_sub_text_tool .se2_del_style{width:22px;background-position:-473px 0 !important}
+#smart_editor2 .se2_sub_text_tool .se2_blockquote{width:22px;background-position:-495px 0 !important}
+#smart_editor2 .se2_sub_text_tool .se2_url{width:22px;background-position:-538px 0 !important}
+#smart_editor2 .se2_sub_text_tool .se2_character{background-position:-581px 0 !important}
+#smart_editor2 .se2_sub_text_tool .se2_table{background-position:-602px 0 !important}
+#smart_editor2 .se2_sub_text_tool .se2_find{background-position:-623px 0 !important}
+#smart_editor2 .se2_sub_text_tool .se2_spelling{background-position:-644px 0 !important}
+#smart_editor2 .se2_sub_text_tool .hover .se2_blockquote{width:22px;background-position:-495px -42px !important}
+#smart_editor2 .se2_sub_text_tool .hover .se2_url{width:22px;background-position:-538px -42px !important}
+#smart_editor2 .se2_sub_text_tool .hover .se2_character{background-position:-581px -42px !important}
+#smart_editor2 .se2_sub_text_tool .hover .se2_table{background-position:-602px -42px !important}
+#smart_editor2 .se2_sub_text_tool .hover .se2_find{background-position:-623px -42px !important}
+#smart_editor2 .se2_sub_text_tool .hover .se2_spelling{background-position:-644px -42px !important}
+#smart_editor2 .se2_sub_text_tool .active .se2_blockquote{width:22px;background-position:-495px -63px !important}
+#smart_editor2 .se2_sub_text_tool .active .se2_url{width:22px;background-position:-538px -63px !important}
+#smart_editor2 .se2_sub_text_tool .active .se2_character{background-position:-581px -63px !important}
+#smart_editor2 .se2_sub_text_tool .active .se2_table{background-position:-602px -63px !important}
+#smart_editor2 .se2_sub_text_tool .active .se2_find{background-position:-623px -63px !important}
+#smart_editor2 .se2_sub_text_tool .active .se2_spelling{background-position:-644px -63px !important}
+/* 편집영역 */
+#smart_editor2 .se2_input_area{position:relative;z-index:15;height:400px;margin:0;padding:0;*zoom:1}
+#smart_editor2 .se2_input_wysiwyg,#smart_editor2 .se2_input_syntax{display:block;overflow:auto;width:100%;height:100%;margin:0;border:0}
+#smart_editor2 .se2_input_syntax{*margin-top:-1px}
+
+/* 모드전환 */
+#smart_editor2 .se2_conversion_mode{position:relative;z-index:10;height:15px;padding-top:1px;border-top:1px solid #b5b5b5;background:url(../img/icon_set.gif) 0 -896px repeat-x}
+#smart_editor2 .se2_inputarea_controller{display:block;clear:both;position:relative;width:100%;height:15px;background:url(../img/icon_set.gif) center -47px no-repeat;text-align:center;cursor:n-resize}
+#smart_editor2 .se2_inputarea_controller span{display:block;visibility:visible;height:15px;font-size:0;line-height:0;color:#fff;white-space:nowrap}
+#smart_editor2 .se2_converter{float:left;position:absolute;top:-1px;right:3px;z-index:20}
+#smart_editor2 .se2_converter li{float:left}
+#smart_editor2 .se2_converter .se2_to_editor{width:59px;height:15px;background:url(../img/btn_set.png) 0 -714px no-repeat;vertical-align:top}
+#smart_editor2 .se2_converter .se2_to_text{width:59px;height:15px;background:url(../img/btn_set.png) -60px -714px no-repeat;vertical-align:top}
+#smart_editor2 .se2_converter .se2_to_html{width:60px;height:15px;background:url(../img/btn_set.png) -118px -714px no-repeat;vertical-align:top}
+#smart_editor2 .se2_converter .active .se2_to_editor{width:59px;height:15px;background:url(../img/btn_set.png) 0 -729px no-repeat;vertical-align:top}
+#smart_editor2 .se2_converter .active .se2_to_text{width:59px;height:15px;background:url(../img/btn_set.png) -60px -729px no-repeat;vertical-align:top}
+#smart_editor2 .se2_converter .active .se2_to_html{width:60px;height:15px;background:url(../img/btn_set.png) -118px -729px no-repeat;vertical-align:top}
+
+/* layer */
+#smart_editor2 .se2_icon_tool .se2_layer{display:none;position:absolute;top:29px;right:-1px;margin:0;padding:0;border:1px solid #bcbbbb;background:#fafafa}
+#smart_editor2 .se2_icon_tool .se2_itool4 .se2_layer{right:-1px;_right:-2px}
+#smart_editor2 .se2_icon_tool .active{z-index:70}
+#smart_editor2 .se2_icon_tool .active .se2_layer{display:block;z-index:70}
+#smart_editor2 .se2_icon_tool .se2_close{position:absolute;top:3px;right:6px;width:25px;height:25px;background:url(../img/btn_set.png) -149px 2px no-repeat}
+#smart_editor2 .se2_text_tool .se2_layer{display:none;float:left;position:absolute;top:20px;left:0;z-index:50;margin:0;padding:0;border:1px solid #bcbbbb;background:#fafafa}
+#smart_editor2 .se2_text_tool li.active{z-index:50}
+#smart_editor2 .se2_text_tool .active .se2_layer{display:block}
+#smart_editor2 .se2_text_tool .active li .se2_layer{display:none}
+#smart_editor2 .se2_text_tool .active .active .se2_layer{display:block}
+#smart_editor2 .se2_text_tool .se2_layer .se2_in_layer{float:left;margin:0;padding:0;border:1px solid #fff;background:#fafafa}
+/* 에디터영역 꺽쇠 */
+#smart_editor2 .se2_editor_mark{position:absolute;left:0;top:20px;margin-left:64px}
+#smart_editor2 .se2_editor_mark .lt{position:absolute;left:-12px;bottom:2px;width:9px;height:9px;border-right:1px solid #bfbfbf;border-bottom:1px solid #bfbfbf;font-size:0;line-height:0}
+#smart_editor2 .se2_editor_mark .rt{position:absolute;right:-12px;bottom:2px;width:9px;height:9px;border-left:1px solid #bfbfbf;border-bottom:1px solid #bfbfbf;font-size:0;line-height:0}

@@ -27,6 +27,7 @@ nhn.husky.EZCreator = new (function(){
 			var bUseBlocker = arguments[5];
 			var htParams = arguments[6];
 		}
+		if(fOnAppLoad && htParams) htParams["fOnAppLoad"] = fOnAppLoad;
 		
 		if(bUseBlocker) nhn.husky.EZCreator.showBlocker();
 
@@ -46,7 +47,9 @@ nhn.husky.EZCreator = new (function(){
 		if(typeof(elPlaceHolder) != "object")
 			elPlaceHolder = document.getElementById(elPlaceHolder);
 
-		var elIFrame;
+		var elIFrame, nEditorWidth, nEditorHeight;
+		 
+
 		try{
 			elIFrame = document.createElement("<IFRAME frameborder=0 scrolling=no>");
 		}catch(e){
@@ -54,15 +57,23 @@ nhn.husky.EZCreator = new (function(){
 			elIFrame.setAttribute("frameborder", "0");
 			elIFrame.setAttribute("scrolling", "no");
 		}
+		
 		elIFrame.style.width = "1px";
 		elIFrame.style.height = "1px";
-
 		elPlaceHolder.parentNode.insertBefore(elIFrame, elPlaceHolder.nextSibling);
-
+		
 		attachEvent(elIFrame, "load", function(){
-			fCreator = elIFrame.contentWindow[fCreator] || elIFrame.contentWindow.createSEditorInIFrame;
+			fCreator = elIFrame.contentWindow[fCreator] || elIFrame.contentWindow.createSEditor2;
+			
+//			top.document.title = ((new Date())-window.STime);
+//			window.STime = new Date();
 			
 			try{
+			
+				nEditorWidth = elIFrame.contentWindow.document.body.scrollWidth || "500px";
+				nEditorHeight = elIFrame.contentWindow.document.body.scrollHeight + 12;
+				elIFrame.style.width =  "100%";
+				elIFrame.style.height = nEditorHeight+ "px";
 				elIFrame.contentWindow.document.body.style.margin = "0";
 			}catch(e){
 				nhn.husky.EZCreator.hideBlocker(true);
@@ -72,22 +83,23 @@ nhn.husky.EZCreator = new (function(){
 				alert("Failed to access "+sSkinURI);
 				return;
 			}
+			
+			var oApp = fCreator(elPlaceHolder, htParams);	// oEditor
+			
 
-			var oApp = fCreator(elIFrame, elPlaceHolder, htParams);
 			oApp.elPlaceHolder = elPlaceHolder;
 
 			oAppRef[oAppRef.length] = oApp;
 			if(!oAppRef.getById) oAppRef.getById = {};
 			
-			if(elPlaceHolder.id){
-				oApp.sAppId = elPlaceHolder.id;
-				oAppRef.getById[elPlaceHolder.id] = oApp;
-			}
-			oApp.run({fnOnAppReady:fOnAppLoad});
-
+			if(elPlaceHolder.id) oAppRef.getById[elPlaceHolder.id] = oApp;
+			
+			oApp.run({});
+			
+//			top.document.title += ", "+((new Date())-window.STime);
 			nhn.husky.EZCreator.hideBlocker();
 		});
-
+//		window.STime = new Date();
 		elIFrame.src = sSkinURI;
 	};
 	
