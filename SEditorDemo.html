@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>스마트에디터 데모 페이지</title>
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/HuskyEZCreator.js" charset="utf-8"></script>
+</head>
+<body>
+<form action="sample.php" method="post">
+	<p>
+		<input type="button" onclick="pasteHTMLDemo()" value="본문에 HTML 삽입"></input>
+		<input type="button" onclick="showHTML()" value="본문 HTML 보기"></input>
+		<input type="button" onclick="_onSubmit(this)" value="서버에 전송"></input>
+	</p>
+	<textarea name="ir1" id="ir1" style="width:725px; height:300px; display:none;"><p>에디터에 기본으로 삽입할 글(수정 모드)이 없다면 이 값을 지정하지 않으시면 됩니다.</p></textarea>
+</form>
+<script>
+var oEditors = [];
+nhn.husky.EZCreator.createInIFrame({
+	oAppRef: oEditors,
+	elPlaceHolder: "ir1",
+	sSkinURI: "SEditorSkin.html",
+	fCreator: "createSEditorInIFrame"
+});
+
+// 복수개의 에디터를 생성하고자 할 경우, 아래와 같은 방식으로 호출하고 oEditors.getById["ir2"]이나 oEditors[1]을 이용해 접근하면 됩니다.
+/*
+nhn.husky.EZCreator.createInIFrame({
+	oAppRef: oEditors,
+	elPlaceHolder: "ir2",
+	sSkinURI: "SEditorSkin.html",
+	fCreator: "createSEditorInIFrame"
+});
+*/
+
+function pasteHTMLDemo(){
+	sHTML = "<span style='color:#FF0000'>이미지 등도 이렇게 삽입하면 됩니다.</span>";
+	oEditors.getById["ir1"].exec("PASTE_HTML", [sHTML]);
+}
+
+function showHTML(){
+	alert(oEditors.getById["ir1"].getIR());
+}
+
+function _onSubmit(elClicked){
+	// 에디터의 내용을 에디터 생성시에 사용했던 textarea에 넣어 줍니다.
+	oEditors.getById["ir1"].exec("UPDATE_IR_FIELD", []);
+	
+	// 에디터의 내용에 대한 값 검증은 이곳에서 document.getElementById("ir1").value를 이용해서 처리하면 됩니다.
+
+	try{
+		elClicked.form.submit();
+	}catch(e){}
+}
+</script>
+</body>
+</html>
