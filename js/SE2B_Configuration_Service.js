@@ -62,3 +62,10 @@ nhn.husky.SE2M_Configuration.SE2M_Accessibility = {
     sNextElementId : '',
     sTitleElementId : ''
 };
+
+/**
+ * 링크 기능 옵션
+ */
+nhn.husky.SE2M_Configuration.SE2M_Hyperlink = {
+	bAutolink : true	// 자동링크기능 사용여부(기본값:true)
+};

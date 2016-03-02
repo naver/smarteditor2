@@ -1,4 +1,4 @@
-/**    * SmartEditor2 NHN_Library:SE2.3.8.O10836:SmartEditor2.0-OpenSource    * @version 10836    */    var nSE2Version = 10836;if(typeof window.nhn=='undefined') window.nhn = {};
+/**    * SmartEditor2 NHN_Library:SE2.3.9.O10938:SmartEditor2.0-OpenSource    * @version 10938    */    var nSE2Version = 10938;if(typeof window.nhn=='undefined') window.nhn = {};
 
 /**
  * @fileOverview This file contains a function that takes care of various operations related to find and replace
@@ -149,11 +149,20 @@ nhn.FindReplace = jindo.$Class({
 	// 3: not replaced & next word not found
 	// 4: sOriginalWord required
 	replace : function(sOriginalWord, Replacement, bCaseMatch, bBackwards, bWholeWord){
+		return this._replace(sOriginalWord, Replacement, bCaseMatch, bBackwards, bWholeWord);
+	},
+
+	/**
+	 * [SMARTEDITORSUS-1591] 크롬에서 replaceAll 시 selection 을 새로 만들면 첫번째 단어가 삭제되지 않고 남는 문제가 있어서 
+	 * selection 객체를 받아서 사용할 수 있도록 private 메서드 추가
+	 * TODO: 근본적으로 HuskyRange 를 리팩토링할 필요가 있음
+	 */
+	_replace : function(sOriginalWord, Replacement, bCaseMatch, bBackwards, bWholeWord, oSelection){
 		if(!sOriginalWord) return 4;
 
-		var oSelection = new nhn.HuskyRange(this.window);
+		oSelection = oSelection || new nhn.HuskyRange(this.window);
 		oSelection.setFromSelection();
-
+		
 		bCaseMatch = bCaseMatch || false;
 		var bMatch, selectedText = oSelection.toString();
 		if(bCaseMatch)
@@ -163,17 +172,17 @@ nhn.FindReplace = jindo.$Class({
 		
 		if(!bMatch)
 			return this.find(sOriginalWord, bCaseMatch, bBackwards, bWholeWord)+2;
-
+		
 		if(typeof Replacement == "function"){
 			// the returned oSelection must contain the replacement 
 			oSelection = Replacement(oSelection);
 		}else{
 			oSelection.pasteText(Replacement);
 		}
-
+		
 		// force it to find the NEXT occurance of sOriginalWord
 		oSelection.select();
-
+		
 		return this.find(sOriginalWord, bCaseMatch, bBackwards, bWholeWord);
 	},
 
@@ -206,7 +215,7 @@ nhn.FindReplace = jindo.$Class({
 		
 		this.bEOC = false;
 		while(!this.bEOC){
-			iReplaceResult = this.replace(sOriginalWord, Replacement, bCaseMatch, bBackwards, bWholeWord);
+			iReplaceResult = this._replace(sOriginalWord, Replacement, bCaseMatch, bBackwards, bWholeWord, oSelection);
 			if(iReplaceResult == 0 || iReplaceResult == 1){
 				iResult++;
 			}
@@ -221,17 +230,19 @@ nhn.FindReplace = jindo.$Class({
 
 			if(pos == 1) return false;
 			return true;
-		}
+		};
 
 		iReplaceResult = 0;
 		this.bEOC = false;
 		while(!startingPointReached() && iReplaceResult == 0 && !this.bEOC){
-			iReplaceResult = this.replace(sOriginalWord, Replacement, bCaseMatch, bBackwards, bWholeWord);
-			if(iReplaceResult == 0 || iReplaceResult == 1) iResult++;
+			iReplaceResult = this._replace(sOriginalWord, Replacement, bCaseMatch, bBackwards, bWholeWord, oSelection);
+			if(iReplaceResult == 0 || iReplaceResult == 1){
+				iResult++;
+			}
 		}
 		
 		oSelection.moveToBookmark(sBookmark);
-		oSelection.select();
+		oSelection.deleteContents();	// [SMARTEDITORSUS-1591] 크롬에서 첫번째 단어가 삭제되지 않는 경우가 있으므로 select()메서드대신 deleteContents() 메서드를 호출한다.
 		oSelection.removeStringBookmark(sBookmark);
 
 		// setTimeout 없이 바로 지우면 IE8 브라우저가 빈번하게 죽어버림
@@ -4592,8 +4603,6 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	},
 
 	$BEFORE_MSG_APP_READY : function(msg){
-		this.oNavigator = jindo.$Agent().navigator();
-		
 		this.oApp.exec("ADD_APP_PROPERTY", ["elEditingAreaContainer", this.elEditingAreaContainer]);
 		this.oApp.exec("ADD_APP_PROPERTY", ["welEditingAreaContainer", jindo.$Element(this.elEditingAreaContainer)]);
 		this.oApp.exec("ADD_APP_PROPERTY", ["getEditingAreaHeight", jindo.$Fn(this.getEditingAreaHeight, this).bind()]);
@@ -4724,7 +4733,8 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		//[SMARTEDITORSUS-1017] [iOS5대응] 모드 전환 시 textarea에 포커스가 있어도 글자가 입력이 안되는 현상
 		//원인 : WYSIWYG모드가 아닐 때에도 iframe의 contentWindow에 focus가 가면서 focus기능이 작동하지 않음
 		//해결 : WYSIWYG모드 일때만 실행 되도록 조건식 추가 및 기존에 blur처리 코드 삭제
-		if(!!this.oNavigator.msafari && !!this.iframeWindow && !this.iframeWindow.document.hasFocus() && this.oActivePlugin.sMode == "WYSIWYG"){
+		//[SMARTEDITORSUS-1594] 크롬에서 웹접근성용 키로 빠져나간 후 다시 진입시 간혹 포커싱이 안되는 문제가 있어 iframe에 포커싱을 먼저 주도록 수정
+		if(!!this.iframeWindow && this.iframeWindow.document.hasFocus && !this.iframeWindow.document.hasFocus() && this.oActivePlugin.sMode == "WYSIWYG"){
 			this.iframeWindow.focus();
 		}
 		
@@ -5296,6 +5306,13 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 		if(sIR.toLowerCase() === "<br>" || sIR.toLowerCase() === "<p>&nbsp;</p>" || sIR.toLowerCase() === "<p><br></p>"){
 			sIR="";
 		}
+		
+		// [SMARTEDITORSUS-1589] 문서 모드가 Edge인 IE11에서 WYSIWYG 모드와 HTML 모드 전환 시, 문말에 무의미한 <br> 두 개가 첨가되는 현상으로 필터링 추가
+		var htBrowser = jindo.$Agent().navigator();
+		if(htBrowser.ie && htBrowser.nativeVersion == 11 && document.documentMode == 11){ // Edge 모드의 documentMode 값은 11
+			sIR = sIR.replace(/(<br><br>$)/, "");
+		}
+		// --[SMARTEDITORSUS-1589]
 		
 		var sContent = sIR;
 		if (this.oApp.applyConverter) {
@@ -7967,7 +7984,6 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
  */
 nhn.husky.SE2M_Accessibility = jindo.$Class({
 	name : "SE2M_Accessibility",
-	htAccessOption : nhn.husky.SE2M_Configuration.SE2M_Accessibility,
 	
 	/*
 	 * elAppContainer : mandatory
@@ -7982,13 +7998,11 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
             
         if(!!sEditorType){
             this.sType = sEditorType;
-        }   
+        }
 	},          
 
 	_assignHTMLElements : function(elAppContainer){
-		var oAppContainer = elAppContainer;
-		
-		this.elHelpPopupLayer = jindo.$$.getSingle("DIV.se2_accessibility", oAppContainer);
+		this.elHelpPopupLayer = jindo.$$.getSingle("DIV.se2_accessibility", elAppContainer);
 		this.welHelpPopupLayer = jindo.$Element(this.elHelpPopupLayer);	
 
 		//close buttons
@@ -7996,10 +8010,14 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 		this.oCloseButton2 = jindo.$$.getSingle("BUTTON.se2_close2", this.elHelpPopupLayer);
 		
 		this.nDefaultTop = 150;
+		
+		// [SMARTEDITORSUS-1594] 포커스 탐색에 사용하기 위해 할당
+		this.elAppContainer = elAppContainer;
+		// --[SMARTEDITORSUS-1594]
 	},
-
 	
 	$ON_MSG_APP_READY : function(){
+		this.htAccessOption = nhn.husky.SE2M_Configuration.SE2M_Accessibility || {};
 		this.oApp.exec("REGISTER_HOTKEY", ["alt+F10", "FOCUS_TOOLBAR_AREA", []]); 
         this.oApp.exec("REGISTER_HOTKEY", ["alt+COMMA", "FOCUS_BEFORE_ELEMENT", []]);
         this.oApp.exec("REGISTER_HOTKEY", ["alt+PERIOD", "FOCUS_NEXT_ELEMENT", []]);
@@ -8015,12 +8033,11 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
         }   
 
 		//[SMARTEDITORSUS-1353]
-		if (!!this.htAccessOption.sTitleElementId) {
-			var targetElement = jindo.$Element(document.getElementById(this.htAccessOption.sTitleElementId));
-			this.oApp.registerBrowserEvent(targetElement, "keydown", "MOVE_TO_EDITAREA", []);
+		if (this.htAccessOption.sTitleElementId) {
+			this.oApp.registerBrowserEvent(document.getElementById(this.htAccessOption.sTitleElementId), "keydown", "MOVE_TO_EDITAREA", []);
 		}
 	},
-
+	
 	$ON_MOVE_TO_EDITAREA : function(weEvent) {
 		var TAB_KEY_CODE = 9;
 		if (weEvent.key().keyCode == TAB_KEY_CODE) {
@@ -8048,57 +8065,276 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
         //[css markup] left:11 top:74로 되어 있음
 	},
 
-	
-	//SE2M_Configuration_General 에서 지정한 에디터 영역 이후의 엘레먼트로 포커스가 이동하도록 한다. 
+	/**
+	 * [SMARTEDITORSUS-1594]
+	 * SE2M_Configuration_General에서 포커스를 이동할 에디터 영역 이후의 엘레먼트를 지정해 두었다면, 설정값을 따른다.
+	 * 지정하지 않았거나 빈 String이라면, elAppContainer를 기준으로 자동 탐색한다.
+	 * */
 	$ON_FOCUS_NEXT_ELEMENT : function() {
-		if (!!this.htAccessOption.sNextElementId) {
-			var sNextElementId = this.htAccessOption.sNextElementId;
-			if (document.getElementById(sNextElementId)) {
-
-				//[SMARTEDITORSUS-1360] 
-				/*
-				if(jindo.$Agent().navigator().ie && jindo.$Agent().navigator().version == 7) {
-		            window.focus();
-		            document.getElementById(sNextElementId).focus();
-				} else {
-					document.getElementById(sNextElementId).focus();
-				}
-				*/
-				
-				window.focus();
-	            document.getElementById(sNextElementId).focus();
-			} 
+		// 포커스 캐싱
+		this._currentNextFocusElement = null; // 새로운 포커스 이동이 발생할 때마다 캐싱 초기화
+		
+		if(this.htAccessOption.sNextElementId){
+			this._currentNextFocusElement = document.getElementById(this.htAccessOption.sNextElementId); 
+		}else{
+			this._currentNextFocusElement = this._findNextFocusElement(this.elAppContainer);
+		}
+		
+		if(this._currentNextFocusElement){
+			window.focus(); // [SMARTEDITORSUS-1360] IE7에서는 element에 대한 focus를 주기 위해 선행되어야 한다.
+			this._currentNextFocusElement.focus();
+		}else if(parent && parent.nhn && parent.nhn.husky && parent.nhn.husky.EZCreator && parent.nhn.husky.EZCreator.elIFrame){
+			parent.focus();
+			if(this._currentNextFocusElement = this._findNextFocusElement(parent.nhn.husky.EZCreator.elIFrame)){
+				this._currentNextFocusElement.focus();
+			}
 		}
 	},
 
-	//SE2M_Configuration_General에서 지정한 에디터 영역 이전의 엘레먼트로 포커스가 이동하도록 한다. 
-	$ON_FOCUS_BEFORE_ELEMENT : function() {
-		if (!!this.htAccessOption.sBeforeElementId) {
-			var sBeforeElementId = this.htAccessOption.sBeforeElementId;
-			if (document.getElementById(sBeforeElementId)) {
-				if(jindo.$Agent().navigator().ie && jindo.$Agent().navigator().version == 7) {
-		            window.focus();
-		            document.getElementById(sBeforeElementId).focus();
-				} else {
-					document.getElementById(sBeforeElementId).focus();
+	/**
+	 * [SMARTEDITORSUS-1594] DIV#smart_editor2 다음 요소에서 가장 가까운 포커스용 태그를 탐색 
+	 * */
+	_findNextFocusElement : function(targetElement){
+		var target = null;
+		
+		var el = targetElement.nextSibling;
+
+		while(el){
+			if(el.nodeType !== 1){ // Element Node만을 대상으로 한다.
+				// 대상 노드 대신 nextSibling을 찾되, 부모를 거슬러 올라갈 수도 있다.
+				// document.body까지 거슬러 올라가게 되면 탐색 종료
+				el = this._switchToSiblingOrNothing(el);
+				if(!el){
+					break;
+				}else{
+					continue;
 				}
-			} 
+			}
+			
+			// 대상 노드를 기준으로, 전위순회로 조건에 부합하는 노드 탐색
+			this._recursivePreorderTraversalFilter(el, this._isFocusTag);	
+			
+			if(this._nextFocusElement){
+				target = this._nextFocusElement;
+				
+				// 탐색에 사용했던 변수 초기화
+				this._bStopFindingNextElement = false;
+				this._nextFocusElement = null;
+				
+				break;
+			}else{
+				// 대상 노드 대신 nextSibling을 찾되, 부모를 거슬러 올라갈 수도 있다.
+				// document.body까지 거슬러 올라가게 되면 탐색 종료
+				el = this._switchToSiblingOrNothing(el);
+				if(!el){
+					break;
+				}
+			}
 		}
+	
+		// target이 존재하지 않으면 null 반환
+		return target;
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-1594] 대상 노드를 기준으로 하여, nextSibling 또는 previousSibling을 찾는다.
+	 * nextSibling 또는 previousSibling이 없다면,
+	 * 부모를 거슬러 올라가면서 첫 nextSibling 또는 previousSibling을 찾는다.
+	 * document의 body까지 올라가도 nextSibling 또는 previousSibling이 나타나지 않는다면
+	 * 탐색 대상으로 null을 반환한다.
+	 * @param {NodeElement} 대상 노드 (주의:NodeElement에 대한 null 체크 안함)
+	 * @param {Boolean} 생략하거나 false이면 nextSibling을 찾고, true이면 previousSibling을 찾는다. 
+	 * */
+	_switchToSiblingOrNothing : function(targetElement, isPreviousOrdered){
+		var el = targetElement;
+		
+		if(isPreviousOrdered){
+			if(el.previousSibling){
+				el = el.previousSibling;
+			}else{
+				// 형제가 없다면 부모를 거슬러 올라가면서 탐색
+				
+				// 이 루프의 종료 조건
+				// 1. 부모를 거슬러 올라가다가 el이 document.body가 되는 시점
+				// - 더 이상 previousSibling을 탐색할 수 없음
+				// 2. el이 부모로 대체된 뒤 previousSibling이 존재하는 경우
+				while(el.nodeName.toUpperCase() != "BODY" && !el.previousSibling){
+					el = el.parentNode;
+				}
+
+				if(el.nodeName.toUpperCase() == "BODY"){
+					el = null;
+				}else{
+					el = el.previousSibling;
+				}
+			}
+		}else{
+			if(el.nextSibling){
+				el = el.nextSibling;
+			}else{
+				// 형제가 없다면 부모를 거슬러 올라가면서 탐색
+				
+				// 이 루프의 종료 조건
+				// 1. 부모를 거슬러 올라가다가 el이 document.body가 되는 시점
+				// - 더 이상 nextSibling을 탐색할 수 없음
+				// 2. el이 부모로 대체된 뒤 nextSibling이 존재하는 경우
+				while(el.nodeName.toUpperCase() != "BODY" && !el.nextSibling){
+					el = el.parentNode;
+				}
+
+				if(el.nodeName.toUpperCase() == "BODY"){
+					el = null;
+				}else{
+					el = el.nextSibling;
+				}
+			}
+		}
+		
+		return el;
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-1594] 대상 노드를 기준으로 하는 트리를 전위순회를 거쳐, 필터 조건에 부합하는 첫 노드를 찾는다.
+	 * @param {NodeElement} 탐색하려는 트리의 루트 노드
+	 * @param {Function} 필터 조건으로 사용할 함수
+	 * @param {Boolean} 생략하거나 false이면 순수 전위순회(루트 - 좌측 - 우측 순)로 탐색하고, true이면 반대 방향의 전위순회(루트 - 우측 - 좌측)로 탐색한다.
+	 * */
+	_recursivePreorderTraversalFilter : function(node, filterFunction, isReversed){
+		var self = this;
+		
+		// 현재 노드를 기준으로 필터링
+		var _bStopFindingNextElement = filterFunction.apply(node);
+		
+		if(_bStopFindingNextElement){
+			// 최초로 포커스 태그를 찾는다면 탐색 중단용 flag 변경
+			self._bStopFindingNextElement = true;
+			
+			if(isReversed){
+				self._previousFocusElement = node;
+			}else{
+				self._nextFocusElement = node;
+			}
+
+			return;
+		}else{
+			// 필터링 조건에 부합하지 않는다면, 자식들을 기준으로 반복하게 된다.
+			if(isReversed){
+				for(var len = node.childNodes.length, i = len - 1; i >= 0; i--){
+					self._recursivePreorderTraversalFilter(node.childNodes[i], filterFunction, true);
+					if(!!this._bStopFindingNextElement){
+						break;
+					}
+				}
+			}else{
+				for(var i=0, len = node.childNodes.length; i < len; i++){
+					self._recursivePreorderTraversalFilter(node.childNodes[i], filterFunction);
+					if(!!this._bStopFindingNextElement){
+						break;
+					}
+				}
+			}
+		}
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-1594] 필터 함수로, 이 노드가 tab 키로 포커스를 이동하는 태그에 해당하는지 확인한다.
+	 * */
+	_isFocusTag : function(){
+		var self = this;
+		
+		// tab 키로 포커스를 잡아주는 태그 목록
+		var aFocusTagViaTabKey = ["A", "BUTTON", "INPUT", "TEXTAREA"];
+		
+		// 포커스 태그가 현재 노드에 존재하는지 확인하기 위한 flag
+		var bFocusTagExists = false;
+		
+		for(var i = 0, len = aFocusTagViaTabKey.length; i < len; i++){
+			if(self.nodeType === 1 && self.nodeName && self.nodeName.toUpperCase() == aFocusTagViaTabKey[i] && !self.disabled && jindo.$Element(self).visible()){
+				bFocusTagExists = true;
+				break;
+			}
+		}
+		
+		return bFocusTagExists;
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-1594]
+	 * SE2M_Configuration_General에서 포커스를 이동할 에디터 영역 이전의 엘레먼트를 지정해 두었다면, 설정값을 따른다.
+	 * 지정하지 않았거나 빈 String이라면, elAppContainer를 기준으로 자동 탐색한다.
+	 * */
+	$ON_FOCUS_BEFORE_ELEMENT : function() {
+		// 포커스 캐싱
+		this._currentPreviousFocusElement = null; // 새로운 포커스 이동이 발생할 때마다 캐싱 초기화
+		
+		if(this.htAccessOption.sBeforeElementId){
+			this._currentPreviousFocusElement = document.getElementById(this.htAccessOption.sBeforeElementId);
+		}else{
+			this._currentPreviousFocusElement = this._findPreviousFocusElement(this.elAppContainer); // 삽입될 대상
+		}
+		
+		if(this._currentPreviousFocusElement){
+			window.focus(); // [SMARTEDITORSUS-1360] IE7에서는 element에 대한 focus를 주기 위해 선행되어야 한다.
+			this._currentPreviousFocusElement.focus();
+		}else if(parent && parent.nhn && parent.nhn.husky && parent.nhn.husky.EZCreator && parent.nhn.husky.EZCreator.elIFrame){
+			parent.focus();
+			if(this._currentPreviousFocusElement = this._findPreviousFocusElement(parent.nhn.husky.EZCreator.elIFrame)){
+				this._currentPreviousFocusElement.focus();
+			}
+		}
+	},
+	
+	/**
+	 * [SMARTEDITORSUS-1594] DIV#smart_editor2 이전 요소에서 가장 가까운 포커스용 태그를 탐색
+	 * */
+	_findPreviousFocusElement : function(targetElement){
+		var target = null;
+		
+		var el = targetElement.previousSibling;
+		
+		while(el){
+			if(el.nodeType !== 1){  // Element Node만을 대상으로 한다. 
+				// 대상 노드 대신 previousSibling을 찾되, 부모를 거슬러 올라갈 수도 있다.
+				// document.body까지 거슬러 올라가게 되면 탐색 종료
+				el = this._switchToSiblingOrNothing(el, /*isReversed*/true);
+				if(!el){
+					break;
+				}else{
+					continue;
+				}
+			}
+			
+			// 대상 노드를 기준으로, 역 전위순회로 조건에 부합하는 노드 탐색
+			this._recursivePreorderTraversalFilter(el, this._isFocusTag, true);
+			
+			if(this._previousFocusElement){
+				target = this._previousFocusElement;
+				
+				// 탐색에 사용했던 변수 초기화
+				this._bStopFindingNextElement = false;
+				this._previousFocusElement = null;
+				
+				break;
+			}else{
+				// 대상 노드 대신 previousSibling을 찾되, 부모를 거슬러 올라갈 수도 있다.
+				// document.body까지 거슬러 올라가게 되면 탐색 종료
+				el = this._switchToSiblingOrNothing(el, /*isReversed*/true);
+				if(!el){
+					break;
+				}
+			}
+		}
+		
+		// target이 존재하지 않으면 null 반환
+		return target;
 	},
 	
 	$ON_FOCUS_TOOLBAR_AREA : function(){
-		this.oButton = jindo.$$.getSingle("BUTTON.se2_font_family", this.oAppContainer);
-		
-		//IE7에서는 ALT+F10 실행했을 때 포커스가 에디팅 영역에도 가는 현상이 생기므로 브라우저 버전 체크해서 window.focus 넣어줌.   
-		if(jindo.$Agent().navigator().ie && jindo.$Agent().navigator().version == 7) {
-            window.focus();
-		}
-		
-		try {
+		this.oButton = jindo.$$.getSingle("BUTTON.se2_font_family", this.elAppContainer);
+		if(this.oButton && !this.oButton.disabled){	// [SMARTEDITORSUS-1369] IE9이하에서 disabled 요소에 포커스를 주면 오류 발생
+			window.focus();
 			this.oButton.focus();
-		} catch(e) {
 		}
-		
 	},
 	
 	$ON_OPEN_HELP_POPUP : function() {
@@ -8106,13 +8342,11 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
         this.oApp.exec("SHOW_EDITING_AREA_COVER");
         this.oApp.exec("SELECT_UI", ["se2_accessibility"]);
 
-        
         //아래 코드 없어야 블로그에서도 동일한 위치에 팝업 뜸..
         //this.elHelpPopupLayer.style.top = this.nDefaultTop+"px";
         
-        
         this.nCalcX = this.htTopLeftCorner.x + this.oApp.getEditingAreaWidth() - this.nLayerWidth;
-        this.nCalcY = this.htTopLeftCorner.y;
+        this.nCalcY = this.htTopLeftCorner.y - 30;	// 블로그버전이 아닌 경우 에디터영역을 벗어나는 문제가 있기 때문에 기본툴바(30px) 크기만큼 올려줌 
 
         this.oApp.exec("SHOW_DIALOG_LAYER", [this.elHelpPopupLayer, {
                 elHandle: this.elTitle,
@@ -8123,9 +8357,8 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
         }]);
 	
         // offset (nTop:Numeric,  nLeft:Numeric)
-        this.welHelpPopupLayer.offset(this.nCalcY , (this.nCalcX)/2);
+        this.welHelpPopupLayer.offset(this.nCalcY, (this.nCalcX)/2); 
        
-
         //[SMARTEDITORSUS-1327] IE에서 포커스 이슈로 IE에 대해서만 window.focus실행함. 
         if(jindo.$Agent().navigator().ie) {
         	window.focus();
@@ -10217,7 +10450,24 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		
 		return sBreaker+sResult;
 	},
-	
+
+	/**
+	 * [SMARTEDITORSUS-1405] 자동링크 비활성화 옵션을 체크해서 처리한다.
+	 * $ON_REGISTER_CONVERTERS 메시지가 SE_EditingAreaManager.$ON_MSG_APP_READY 에서 수행되므로 먼저 처리한다.
+	 */
+	$BEFORE_MSG_APP_READY : function(){
+		var htOptions = nhn.husky.SE2M_Configuration.SE2M_Hyperlink;
+		if(htOptions && htOptions.bAutolink === false){
+			// 자동링크 컨버터 비활성화 
+			this.$ON_REGISTER_CONVERTERS = null;
+			// UI enable/disable 처리 제외 
+			this.$ON_DISABLE_MESSAGE = null;
+			this.$ON_ENABLE_MESSAGE = null;
+			// 브라우저의 자동링크기능 비활성화 
+			try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, false); } catch(e){}
+		}
+	},
+
 	$ON_MSG_APP_READY : function(){
 		this.bLayerShown = false;
 
@@ -10498,7 +10748,34 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		}
 	},
 
+	/**
+	 * [MUG-1265] 버튼이 사용불가 상태이면 자동변환기능을 막는다.
+	 * @see http://stackoverflow.com/questions/7556007/avoid-transformation-text-to-link-ie-contenteditable-mode
+	 * IE9 이전 버전은 AutoURlDetect을 사용할 수 없어 오류 발생되기 때문에, try catch로 블럭 처리(http://msdn.microsoft.com/en-us/library/aa769893%28VS.85%29.aspx)
+	 */
+	$ON_DISABLE_MESSAGE : function(sCmd) {
+		if(sCmd !== "TOGGLE_HYPERLINK_LAYER"){
+			return;
+		}
+		try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, false); } catch(e){}
+		this._bDisabled = true;
+	},
+
+	/**
+	 * [MUG-1265] 버튼이 사용가능 상태이면 자동변환기능을 복원해준다.
+	 */
+	$ON_ENABLE_MESSAGE : function(sCmd) {
+		if(sCmd !== "TOGGLE_HYPERLINK_LAYER"){
+			return;
+		}
+		try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, true); } catch(e){}
+		this._bDisabled = false;
+	},
+
 	irToDb : function(oTmpNode){
+		if(this._bDisabled){	// [MUG-1265] 버튼이 사용불가 상태이면 자동변환하지 않는다.
+			return;
+		}
 		//저장 시점에 자동 링크를 위한 함수.
 		//[SMARTEDITORSUS-1207][IE][메일] object 삽입 후 글을 저장하면 IE 브라우저가 죽어버리는 현상   
 		//원인 : 확인 불가. IE 저작권 관련 이슈로 추정
@@ -14551,7 +14828,7 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 				if(!jindo.$Element(elTBL).hasClass(this._sSETblClass) && !jindo.$Element(elTBL).hasClass(this._sSEReviewTblClass)){return;}
 				if(!this._isValidTable(elTBL)){
 					jindo.$Element(elTBL).removeClass(this._sSETblClass);
-					jindo.$Element(elTBL).removeClass(this._sSEReviewTblClass)
+					jindo.$Element(elTBL).removeClass(this._sSEReviewTblClass);
 					return;
 				}
 				
@@ -14798,7 +15075,7 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 					
 					// 최초 리사이징 직전 width attribute에서 style의 width로 이행하는 과정에서 미세보정이 있기 때문에 크기가 조금 변한다.
 					nBorderLeft = parseFloat(getComputedStyle(elCell).borderLeftWidth, 10);
-					nBorderRight = parseFloat(getComputedStyle(elCell).borderRightWidth, 10)
+					nBorderRight = parseFloat(getComputedStyle(elCell).borderRightWidth, 10);
 					nBorderTop = parseFloat(getComputedStyle(elCell).borderTopWidth, 10);
 					nBorderBottom = parseFloat(getComputedStyle(elCell).borderBottomWidth, 10);
 				}else{
@@ -15322,125 +15599,6 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		this._selectCells(this.htSelectionSPos, this.htSelectionEPos);
 	},
 	
-	_deleteSelectedColumn : function(){
-		var nStart = this.htSelectionSPos.x;
-		var nEnd = this.htSelectionEPos.x;
-
-		var nSpan;
-		var elLastSplitted = null;
-		for(var x = nStart; x <= nEnd; x++){
-			elCurCell = this.htMap[x][this.htSelectionSPos.y];
-			if(elCurCell != elLastSplitted){
-				elCurCell.innerHTML = "";
-				nSpan = parseInt(elCurCell.getAttribute("colSpan"), 10) || 1;
-				elCurCell.style.width = "";
-				
-				elCurCell.setAttribute("colSpan", 1);
-				for(var i = 0; i < nSpan - 1; i++){
-					var elTD = this.oApp.getWYSIWYGDocument().createElement("TD");
-					elCurCell.parentNode.insertBefore(elTD, elCurCell);
-				}
-				elLastSplitted = elCurCell;
-			}
-		}
-		this.htMap = this._getCellMapping(this.elSelectionStartTable);
-
-		for(var x = nStart; x <= nEnd; x++){
-			this._deleteColumn(nStart);
-		}
-	},
-	
-	_deleteColumn : function(nCol){
-		var elCurCell;
-		var nColWidth = 0;
-		
-		// obtain nColWidth first
-		for(var y = 0; y < this.htMap[0].length; y++){
-			elCurCell = this.htMap[nCol][y];
-			nSpan = parseInt(elCurCell.getAttribute("colSpan"), 10) || 1;
-			
-			if(nSpan == 1){
-				nColWidth = elCurCell.offsetWidth;
-				break;
-			}
-		}
-
-		var elLastDeleted = null;
-		for(var y = 0; y < this.htMap[0].length; y++){
-			elCurCell = this.htMap[nCol][y];
-			if(elCurCell == elLastDeleted){
-				continue;
-			}
-			elLastDeleted = elCurCell;
-			
-			nSpan = parseInt(elCurCell.getAttribute("colSpan"), 10) || 1;
-			
-			if(nSpan > 1){
-				elCurCell.setAttribute("colSpan", nSpan - 1);
-				elCurCell.style.width = parseInt(elCurCell.style.width) - nColWidth + "px";
-			}else{
-				elCurCell.parentNode.removeChild(elCurCell);
-			}
-		}
-		
-		aTR = jindo.$$(">TBODY>TR", this.elSelectionStartTable, {oneTimeOffCache:true});
-		if(aTR.length < 1){
-			this.elSelectionStartTable.parentNode.removeChild(this.elSelectionStartTable);
-		}else{
-			this.htMap = this._getCellMapping(this.elSelectionStartTable);
-		}
-	},
-
-	_deleteSelectedRow : function(){
-		var nStart = this.htSelectionSPos.y;
-		var nEnd = this.htSelectionEPos.y;
-		for(var y = nStart; y <= nEnd; y++){
-			this._deleteRow(nStart);
-		}
-	},
-	
-	_deleteRow : function(nRow){
-		var elCurCell;
-		var aTR = jindo.$$(">TBODY>TR", this.elSelectionStartTable, {oneTimeOffCache:true});
-		var elCurTR = aTR[nRow];
-		var nRowHeight = elCurTR.offsetHeight;
-		for(var x = 0; x < this.htMap.length; x++){
-			elCurCell = this.htMap[x][nRow];
-			nSpan = parseInt(elCurCell.getAttribute("rowSpan"), 10) || 1;
-			
-			if(nSpan > 1){
-				elCurCell.setAttribute("rowSpan", nSpan - 1);
-				elCurCell.style.height = parseInt(elCurCell.style.height) - nRowHeight + "px";
-				if(elCurCell.parentNode == elCurTR){
-					this._appendCellAt(elCurCell, x, nRow + 1);
-				}
-			}else{
-				elCurCell.parentNode.removeChild(elCurCell);
-			}
-		}
-		elCurTR.parentNode.removeChild(elCurTR);
-		
-		aTR = jindo.$$(">TBODY>TR", this.elSelectionStartTable, {oneTimeOffCache:true});
-		if(aTR.length < 1){
-			this.elSelectionStartTable.parentNode.removeChild(this.elSelectionStartTable);
-		}else{
-			this.htMap = this._getCellMapping(this.elSelectionStartTable);
-		}
-	},
-	
-	_appendCellAt : function(elCell, x, y){
-		var aTR = jindo.$$(">TBODY>TR", this.elSelectionStartTable, {oneTimeOffCache:true});
-		var elCurTR = aTR[y];
-
-		var elInsertionPt = null;
-		for(var i = this.htMap.length - 1; i >= x; i--){
-			if(this.htMap[i][y].parentNode == elCurTR){
-				elInsertionPt = this.htMap[i][y];
-			}
-		}
-		elCurTR.insertBefore(elCell, elInsertionPt);
-	},
-		
 	_deleteSelectedCells : function(){
 		var elTmp;
 
@@ -16204,22 +16362,6 @@ nhn.husky.SE2M_TableEditor = jindo.$Class({
 		return num;
 	},
 	
-	_shallowCloneTR : function(elTR){
-		var elResult = elTR.cloneNode(false);
-		
-		var elCurTD, elCurTDClone;
-		for(var i = 0, nLen = elTR.childNodes.length; i < nLen; i++){
-			elCurTD = elTR.childNodes[i];
-			if(elCurTD.tagName == "TD"){
-				elCurTDClone = this._shallowCloneTD(elCurTD);
-				elResult.insertBefore(elCurTDClone, null);
-			}
-		}
-		
-		return elResult;
-	},
-	
-	// 
 	_getTRCloneWithAllTD : function(nRow){
 		var elResult = this.htMap[0][nRow].parentNode.cloneNode(false);
 
