@@ -47,6 +47,7 @@ nhn.husky.SE2M_Configuration.SE2M_Hyperlink = {
 nhn.husky.SE2M_Configuration.Quote = {
 	sImageBaseURL : 'http://static.se2.naver.com/static/img'
 };
+
 nhn.husky.SE2M_Configuration.SE2M_ColorPalette = {
-	bAddRecentColorFromDefault : false
+	bUseRecentColor : false
 };

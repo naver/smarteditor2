@@ -21,6 +21,19 @@ function createSEditor2(elIRField, htParams, elSeAppContainer){
 	var oEditor = new nhn.husky.HuskyCore(htParams);
 	oEditor.registerPlugin(new nhn.husky.CorePlugin(htParams?htParams.fOnAppLoad:null));	
 	oEditor.registerPlugin(new nhn.husky.StringConverterManager());
+	if(htParams.bSkipXssFilter !== true){
+		// 보안 필터링 플러그인 (TODO:소스분리 및 블랙리스트 옵션 추가)
+		oEditor.registerPlugin({
+			_rxFilter:/<\/*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*?>/gi,
+			$ON_REGISTER_CONVERTERS : function() {
+				var fXssFilter = jindo.$Fn(function(sHtml){
+					return sHtml.replace(this._rxFilter, "");
+				}, this).bind();
+				this.oApp.exec("ADD_CONVERTER",["HTMLSrc_TO_IR", fXssFilter]);
+				this.oApp.exec("ADD_CONVERTER",["IR_TO_DB", fXssFilter]);
+			}
+		});
+	}
 
 	var htDimension = {
 		nMinHeight:205,
