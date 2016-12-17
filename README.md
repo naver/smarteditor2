@@ -16,7 +16,7 @@ WYSIWYG 모드 및 HTML 편집 모드와 TEXT 모드를 제공하고, 자유로�
 
 ## Demo
 아래 데모페이지 에서는 SmartEditor2.0 이 제공하는 다양한 기능을 바로 체험해 볼 수 있습니다.
- * [SmartEditor2 Demo 바로가기](http://jindo.dev.naver.com/smarteditor/demo/SmartEditor2.html)
+ * [SmartEditor2 Demo 바로가기](http://naver.github.io/smarteditor2/demo/)
 
 ## Supported Browsers
  * Internet Explorer 8.x 이상
