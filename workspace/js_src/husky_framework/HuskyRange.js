@@ -1878,16 +1878,19 @@ nhn.HuskyRange = jindo.$Class({
 				return;
 			}
 
-			if(node.firstChild && node.tagName != "TABLE"){
-				var curNode = node.lastChild;
-				while(curNode && !frontEndFinal){
-					getFrontEnd(curNode);
-					
-					curNode = curNode.previousSibling;
-				}
-			}else{
+			// [SMARTEDITORSUS-2339] 인라인요소가 많은 경우 recursive limit를 유발한다.
+			// @see https://web.archive.org/web/20110128022845/http://www.javascriptrules.com/2009/06/30/limitation-on-call-stacks/
+			// 어짜피 블럭요소가 아니라면 하위요소를 찾을 필요가 있을까? 해당 로직이 있는 히스토리를 몰라서 제거하지 않고 주석처리
+			// if(node.firstChild && node.tagName != "TABLE"){
+			// 	var curNode = node.lastChild;
+			// 	while(curNode && !frontEndFinal){
+			// 		getFrontEnd(curNode);
+			//
+			// 		curNode = curNode.previousSibling;
+			// 	}
+			// }else{
 				frontEnd = node;
-			}
+			// }
 			
 			if(!frontEndFinal){
 				getFrontEnd(node.previousSibling);
@@ -1937,7 +1940,7 @@ nhn.HuskyRange = jindo.$Class({
 		function getBackEnd(node){
 			if(!node){return;}
 			if(backEndFinal){return;}
-			
+
 			if(rxLineBreaker.test(node.tagName)){
 				lineBreaker = node;
 				backEndFinal = backEnd;
@@ -1947,16 +1950,19 @@ nhn.HuskyRange = jindo.$Class({
 				return;
 			}
 
-			if(node.firstChild && node.tagName != "TABLE"){
-				var curNode = node.firstChild;
-				while(curNode && !backEndFinal){
-					getBackEnd(curNode);
-					
-					curNode = curNode.nextSibling;
-				}
-			}else{
+			// [SMARTEDITORSUS-2339] 인라인요소가 많은 경우 recursive limit를 유발한다.
+			// @see https://web.archive.org/web/20110128022845/http://www.javascriptrules.com/2009/06/30/limitation-on-call-stacks/
+			// 어짜피 블럭요소가 아니라면 하위요소를 찾을 필요가 있을까? 해당 로직이 있는 히스토리를 몰라서 제거하지 않고 주석처리
+			// if(node.firstChild && node.tagName != "TABLE"){
+			// 	var curNode = node.firstChild;
+			// 	while(curNode && !backEndFinal){
+			// 		getBackEnd(curNode);
+			//
+			// 		curNode = curNode.nextSibling;
+			// 	}
+			// }else{
 				backEnd = node;
-			}
+			// }
 	
 			if(!backEndFinal){
 				getBackEnd(node.nextSibling);
@@ -1968,7 +1974,7 @@ nhn.HuskyRange = jindo.$Class({
 		}else{
 			getLineEnd(node);
 		}
-	
+
 		return {oNode: backEndFinal, oLineBreaker: lineBreaker, bParentBreak: bParentBreak};
 	},
 

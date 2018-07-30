@@ -815,9 +815,9 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		return this.elEditingAreaContainer.offsetHeight;
 	}
 });
-var nSE2Version = "4a256db";
+var nSE2Version = "5caeebb";
 nhn.husky.SE_EditingAreaManager.version = {
-	revision : "4a256db",
+	revision : "5caeebb",
 	type : "open",
-	number : "2.9.0"
+	number : "2.9.1"
 };

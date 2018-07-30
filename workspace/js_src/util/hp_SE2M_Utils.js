@@ -101,13 +101,18 @@ nhn.husky.SE2M_Utils = {
 	_rxTable : /^(?:CAPTION|TBODY|THEAD|TFOOT|TR|TD|TH|COLGROUP|COL)$/i,
 	_rxSpaceOnly : /^\s+$/,
 	_rxFontStart : /<font(?:\s+[^>]*)?>/i,
-	_htFontSize : { // @see http://jerekdain.com/fontconversion.html
+	_rxFontStrip : /<\/?font(?:\s+[^>]*)?>/gi,
+	_bUnderIE8 : jindo.$Agent().navigator().ie && (jindo.$Agent().navigator().version < 9),
+	// @see http://jerekdain.com/fontconversion.html
+	// @see https://www.w3.org/TR/html401/present/graphics.html#h-15.2.2
+	_htFontSize : {
 		"1" : "7pt",
 		"2" : "10pt",
 		"3" : "12pt",
 		"4" : "13.5pt",
 		"5" : "18pt",
-		"6" : "24pt"
+		"6" : "24pt",
+		"7" : "36pt"
 	},
 
 	/**
@@ -220,6 +225,11 @@ nhn.husky.SE2M_Utils = {
 				elTarget.parentNode.removeChild(elTarget);
 			}
 		}
+
+		// [SMARTEDITORSUS-2337] IE8이하에서 태그가 역전되어 있으면 font태그가 지워지지 않는 경우가 있어서 정규식으로 확실히 제
+		if(i > 0 && this._bUnderIE8){
+			el.innerHTML = el.innerHTML.replace(this._rxFontStrip, "");
+		}
 	},
 
 	/**
@@ -232,8 +242,9 @@ nhn.husky.SE2M_Utils = {
 		/**
 		 * 폰트태그안에 폰트태그가 있을때 innerHTML으로 넣으면 안쪽 폰트태그는 span변환작업에서 누락될 수 있기 때문에
 		 * 폰트태그가 중첩해서 있으면 appendChild를 이용하고 그렇지 않으면 innerHTML을 이용
+		 * [SMARTEDITORSUS-2337] IE8이하에서 태그가 역전되어 있으면 elSpan.innerHTML시 오류가 나는 경우가 있어서 appendChild 방식 사용
 		 */
-		if(this._rxFontStart.test(sInnerHTML)){
+		if(this._rxFontStart.test(sInnerHTML) || this._bUnderIE8){
 			for(var elChild; (elChild = elFont.firstChild);){
 				elSpan.appendChild(elChild);
 			}

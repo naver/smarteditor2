@@ -2312,16 +2312,19 @@ nhn.HuskyRange = jindo.$Class({
 				return;
 			}
 
-			if(node.firstChild && node.tagName != "TABLE"){
-				var curNode = node.lastChild;
-				while(curNode && !frontEndFinal){
-					getFrontEnd(curNode);
-					
-					curNode = curNode.previousSibling;
-				}
-			}else{
+			// [SMARTEDITORSUS-2339] 인라인요소가 많은 경우 recursive limit를 유발한다.
+			// @see https://web.archive.org/web/20110128022845/http://www.javascriptrules.com/2009/06/30/limitation-on-call-stacks/
+			// 어짜피 블럭요소가 아니라면 하위요소를 찾을 필요가 있을까? 해당 로직이 있는 히스토리를 몰라서 제거하지 않고 주석처리
+			// if(node.firstChild && node.tagName != "TABLE"){
+			// 	var curNode = node.lastChild;
+			// 	while(curNode && !frontEndFinal){
+			// 		getFrontEnd(curNode);
+			//
+			// 		curNode = curNode.previousSibling;
+			// 	}
+			// }else{
 				frontEnd = node;
-			}
+			// }
 			
 			if(!frontEndFinal){
 				getFrontEnd(node.previousSibling);
@@ -2371,7 +2374,7 @@ nhn.HuskyRange = jindo.$Class({
 		function getBackEnd(node){
 			if(!node){return;}
 			if(backEndFinal){return;}
-			
+
 			if(rxLineBreaker.test(node.tagName)){
 				lineBreaker = node;
 				backEndFinal = backEnd;
@@ -2381,16 +2384,19 @@ nhn.HuskyRange = jindo.$Class({
 				return;
 			}
 
-			if(node.firstChild && node.tagName != "TABLE"){
-				var curNode = node.firstChild;
-				while(curNode && !backEndFinal){
-					getBackEnd(curNode);
-					
-					curNode = curNode.nextSibling;
-				}
-			}else{
+			// [SMARTEDITORSUS-2339] 인라인요소가 많은 경우 recursive limit를 유발한다.
+			// @see https://web.archive.org/web/20110128022845/http://www.javascriptrules.com/2009/06/30/limitation-on-call-stacks/
+			// 어짜피 블럭요소가 아니라면 하위요소를 찾을 필요가 있을까? 해당 로직이 있는 히스토리를 몰라서 제거하지 않고 주석처리
+			// if(node.firstChild && node.tagName != "TABLE"){
+			// 	var curNode = node.firstChild;
+			// 	while(curNode && !backEndFinal){
+			// 		getBackEnd(curNode);
+			//
+			// 		curNode = curNode.nextSibling;
+			// 	}
+			// }else{
 				backEnd = node;
-			}
+			// }
 	
 			if(!backEndFinal){
 				getBackEnd(node.nextSibling);
@@ -2402,7 +2408,7 @@ nhn.HuskyRange = jindo.$Class({
 		}else{
 			getLineEnd(node);
 		}
-	
+
 		return {oNode: backEndFinal, oLineBreaker: lineBreaker, bParentBreak: bParentBreak};
 	},
 
@@ -4465,11 +4471,11 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		return this.elEditingAreaContainer.offsetHeight;
 	}
 });
-var nSE2Version = "4a256db";
+var nSE2Version = "5caeebb";
 nhn.husky.SE_EditingAreaManager.version = {
-	revision : "4a256db",
+	revision : "5caeebb",
 	type : "open",
-	number : "2.9.0"
+	number : "2.9.1"
 };
 /*[
  * ENABLE_WYSIWYG
@@ -14620,13 +14626,18 @@ nhn.husky.SE2M_Utils = {
 	_rxTable : /^(?:CAPTION|TBODY|THEAD|TFOOT|TR|TD|TH|COLGROUP|COL)$/i,
 	_rxSpaceOnly : /^\s+$/,
 	_rxFontStart : /<font(?:\s+[^>]*)?>/i,
-	_htFontSize : { // @see http://jerekdain.com/fontconversion.html
+	_rxFontStrip : /<\/?font(?:\s+[^>]*)?>/gi,
+	_bUnderIE8 : jindo.$Agent().navigator().ie && (jindo.$Agent().navigator().version < 9),
+	// @see http://jerekdain.com/fontconversion.html
+	// @see https://www.w3.org/TR/html401/present/graphics.html#h-15.2.2
+	_htFontSize : {
 		"1" : "7pt",
 		"2" : "10pt",
 		"3" : "12pt",
 		"4" : "13.5pt",
 		"5" : "18pt",
-		"6" : "24pt"
+		"6" : "24pt",
+		"7" : "36pt"
 	},
 
 	/**
@@ -14739,6 +14750,11 @@ nhn.husky.SE2M_Utils = {
 				elTarget.parentNode.removeChild(elTarget);
 			}
 		}
+
+		// [SMARTEDITORSUS-2337] IE8이하에서 태그가 역전되어 있으면 font태그가 지워지지 않는 경우가 있어서 정규식으로 확실히 제
+		if(i > 0 && this._bUnderIE8){
+			el.innerHTML = el.innerHTML.replace(this._rxFontStrip, "");
+		}
 	},
 
 	/**
@@ -14751,8 +14767,9 @@ nhn.husky.SE2M_Utils = {
 		/**
 		 * 폰트태그안에 폰트태그가 있을때 innerHTML으로 넣으면 안쪽 폰트태그는 span변환작업에서 누락될 수 있기 때문에
 		 * 폰트태그가 중첩해서 있으면 appendChild를 이용하고 그렇지 않으면 innerHTML을 이용
+		 * [SMARTEDITORSUS-2337] IE8이하에서 태그가 역전되어 있으면 elSpan.innerHTML시 오류가 나는 경우가 있어서 appendChild 방식 사용
 		 */
-		if(this._rxFontStart.test(sInnerHTML)){
+		if(this._rxFontStart.test(sInnerHTML) || this._bUnderIE8){
 			for(var elChild; (elChild = elFont.firstChild);){
 				elSpan.appendChild(elChild);
 			}
