@@ -1,6 +1,6 @@
 {
-  "name": "SmartEditor2",
-  "version": "2.9.1",
+  "name": "smarteditor2",
+  "version": "2.10.0-alpha",
   "description": "WYSIWYG HTML text editor",
   "keywords": [
     "javascript",
@@ -14,7 +14,8 @@
   },
   "license": "LGPL-2.1",
   "author": {
-    "name": "NAVER corp."
+    "name": "NAVER corp.",
+    "email": "dl_smarteditor2open@navercorp.com"
   },
   "ignore": [
     "**/.*",
