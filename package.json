@@ -2,6 +2,10 @@
   "name": "smarteditor2",
   "version": "2.10.0-alpha",
   "description": "WYSIWYG HTML text editor",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server --open"
+  },
   "keywords": [
     "javascript",
     "WYSIWYG",
@@ -54,6 +58,9 @@
     "mkdirp": "^0.5.1",
     "selenium-webdriver": "~2.39.0",
     "time-grunt": "^1.1.0",
-    "uglify-js": "2.6.1"
+    "uglify-js": "2.6.1",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
   }
 }
