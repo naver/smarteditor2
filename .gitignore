@@ -7,3 +7,4 @@ release
 target
 
 *.iml
+*lock*
