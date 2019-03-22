@@ -4,6 +4,10 @@
   "description": "WYSIWYG HTML text editor",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:serve": "gitbook --port 3000 serve ./workspace/docs/user_guide ./build/docs/user_guide",
+    "docs:build": "gitbook build ./workspace/docs/user_guide ./build/docs/user_guide",
+    "docs:publish": "gh-pages -d ./build/docs/user_guide -e ./user_guide",
+    "docs:deploy": "npm run docs:build && npm run docs:publish",
     "start": "webpack-dev-server --open"
   },
   "keywords": [
@@ -32,6 +36,8 @@
     "url": "https://github.com/naver/smarteditor2.git"
   },
   "devDependencies": {
+    "gh-pages": "^2.0.1",
+    "gitbook-cli": "^2.3.2",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5"
