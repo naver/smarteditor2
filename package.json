@@ -3,7 +3,9 @@
   "version": "2.10.0-alpha",
   "description": "WYSIWYG HTML text editor",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "jest": "jest",
     "eslint": "eslint",
     "lint": "eslint -f table ./workspace",
     "docs:serve": "gitbook --port 3000 serve ./workspace/docs/user_guide ./build/docs/user_guide",
@@ -39,8 +41,10 @@
   },
   "devDependencies": {
     "eslint": "^6.1.0",
+    "eslint-plugin-jest": "^22.13.7",
     "gh-pages": "^2.0.1",
     "gitbook-cli": "^2.3.2",
+    "jest": "^24.8.0",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5"
