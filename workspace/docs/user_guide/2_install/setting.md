@@ -13,7 +13,7 @@ SmartEditor2Skin.html
 ```
 2. write.html 파일에 다음과 같은 내용을 추가한다. 이때 HuskyEZCreator.js 파일의 경로가 맞는지 주의해야 한다.
 ```
-<script type="text/javascript" src="../se2/js/HuskyEZCreator.js" charset="utf-8"></script>
+<script type="text/javascript" src="../se2/js/service/HuskyEZCreator.js" charset="utf-8"></script>
 ```
 3. write.html 파일에서 에디터를 추가할 위치에 다음과 같이 textarea를 추가한다. 사용자가 에디터에서 작성한 내용은 여기에서 추가한 textarea value를 통해 서버로 전송된다. 기존에 작성하여 저장한 글을 수정하는 경우에는 이 textarea value에 수정할 내용을 지정하여, 에디터가 로드되었을 때 에디터 편집 영역에 기존 글이 표시되도록 한다.
 ```
