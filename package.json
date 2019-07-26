@@ -4,6 +4,8 @@
   "description": "WYSIWYG HTML text editor",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "eslint": "eslint",
+    "lint": "eslint -f table ./workspace",
     "docs:serve": "gitbook --port 3000 serve ./workspace/docs/user_guide ./build/docs/user_guide",
     "docs:build": "gitbook build ./workspace/docs/user_guide ./build/docs/user_guide",
     "docs:publish": "gh-pages -d ./build/docs/user_guide -e ./user_guide",
@@ -36,6 +38,7 @@
     "url": "https://github.com/naver/smarteditor2.git"
   },
   "devDependencies": {
+    "eslint": "^6.1.0",
     "gh-pages": "^2.0.1",
     "gitbook-cli": "^2.3.2",
     "webpack": "^4.16.5",
