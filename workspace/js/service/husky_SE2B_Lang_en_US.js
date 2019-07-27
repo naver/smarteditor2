@@ -21,7 +21,7 @@ if(typeof window.nhn=='undefined'){window.nhn = {};}
  * @name husky_SE2B_Lang_en_US.js
  * @ unescape
  */
-var oMessageMap_en_US = {
+window.oMessageMap_en_US = {
 	'SE_EditingAreaManager.onExit' : 'Contents have been changed.',
 	'SE_Color.invalidColorCode' : 'Enter the correct color code. \n\n ex) #000000, #FF0000, #FFFFFF, #ffffff, ffffff',
 	'SE_Hyperlink.invalidURL' : 'You have entered an incorrect URL.',

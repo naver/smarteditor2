@@ -21,7 +21,7 @@ if(typeof window.nhn=='undefined'){window.nhn = {};}
  * @name husky_SE2B_Lang_ko_KR.js
  * @ unescape
  */
-var oMessageMap = {
+window.oMessageMap = {
 	'SE_EditingAreaManager.onExit' : '내용이 변경되었습니다.',
 	'SE_Color.invalidColorCode' : '색상 코드를 올바르게 입력해 주세요. \n\n 예) #000000, #FF0000, #FFFFFF, #ffffff, ffffff',
 	'SE_Hyperlink.invalidURL' : '입력하신 URL이 올바르지 않습니다.',

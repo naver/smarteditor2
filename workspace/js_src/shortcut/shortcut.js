@@ -412,4 +412,4 @@ Shortcut.Action ={
 		hash.EQUAL  = 61;
 	}
 })();
-var shortcut = Shortcut;
+window.shortcut = Shortcut;

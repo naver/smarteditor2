@@ -21,7 +21,7 @@ if(typeof window.nhn=='undefined'){window.nhn = {};}
  * @name husky_SE2B_Lang_ja_JP.js
  * @ unescape
  */
-var oMessageMap_ja_JP = {
+window.oMessageMap_ja_JP = {
 	'SE_EditingAreaManager.onExit' : '内容が変更されました。',
 	'SE_Color.invalidColorCode' : 'カラーコードを正しく入力してください。 \n\n 例) #000000, #FF0000, #FFFFFF, #ffffff, ffffff',
 	'SE_Hyperlink.invalidURL' : '入力したURLが正しくありません。',

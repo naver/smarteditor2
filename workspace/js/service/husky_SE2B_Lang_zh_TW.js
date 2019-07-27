@@ -21,7 +21,7 @@ if(typeof window.nhn=='undefined'){window.nhn = {};}
  * @name husky_SE2B_Lang_zh_TW.js
  * @ unescape
  */
-var oMessageMap_zh_TW = {
+window.oMessageMap_zh_TW = {
 	'SE_EditingAreaManager.onExit' : '內容已被更改。',
 	'SE_Color.invalidColorCode' : '請輸入正確的顔色代碼。\n\n例子）#000000, #FF0000, #FFFFFF, #ffffff, ffffff',
 	'SE_Hyperlink.invalidURL' : '輸錯URL',
