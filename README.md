@@ -39,7 +39,3 @@ The following third-party libraries are used :
  * [CHANGELOG](CHANGELOG.md)
  * [TODO List](TODO.md)
  * 설치시 발생하는 버그 또는 질문은 "[이슈](https://github.com/naver/smarteditor2/issues)" 게시판을 이용해주세요.
-
-## SmartEditorBasic 0.3.X 버전이 궁금하시다면...
-
- * [구 SmartEditorBasic 0.3.X 버전 도움말 보기](http://dev.naver.com/projects/smarteditor/wiki/old_user_guide)

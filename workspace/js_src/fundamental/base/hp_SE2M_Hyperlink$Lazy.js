@@ -125,7 +125,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 			
 			var sBM;
 			if(this.oSelection.collapsed){
-				var str = "<a href='" + sURL + "' target="+sTarget+">" + sURL + "</a>" + sBlank;
+				var str = "<a href='" + sURL + "' target="+sTarget+">" + nhn.husky.SE2M_Utils.replaceSpecialChar(sURL) + "</a>" + sBlank;
 				this.oSelection.pasteHTML(str);
 				sBM = this.oSelection.placeStringBookmark();
 			}else{
