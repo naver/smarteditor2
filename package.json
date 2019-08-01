@@ -5,8 +5,6 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage",
-    "jest": "jest",
-    "eslint": "eslint",
     "lint": "eslint -f table ./workspace",
     "docs:serve": "gitbook --port 3000 serve ./workspace/docs/user_guide ./build/docs/user_guide",
     "docs:build": "gitbook build ./workspace/docs/user_guide ./build/docs/user_guide",
