@@ -11,8 +11,8 @@
     "docs:publish": "gh-pages -d ./build/docs/user_guide -e ./user_guide",
     "docs:deploy": "npm run docs:build && npm run docs:publish",
     "start": "webpack-dev-server --open --hot",
-    "build": "webpack",
-    "deploy": "webpack --env.production"
+    "build": "webpack --env.production",
+    "deploy": "npm run build && npm publish"
   },
   "keywords": [
     "javascript",
