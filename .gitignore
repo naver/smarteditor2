@@ -1,6 +1,8 @@
 node_modules
 build
+dist
 report
+*.tgz
 
 .idea
 *.iml

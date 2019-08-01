@@ -1,6 +1,8 @@
 const path = require('path');
 const child_process = require('child_process');
 const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = (env = {}) => {
@@ -9,12 +11,22 @@ module.exports = (env = {}) => {
 
     return {
         mode: env.production ? 'production' : 'development',
-        entry: './workspace/modules/index.js',
+        entry: {
+            'bundle/husky-range': './workspace/modules/husky-range.js',
+            'bundle/base': './workspace/modules/base.js',
+            'bundle/extra': './workspace/modules/extra.js',
+            'bundle/lazy': './workspace/modules/lazy.js',
+            'smarteditor2': './workspace/modules/index.js'
+        },
         output: {
-            path: path.resolve(__dirname, 'dist/js'),
-            filename: "smarteditor2.js"
+            filename: 'js/[name].js',
+            path: path.resolve(__dirname, 'dist')
         },
         plugins: [
+            new CleanWebpackPlugin(),
+            new CopyWebpackPlugin([
+                'workspace/static'
+            ]),
             new webpack.DefinePlugin({
                 __VERSION__: JSON.stringify(pkg.version),
                 __HASH__: JSON.stringify(githash)
@@ -25,7 +37,6 @@ module.exports = (env = {}) => {
             minimizer: [new UglifyJsPlugin()]
         },
         devServer: {
-            publicPath: '/js/',
             contentBase: path.join(__dirname, 'dist'),
             openPage: 'SmartEditor2.html'
         }

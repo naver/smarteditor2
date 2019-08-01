@@ -1,4 +1,4 @@
-require("@dist/js/lib/jindo2.all");
+require("@static/js/lib/jindo2.all");
 require("@src/util/hp_SE2M_Utils");
 
 describe("StringBuffer", () => {

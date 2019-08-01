@@ -8,7 +8,7 @@ module.exports = {
     coverageDirectory: "report/coverage",
     browser: true,
     moduleNameMapper: {
-        "^@dist(.*)$": "<rootDir>/dist$1",
+        "^@static(.*)$": "<rootDir>/workspace/static$1",
         "^@src(.*)$": "<rootDir>/workspace/js_src$1"
     },
     transformIgnorePatterns: [

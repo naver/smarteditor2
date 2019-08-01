@@ -1,6 +1,6 @@
 {
   "name": "smarteditor2",
-  "version": "2.10.0-alpha",
+  "version": "2.10.0-alpha.7",
   "description": "WYSIWYG HTML text editor",
   "scripts": {
     "test": "jest",
@@ -12,7 +12,10 @@
     "docs:deploy": "npm run docs:build && npm run docs:publish",
     "start": "webpack-dev-server --open --hot",
     "build": "webpack --env.production",
-    "deploy": "npm run build && npm publish"
+    "predeploy": "npm test && npm run build",
+    "deploy": "npm version patch && npm publish",
+    "postdeploy": "git push --follow-tags && npm pack",
+    "deploy:dev": "npm run build && npm publish --tag dev"
   },
   "keywords": [
     "javascript",
@@ -29,17 +32,17 @@
     "name": "NAVER corp.",
     "email": "dl_smarteditor2open@navercorp.com"
   },
-  "ignore": [
-    "**/.*",
-    "**/_*",
-    "node_modules",
-    "bower_components"
+  "main": "dist/js/smarteditor2.js",
+  "files": [
+    "dist"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/naver/smarteditor2.git"
   },
   "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.0.4",
     "eslint": "^6.1.0",
     "eslint-plugin-jest": "^22.13.7",
     "gh-pages": "^2.0.1",
