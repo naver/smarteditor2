@@ -42,10 +42,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 	_assignHTMLElements : function(oAppContainer){
 		var htConfiguration = nhn.husky.SE2M_Configuration.SE2M_ColorPalette;
 		if(htConfiguration){
+			var LinkageDomain = nhn.husky.SE2M_Configuration.LinkageDomain || {};
+			var sDomainCommonAPI = LinkageDomain.sCommonAPI || "";
 			this.bUseRecentColor = htConfiguration.bUseRecentColor || false;
-			this.URL_COLOR_ADD = htConfiguration.addColorURL || "http://api.se2.naver.com/1/colortable/TextAdd.nhn";
-			this.URL_COLOR_UPDATE = htConfiguration.updateColorURL || "http://api.se2.naver.com/1/colortable/TextUpdate.nhn";
-			this.URL_COLOR_LIST = htConfiguration.colorListURL || "http://api.se2.naver.com/1/colortable/TextList.nhn";
+			this.URL_COLOR_ADD = htConfiguration.addColorURL || sDomainCommonAPI + "/1/colortable/TextAdd.nhn";
+			this.URL_COLOR_UPDATE = htConfiguration.updateColorURL || sDomainCommonAPI + "/1/colortable/TextUpdate.nhn";
+			this.URL_COLOR_LIST = htConfiguration.colorListURL || sDomainCommonAPI + "/1/colortable/TextList.nhn";
 		}
 		
 		this.elColorPaletteLayer = jindo.$$.getSingle("DIV.husky_se2m_color_palette", oAppContainer);

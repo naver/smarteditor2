@@ -360,11 +360,12 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			}else{
 				sImageName = sImageName + n + ".gif";
 			}
-			
+
+			var sBackgroundImage = nhn.husky.SE2M_Configuration.LinkageDomain.sCommonStatic + "/static/img/" + sImageName;
 			for(var j = 0, nLen = this.aSelectedCells.length; j < nLen ; j++){
-				jindo.$Element(this.aSelectedCells[j]).css("backgroundImage", "url("+"http://static.se2.naver.com/static/img/"+sImageName+")");
+				jindo.$Element(this.aSelectedCells[j]).css("backgroundImage", "url("+sBackgroundImage+")");
 				this.aSelectedCells[j].removeAttribute(this.TMP_BGC_ATTR);
-				this.aSelectedCells[j].setAttribute(this.TMP_BGIMG_ATTR, "url("+"http://static.se2.naver.com/static/img/"+sImageName+")");
+				this.aSelectedCells[j].setAttribute(this.TMP_BGIMG_ATTR, "url("+sBackgroundImage+")");
 			}
 		} 
 		this.sQEAction = "TABLE_SET_BGIMAGE";
