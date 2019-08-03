@@ -3,13 +3,13 @@
 
 module.exports = {
     collectCoverageFrom: [
-        "workspace/js_src/**/*.js"
+        "workspace/src/**/*.js"
     ], 
     coverageDirectory: "report/coverage",
     browser: true,
     moduleNameMapper: {
         "^@static(.*)$": "<rootDir>/workspace/static$1",
-        "^@src(.*)$": "<rootDir>/workspace/js_src$1"
+        "^@src(.*)$": "<rootDir>/workspace/src$1"
     },
     transformIgnorePatterns: [
         "/node_modules/",

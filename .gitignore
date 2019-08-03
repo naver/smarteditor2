@@ -6,4 +6,5 @@ report
 
 .idea
 *.iml
-*lock*
+package-lock.json
+yarn.lock
