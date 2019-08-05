@@ -815,11 +815,3 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		return this.elEditingAreaContainer.offsetHeight;
 	}
 });
-if(typeof __VERSION__=="undefined"){var __VERSION__ = "unknown";}
-if(typeof __HASH__=="undefined"){var __HASH__ = "unknown";}
-window.nSE2Version = __HASH__;
-nhn.husky.SE_EditingAreaManager.version = {
-	revision : __HASH__,
-	type : "open",
-	number : __VERSION__
-};

@@ -39,3 +39,10 @@ import "../util/hp_MessageManager.js";
 import "../util/hp_LazyLoader.js";
 import "../util/hp_PopupManager.js";
 import "../util/hp_SE2M_Utils.js";
+
+window.nSE2Version = __VERSION__ + "." + __HASH__;
+nhn.husky.SE_EditingAreaManager.version = {
+    revision : __HASH__,
+    type : "open",
+    number : __VERSION__
+};
