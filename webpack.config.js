@@ -16,11 +16,37 @@ module.exports = (env = {}) => {
             'bundle/base': './workspace/src/bundle/base.js',
             'bundle/extra': './workspace/src/bundle/extra.js',
             'bundle/lazy': './workspace/src/bundle/lazy.js',
-            'smarteditor2': './workspace/src/index.js'
+            'bundle/index': './workspace/src/bundle/index.js',
+            'smarteditor2': './workspace/src/bundle/index.js'
         },
         output: {
             filename: 'js/[name].js',
             path: path.resolve(__dirname, 'dist')
+        },
+        module: {
+            rules: [
+                {
+                    test: /bundle\/.*\.js$/,
+                    exclude: [
+                        /node_modules/,
+                    ],
+                    query: {
+                        presets: [
+                            ['env', {
+                                targets: {
+                                    browsers: ['ie >= 8']
+                                },
+                                loose: true
+                            }]
+                        ],
+                        "plugins": [
+                            "transform-es3-property-literals",
+                            "transform-es3-member-expression-literals"
+                        ]
+                    },
+                    loader: "babel-loader"
+                }
+            ]
         },
         plugins: [
             new CleanWebpackPlugin(),
@@ -34,7 +60,11 @@ module.exports = (env = {}) => {
             new webpack.BannerPlugin('Copyright (C) NAVER corp. Licensed under LGPL v2. @see https://github.com/naver/smarteditor2/blob/master/LICENSE.md')
         ],
         optimization: {
-            minimizer: [new UglifyJsPlugin()]
+            minimizer: [new UglifyJsPlugin({
+                uglifyOptions: {
+                    ie8: true
+                }
+            })]
         },
         devServer: {
             contentBase: path.join(__dirname, 'dist'),

@@ -250,7 +250,7 @@ nhn.husky.SE_WYSIWYGStyleGetter = jindo.$Class({
 			}
 		}
 		
-		for(attributeName in oStyle){
+		for(var attributeName in oStyle){
 			if(this.oStyleMap[attributeName].converter){
 				oStyle[attributeName] = this.oStyleMap[attributeName].converter(oStyle[attributeName], oStyle);
 			}

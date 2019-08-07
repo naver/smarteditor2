@@ -1,6 +1,6 @@
 {
   "name": "smarteditor2",
-  "version": "2.10.0-alpha.8",
+  "version": "2.10.0-alpha.9",
   "description": "WYSIWYG HTML text editor",
   "scripts": {
     "test": "jest",
@@ -41,6 +41,11 @@
     "url": "https://github.com/naver/smarteditor2.git"
   },
   "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-transform-es3-member-expression-literals": "^6.22.0",
+    "babel-plugin-transform-es3-property-literals": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.4",
     "eslint": "^6.1.0",

@@ -1198,9 +1198,7 @@ nhn.husky.AutoResizer = jindo.$Class({
  
  var sTmp3 = new StringBuffer('1').append('2').append('3');
  */
-if ('undefined' != typeof(StringBuffer)) {
-	StringBuffer = {};
-}
+if(typeof window.StringBuffer == 'undefined') { window.StringBuffer = {}; }
 
 StringBuffer = function(str) {
 	this._aString = [];
@@ -1237,7 +1235,7 @@ StringBuffer.prototype.setLength = function(nLen) {
 
 	var oDummy = null, rx = /,/gi;
 
-	IsInstalledFont = function(sFont) {
+	window.IsInstalledFont = function(sFont) {
 
 		var sDefFont = sFont == 'Comic Sans MS' ? 'Courier New' : 'Comic Sans MS';
 		if (!oDummy) {

@@ -70,7 +70,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		this.elPanelQETemplatePreview = jindo.$$.getSingle("SPAN.se2_t_style1", this.elQELayer);
 		
 		this.aElBtn_tableStyle = jindo.$$("BUTTON", this.elPanelQETemplate);
-		for(i = 0; i < this.aElBtn_tableStyle.length; i++){
+		for(var i = 0; i < this.aElBtn_tableStyle.length; i++){
 			this.oApp.registerBrowserEvent(this.aElBtn_tableStyle[i], "click", "TABLE_QE_SELECT_TEMPLATE");
 		}
 	},
