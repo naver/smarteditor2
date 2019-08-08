@@ -30,13 +30,13 @@ nhn.husky.MessageManager = jindo.$Class({
 		var oTmpMessageMap;
 		switch(sLocale) {
 			case "ja_JP" :
-				oTmpMessageMap = oMessageMap_ja_JP;
+				oTmpMessageMap = window.oMessageMap_ja_JP;
 				break;
 			case "en_US" :
-				oTmpMessageMap = oMessageMap_en_US;
+				oTmpMessageMap = window.oMessageMap_en_US;
 				break;
 			case "zh_CN" :
-				oTmpMessageMap = oMessageMap_zh_CN;
+				oTmpMessageMap = window.oMessageMap_zh_CN;
 				break;
 			default :  // Korean
 				oTmpMessageMap = oMessageMap;

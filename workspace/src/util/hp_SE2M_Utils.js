@@ -26,25 +26,25 @@ if(!nhn.husky) { nhn.husky = {}; }
 		os = oAgent.os();
 
 	// [SMARTEDITORSUS-1795] 갤럭시노트 기본브라우저 구분을 위해 구분필드 추가
-    var aMatch = ua.match(/(SHW-|Chrome|Safari)/gi) || "";
-    if(aMatch.length === 2 && aMatch[0] === "SHW-" && aMatch[1] === "Safari"){
-    	// 갤럭시노트 기본브라우저
-    	browser.bGalaxyBrowser = true;
-    }else if(ua.indexOf("LG-V500") > -1 && ua.indexOf("Version/4.0") > -1){
-    	// [SMARTEDITORSUS-1802] G패드 기본브라우저
-    	browser.bGPadBrowser = true;
-    }
-    // [SMARTEDITORSUS-1860] iOS 버전 확인용 
-    // os 에서 ios 여부 및 version 정보는 jindo2.3.0 부터 추가되었음
-    if(typeof os.ios === 'undefined'){
-    	os.ios = ua.indexOf("iPad") > -1 || ua.indexOf("iPhone") > -1;
-    	if(os.ios){
-    		aMatch = ua.match(/(iPhone )?OS ([\d|_]+)/);
-    		if(aMatch != null && aMatch[2] != undefined){
-    			os.version = String(aMatch[2]).split("_").join(".");
-    		}
-    	}
-    }
+	var aMatch = ua.match(/(SHW-|Chrome|Safari)/gi) || "";
+	if(aMatch.length === 2 && aMatch[0] === "SHW-" && aMatch[1] === "Safari"){
+		// 갤럭시노트 기본브라우저
+		browser.bGalaxyBrowser = true;
+	}else if(ua.indexOf("LG-V500") > -1 && ua.indexOf("Version/4.0") > -1){
+		// [SMARTEDITORSUS-1802] G패드 기본브라우저
+		browser.bGPadBrowser = true;
+	}
+	// [SMARTEDITORSUS-1860] iOS 버전 확인용 
+	// os 에서 ios 여부 및 version 정보는 jindo2.3.0 부터 추가되었음
+	if(typeof os.ios === 'undefined'){
+		os.ios = ua.indexOf("iPad") > -1 || ua.indexOf("iPhone") > -1;
+		if(os.ios){
+			aMatch = ua.match(/(iPhone )?OS ([\d|_]+)/);
+			if(aMatch != null && aMatch[2] != undefined){
+				os.version = String(aMatch[2]).split("_").join(".");
+			}
+		}
+	}
 })();
 
 nhn.husky.SE2M_UtilPlugin = jindo.$Class({
@@ -899,7 +899,7 @@ getFilteredHashTable({
 		
 		var sAttrTmp = (aResult[1] || aResult[2] || aResult[3]); // for chrome 5.x bug!
 		if (!!sAttrTmp) {
-			sAttrTmp = sAttrTmp.replace(/[\"]/g, '');
+			sAttrTmp = sAttrTmp.replace(/["]/g, '');
 		}
 		
 		return sAttrTmp;
@@ -946,7 +946,7 @@ getFilteredHashTable({
 	 */
 	getJsonDatafromXML : function(sXML) {
 		var o  = {};
-		var re = /\s*<(\/?[\w:\-]+)((?:\s+[\w:\-]+\s*=\s*(?:"(?:\\"|[^"])*"|'(?:\\'|[^'])*'))*)\s*((?:\/>)|(?:><\/\1>|\s*))|\s*<!\[CDATA\[([\w\W]*?)\]\]>\s*|\s*>?([^<]*)/ig;
+		var re = /\s*<(\/?[\w:-]+)((?:\s+[\w:-]+\s*=\s*(?:"(?:\\"|[^"])*"|'(?:\\'|[^'])*'))*)\s*((?:\/>)|(?:><\/\1>|\s*))|\s*<!\[CDATA\[([\w\W]*?)\]\]>\s*|\s*>?([^<]*)/ig;
 		var re2= /^[0-9]+(?:\.[0-9]+)?$/;
 		var re3= /^\s+$/g;
 		var ec = {"&amp;":"&","&nbsp;":" ","&quot;":"\"","&lt;":"<","&gt;":">"};
@@ -958,7 +958,7 @@ getFilteredHashTable({
 			return s.replace(/&[a-z]+;/g, function(m){ return (typeof ec[m] == "string")?ec[m]:m; });
 		};
 		var at = function(s,c) {
-			s.replace(/([\w\:\-]+)\s*=\s*(?:"((?:\\"|[^"])*)"|'((?:\\'|[^'])*)')/g, function($0,$1,$2,$3) {
+			s.replace(/([\w:-]+)\s*=\s*(?:"((?:\\"|[^"])*)"|'((?:\\'|[^'])*)')/g, function($0,$1,$2,$3) {
 				c[$1] = es(($2?$2.replace(/\\"/g,'"'):undefined)||($3?$3.replace(/\\'/g,"'"):undefined));
 			}); 
 		};
@@ -1058,7 +1058,7 @@ getFilteredHashTable({
 			}
 		};
 		
-		sXML = sXML.replace(/<(\?|\!-)[^>]*>/g, "");
+		sXML = sXML.replace(/<(\?|!-)[^>]*>/g, "");
 		sXML.replace(re, cb);
 		
 		return jindo.$Json(o);
@@ -1076,7 +1076,7 @@ getFilteredHashTable({
 	 * // 결과: &amp;quot;, &amp;#39;, &amp;amp;, &amp;lt;, &amp;gt;
 	 */
 	replaceSpecialChar : function(sString){
-		return (typeof(sString) == "string") ? (sString.replace(/\&/g, "&amp;").replace(/\"/g, "&quot;").replace(/\'/g, "&#39;").replace(/</g, "&lt;").replace(/\>/g, "&gt;")) : "";
+		return (typeof(sString) == "string") ? (sString.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;")) : "";
 	},
 	/**
 	 * 문자열내 자주 사용되는 HTML Entity Code 5개를 원래 문자로 (", ', &, <, >)로 변경하여 반환
@@ -1217,11 +1217,11 @@ StringBuffer.prototype.toString = function() {
 };
 
 StringBuffer.prototype.setLength = function(nLen) {
-    if('undefined' == typeof(nLen) || 0 >= nLen) {
-    	this._aString.length = 0;
-    } else {
-    	this._aString.length = nLen;
-    }
+	if('undefined' == typeof(nLen) || 0 >= nLen) {
+		this._aString.length = 0;
+	} else {
+		this._aString.length = nLen;
+	}
 };
 
 /**

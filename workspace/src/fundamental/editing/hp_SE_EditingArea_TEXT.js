@@ -104,11 +104,11 @@ nhn.husky.SE_EditingArea_TEXT = jindo.$Class({
 		
 		//2. 빈 라인 이외에 linebreak 처리.
 		sContent = sContent.replace(/<br(\s)*\/?>/gi, '\n'); // br 태그를 개행문자로
-		sContent = sContent.replace(/<br(\s[^\/]*)?>/gi, '\n'); // br 태그를 개행문자로
-		sContent = sContent.replace(/<\/p(\s[^\/]*)?>/gi, '\n'); // p 태그를 개행문자로
+		sContent = sContent.replace(/<br(\s[^/]*)?>/gi, '\n'); // br 태그를 개행문자로
+		sContent = sContent.replace(/<\/p(\s[^/]*)?>/gi, '\n'); // p 태그를 개행문자로
 		
-		sContent = sContent.replace(/<\/li(\s[^\/]*)?>/gi, '\n'); // li 태그를 개행문자로 [SMARTEDITORSUS-107]개행 추가
-		sContent = sContent.replace(/<\/tr(\s[^\/]*)?>/gi, '\n'); // tr 태그를 개행문자로 [SMARTEDITORSUS-107]개행 추가
+		sContent = sContent.replace(/<\/li(\s[^/]*)?>/gi, '\n'); // li 태그를 개행문자로 [SMARTEDITORSUS-107]개행 추가
+		sContent = sContent.replace(/<\/tr(\s[^/]*)?>/gi, '\n'); // tr 태그를 개행문자로 [SMARTEDITORSUS-107]개행 추가
 	
 		// 마지막 \n은 로직상 불필요한 linebreak를 제공하므로 제거해준다.
 		nIdx = sContent.lastIndexOf('\n');
@@ -172,7 +172,7 @@ nhn.husky.SE_EditingArea_TEXT = jindo.$Class({
 				if (!jindo.$Agent().navigator().ie) {
 					oContent.append('<P><BR></P>');
 				} else {
-					oContent.append('<P>&nbsp;<\/P>');
+					oContent.append('<P>&nbsp;</P>');
 				}
 			}
 		}

@@ -124,10 +124,10 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 		}
 	},
 
-	$LOCAL_BEFORE_FIRST : function(sMsg) {
+	$LOCAL_BEFORE_FIRST : function(/* sMsg */) {
 		var aToolItems = jindo.$$(">ul>li[class*=" + this.sUIClassPrefix + "]>button", this.elTextTool);
 		var nItemLength = aToolItems.length;
-		 
+
 		this.elFirstToolbarItem = this.elFirstToolbarItem || aToolItems[0];
 		this.elLastToolbarItem = aToolItems[nItemLength-1];
 
@@ -265,7 +265,7 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 			return;
 		}
 	
-		var sUIName, className;
+		var sUIName;
 		htOptions = htOptions || {};
 		var waExceptions = jindo.$A(htOptions.aExceptions || []);
 

@@ -74,7 +74,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		var aTables = jindo.$$('table[class=__se_tbl]', oTmpNode, {oneTimeOffCache:true});
 		
 		// 테두리가 없음 속성의 table (임의로 추가한 attr_no_border_tbl 속성이 있는 table 을 찾음)
-		jindo.$A(aTables).forEach(function(oValue, nIdx, oArray) {
+		jindo.$A(aTables).forEach(function(oValue) {
 			if(jindo.$Element(oValue).attr("attr_no_border_tbl")){
 				aNoBorderTable.push(oValue);
 			}
@@ -96,7 +96,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 			
 			// <TD> 에서는 background-color 를 제외한 style 을 모두 제거
 			aTDs = jindo.$$('tbody>tr>td', oTable);
-			jindo.$A(aTDs).forEach(function(oTD, nIdx, oTDArray) {
+			jindo.$A(aTDs).forEach(function(oTD) {
 				jindo.$Element(oTD).css({"border": "", "borderTop": "", "borderRight": ""});
 			});
 		}
@@ -116,7 +116,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 		var aTables = jindo.$$('table[class=__se_tbl]', oTmpNode, {oneTimeOffCache:true});
 		
 		// 테두리가 없음 속성의 table (임의로 추가한 attr_no_border_tbl 속성이 있는 table 을 찾음)
-		jindo.$A(aTables).forEach(function(oValue, nIdx, oArray) {
+		jindo.$A(aTables).forEach(function(oValue) {
 			if(jindo.$Element(oValue).attr("attr_no_border_tbl")){
 				aNoBorderTable.push(oValue);
 			}
@@ -137,7 +137,7 @@ nhn.husky.SE2M_TableCreator = jindo.$Class({
 			
 			// <TD> 에서 style 속성값 추가
 			aTDs = jindo.$$('tbody>tr>td', oTable);
-			jindo.$A(aTDs).forEach(function(oTD, nIdx, oTDArray) {
+			jindo.$A(aTDs).forEach(function(oTD) {
 				jindo.$Element(oTD).css({"border": "1px dashed #c7c7c7", "borderTop": 0, "borderRight": 0});
 			});
 		}

@@ -44,7 +44,7 @@ nhn.husky.SE2B_CSSLoader = jindo.$Class({
 				}, this).bind();
 			}
 			
-			for(var i=0, nLen = this.aDelayedLoadTrigger.length; i<nLen; i++){
+			for(i=0, nLen = this.aDelayedLoadTrigger.length; i<nLen; i++){
 				var sMsg = this.aDelayedLoadTrigger[i];
 
 				this["$BEFORE_"+this.aDelayedLoadTrigger[i]] = jindo.$Fn(function(sMsg){

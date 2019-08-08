@@ -105,7 +105,7 @@ nhn.husky.SE_WYSIWYGStyleGetter = jindo.$Class({
 		}
 	},
 	
-	$ON_EVENT_EDITING_AREA_MOUSEUP : function(oEvnet){
+	$ON_EVENT_EDITING_AREA_MOUSEUP : function(){
 		/*
 		if(this.hKeyUp){
 			clearTimeout(this.hKeyUp);
@@ -309,7 +309,7 @@ nhn.husky.SE_WYSIWYGStyleGetter = jindo.$Class({
 		}
 		
 		var welNode = jindo.$Element(oNode);
-		var attribute, cssName;
+		var attribute;
 
 		for(var styleName in this.oStyle){
 			attribute = this.oStyleMap[styleName];
@@ -327,7 +327,7 @@ nhn.husky.SE_WYSIWYGStyleGetter = jindo.$Class({
 					} else {
 						// todo
 					}
-				}catch(e){}
+				}catch(e){/**/}
 			}else{
 				if(attribute.command){
 					try{
@@ -336,7 +336,7 @@ nhn.husky.SE_WYSIWYGStyleGetter = jindo.$Class({
 						}else{
 							oStyle[styleName] = "@-";
 						}
-					}catch(e){}
+					}catch(e){/**/}
 				}else{
 					// todo
 				}

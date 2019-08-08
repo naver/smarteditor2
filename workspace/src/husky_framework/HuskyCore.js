@@ -386,15 +386,15 @@ if (!nhn.husky){nhn.husky = {};}
 	 * @param {Object} htMixin 덧붙일 프로토타입 데이터
 	 * @param {Boolean} bOverride 원본 클래스에 프로토타입을 덮어씌울지 여부
 	 */
-	nhn.husky.HuskyCore.mixin = function(oClass, htMixin, bOverride, sFilename){
+	nhn.husky.HuskyCore.mixin = function(oClass, htMixin, bOverride){
 		//TODO: error handling?
 	//	if(typeof oClass != "function"){
 	//		throw new Error("SmartEditor: can't mixin (oClass is invalid)");
 	//	}
-		var aPlugins = [];
+		var aPlugins = [], i, j, k, oHuskyCore, oPlugin;
 		// 믹스인을 적용할 클래스가 이미 플러그인으로 등록된 상태라면 
-		for(var i = 0, oHuskyCore; (oHuskyCore = _aHuskyCores[i]); i++){
-			for(var j = 0, oPlugin; (oPlugin = oHuskyCore.aPlugins[j]); j++){
+		for(i = 0; (oHuskyCore = _aHuskyCores[i]); i++){
+			for(j = 0; (oPlugin = oHuskyCore.aPlugins[j]); j++){
 				if(oPlugin instanceof oClass){
 					// 1. 메시지 추가등록을 위해 해당 플러그인 인스턴스를 담아두고
 					aPlugins.push(oPlugin);
@@ -412,7 +412,7 @@ if (!nhn.husky){nhn.husky = {};}
 					if(typeof oPlugin["$LOCAL_BEFORE_FIRST"] !== "function"){
 						oPlugin.oApp.acceptLocalBeforeFirstAgain(oPlugin, true);
 					}
-					for(var k in htMixin){
+					for(k in htMixin){
 						if(bOverride || !oPlugin.hasOwnProperty(k)){
 							oPlugin[k] = htMixin[k];
 							if(_rxMsgHandler.test(k)){
@@ -425,12 +425,12 @@ if (!nhn.husky){nhn.husky = {};}
 		}
 
 		// mixin 처리
-		for(var k in htMixin){
+		for(k in htMixin){
 			if(bOverride || !oClass.prototype.hasOwnProperty(k)){
 				oClass.prototype[k] = htMixin[k];
 				// 새로 추가되는 함수가 메시지 핸들러라면 메시지 매핑에 추가 해준다.
 				if(_rxMsgHandler.test(k)){
-					for(var j = 0, oPlugin; (oPlugin = aPlugins[j]); j++){
+					for(j = 0; (oPlugin = aPlugins[j]); j++){
 						oPlugin.oApp.addToMessageMap(k, oPlugin);
 					}
 				}

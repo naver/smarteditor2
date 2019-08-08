@@ -117,7 +117,7 @@ nhn.husky.PopUpManager.getInstance = function(oApp) {
 				var win = window.open(op.sUrl, op.sName,sProperties);
 				if (!!win) {
 					setTimeout( function(){ 
-						try{win.focus();}catch(e){} 
+						try{win.focus();}catch(e){/**/}
 					}, 100);
 				}
 				

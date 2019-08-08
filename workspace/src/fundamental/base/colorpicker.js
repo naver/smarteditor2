@@ -19,12 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ColorPicker Component
  * @author gony
  */
- nhn.ColorPicker = jindo.$Class({
+nhn.ColorPicker = jindo.$Class({
 	elem : null,
 	huePanel : null,
 	canvasType : "Canvas",
 	_hsvColor  : null,
- 	$init : function(oElement, oOptions) {
+	$init : function(oElement, oOptions) {
 		this.elem = jindo.$Element(oElement).empty();
 		this.huePanel   = null;
 		this.cursor     = jindo.$Element("<div>").css("overflow", "hidden");
@@ -400,7 +400,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 		this._onMoveColor(e);
 	},
-	_onUpColor : function(e) {
+	_onUpColor : function() {
 		this._onUpColorFn.detach(document, "mouseup");
 		this._onMoveColorFn.detach(document, "mousemove");
 	},
@@ -451,7 +451,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 		this._onMoveHue(e);
 	},
-	_onUpHue : function(e) {
+	_onUpHue : function() {
 		this._onUpHueFn.detach(document, "mouseup");
 		this._onMoveHueFn.detach(document, "mousemove");
 	},

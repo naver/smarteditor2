@@ -46,7 +46,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 			this.oSelection.selectNode(oAnchor);
 			this.oSelection.select();
 			
-			var sTarget = oAnchor.target;
+			// var sTarget = oAnchor.target;
 			//if(sTarget && sTarget == "_blank"){this.oCbNewWin.checked = true;}
 
 			// href속성에 문제가 있을 경우, 예: href="http://na&nbsp;&nbsp; ver.com", IE에서 oAnchor.href 접근 시에 알수 없는 오류를 발생시킴
@@ -80,7 +80,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 			bReturn = true;
 		
 		if(oNavigator.ie) {
-			jindo.$A(this.oSelection.getNodes(true)).forEach(function(elNode, index, array){
+			jindo.$A(this.oSelection.getNodes(true)).forEach(function(elNode){
 				if(!!elNode && elNode.nodeType == 1 && elNode.tagName.toLowerCase() == "iframe" && elNode.getAttribute('s_type').toLowerCase() == "db") {
 					bReturn = false;
 					jindo.$A.Break();
@@ -118,7 +118,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 			// if(false){
 				// sTarget = "_blank";
 			// }else{
-				sTarget = "_self";
+				var sTarget = "_self";
 			//}
 			
 			this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", ["HYPERLINK", {sSaveTarget:(this.bModify ? "A" : null)}]);
@@ -155,8 +155,8 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 						this.oApp.exec("EXECCOMMAND", ["unlink", false, "", {bDontAddUndoHistory: true}]);
 						
 						var sTempUrl = "<a href='" + sURL + "' target="+sTarget+">";
- 						
-						jindo.$A(this.oSelection.getNodes(true)).forEach(function(value, index, array){
+
+						jindo.$A(this.oSelection.getNodes(true)).forEach(function(value){
 							var oEmptySelection = this.oApp.getEmptySelection();
 
 							if(value.nodeType === 3){
@@ -185,7 +185,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 					var sHref = "";
 					try{
 						sHref = elATag.getAttribute("href");
-					}catch(e){}
+					}catch(e){/**/}
 					if (sHref && sHref.match(rxMarker)) {
 						var sNewHref = sHref.replace(rxMarker, "");
 						var sDecodeHref = decodeURIComponent(sNewHref);
@@ -240,7 +240,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 
 		// [SMARTEDITORSUS-612] 이미지 선택 후 링크 추가했을 때 링크가 걸리지 않는 문제
 		if(this.oApp.getWYSIWYGDocument().selection && this.oApp.getWYSIWYGDocument().selection.type === "None"){
-			bImg = jindo.$A(this.oSelection.getNodes()).some(function(value, index, array){
+			bImg = jindo.$A(this.oSelection.getNodes()).some(function(value){
 				if(value.nodeType === 1 && value.tagName === "IMG"){
 					return true;
 				}
@@ -256,7 +256,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 		}	
 		
 		// [SMARTEDITORSUS-579] IE8 이하에서 E-mail 패턴 문자열에 URL 링크 못거는 이슈
-		bEmail = jindo.$A(this.oSelection.getTextNodes()).some(function(value, index, array){
+		bEmail = jindo.$A(this.oSelection.getTextNodes()).some(function(value){
 			if(value.nodeValue.indexOf("@") >= 1){
 				return true;
 			}
@@ -288,7 +288,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 		}catch(e){
 			return false;
 		}
-		return /^(http|https|ftp|mailto):(\/\/)?(([-가-힣]|\w)+(?:[\/\.:@]([-가-힣]|\w)+)+)\/?(.*)?\s*$/i.test(sURL);
+		return /^(http|https|ftp|mailto):(\/\/)?(([-가-힣]|\w)+(?:[/.:@]([-가-힣]|\w)+)+)\/?(.*)?\s*$/i.test(sURL);
 	}
 	//@lazyload_js]
 });

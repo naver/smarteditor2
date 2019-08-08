@@ -60,7 +60,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 			this.$ON_DISABLE_MESSAGE = null;
 			this.$ON_ENABLE_MESSAGE = null;
 			// 브라우저의 자동링크기능 비활성화 
-			try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, false); } catch(e){}
+			try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, false); } catch(e){/**/}
 		}
 	},
 
@@ -111,7 +111,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		if(sCmd !== "TOGGLE_HYPERLINK_LAYER"){
 			return;
 		}
-		try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, false); } catch(e){}
+		try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, false); } catch(e){/**/}
 		this._bDisabled = true;
 	},
 
@@ -122,7 +122,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		if(sCmd !== "TOGGLE_HYPERLINK_LAYER"){
 			return;
 		}
-		try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, true); } catch(e){}
+		try{ this.oApp.getWYSIWYGDocument().execCommand("AutoUrlDetect", false, true); } catch(e){/**/}
 		this._bDisabled = false;
 	},
 
@@ -140,7 +140,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		}catch(e) {
 			oCopyNode = jindo.$(oTmpNode.outerHTML);
 		}
-	 
+
 		var oTmpRange = this.oApp.getEmptySelection();
 		var elFirstNode = oTmpRange._getFirstRealChild(oCopyNode);
 		var elLastNode = oTmpRange._getLastRealChild(oCopyNode);
@@ -161,7 +161,6 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 			}
 		}
 		*/
-		var aCleanTextNodes = aAllTextNodes;
 		
 		// IE에서 PRE를 제외한 다른 태그 하위에 있는 텍스트 노드는 줄바꿈 등의 값을 변질시킴
 		var elTmpDiv = this.oApp.getWYSIWYGDocument().createElement("DIV");
@@ -192,14 +191,14 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 				// IE에서 innerHTML를 이용 해 직접 텍스트 노드 값을 할당 할 경우 줄바꿈등이 깨질 수 있어, 텍스트 노드로 만들어서 이를 바로 append 시켜줌
 				// [SMARTEDITORSUS-1649] https:// URL을 입력한 경우에도 자동링크 지원
 				//elTmpDiv.innerHTML = (sTmpStr+elTmpDiv.innerHTML).replace(/(&nbsp|\s)?(((?!http:\/\/)www\.(?:(?!\&nbsp;|\s|"|').)+)|(http:\/\/(?:(?!&nbsp;|\s|"|').)+))/ig, this._generateAutoLink);
-				elTmpDiv.innerHTML = (sTmpStr+elTmpDiv.innerHTML).replace(/(&nbsp|\s)?(((?!http[s]?:\/\/)www\.(?:(?!\&nbsp;|\s|"|').)+)|(http[s]?:\/\/(?:(?!&nbsp;|\s|"|').)+))/ig, this._generateAutoLink);
+				elTmpDiv.innerHTML = (sTmpStr+elTmpDiv.innerHTML).replace(/(&nbsp|\s)?(((?!http[s]?:\/\/)www\.(?:(?!&nbsp;|\s|"|').)+)|(http[s]?:\/\/(?:(?!&nbsp;|\s|"|').)+))/ig, this._generateAutoLink);
 				// --[SMARTEDITORSUS-1649]
 				
 				// innerHTML 내에 텍스트가 있을 경우 insert 시에 주변 텍스트 노드와 합쳐지는 현상이 있어 div로 위치를 먼저 잡고 하나씩 삽입
 				a[i].parentNode.insertBefore(elTmpDiv, a[i]);
 				a[i].parentNode.removeChild(a[i]);
 			} catch(e1) {
-				
+				// console.warn(e);
 			}
 			
 			while(elTmpDiv.firstChild){
@@ -208,7 +207,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 			elTmpDiv.parentNode.removeChild(elTmpDiv);
 //			alert(a[i].nodeValue);
 		}
-		elTmpDiv = oTmpRange = elFirstNode = elLastNode = waAllNodes = aAllTextNodes = a = aCleanTextNodes = elParent = null;
+		elTmpDiv = oTmpRange = elFirstNode = elLastNode = waAllNodes = aAllTextNodes = a = elParent = null;
 		oCopyNode.innerHTML = oCopyNode.innerHTML.replace(rxTmpStr, "");
 		oTmpNode.innerHTML = oCopyNode.innerHTML;
 		oCopyNode = null;

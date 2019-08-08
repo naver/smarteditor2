@@ -96,6 +96,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		
 		// [SMARTEDITORSUS-1436] 글꼴 리스트에 글꼴 종류 추가하기 기능
 		if(!!this.aAdditionalFontList && this.aAdditionalFontList.length > 0){
+			var nLen;
 			for(i = 0, nLen = this.aAdditionalFontList.length; i < nLen; i++){
 				this.addFont(this.aAdditionalFontList[i][0], this.aAdditionalFontList[i][1], 0, "", "", 1);
 			}
@@ -131,7 +132,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		this.elInnerLayer = this.elFontNameList.parentNode;
 		this.aelFontInMarkup = jindo.$$("LI", this.oDropdownLayer);	// 마크업에 있는 LI
 		this.elFontItemTemplate = this.aelFontInMarkup.shift();		// 맨앞에 있는 LI 는 템플릿
-		this.aLIFontNames = jindo.$A(jindo.$$("LI", this.oDropdownLayer)).filter(function(v,i,a){return (v.firstChild !== null);})._array;
+		this.aLIFontNames = jindo.$A(jindo.$$("LI", this.oDropdownLayer)).filter(function(v){return (v.firstChild !== null);})._array;
 		//@ec]
 		
 		this.sDefaultText = this.elFontNameLabel.innerHTML;
@@ -164,7 +165,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 			return false;
 		}
 
-		var bInstalled = IsInstalledFont(sFontName);
+		var bInstalled = window.IsInstalledFont(sFontName);
 		el.style.display = bInstalled ? "block" : "none";
 		return bInstalled;
 	},
@@ -222,12 +223,12 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		jindo.$Fn(this._onMouseupCover, this).attach(this.welEditingAreaCover.$value(), "mouseup");
 	},
 	
-	_onFocusWYSIWYGBody : function(e){
+	_onFocusWYSIWYGBody : function(){
 		this._wfOnFocusWYSIWYGBody.detach(this.oApp.getWYSIWYGDocument().body, "focus");
 		this._loadAllBaseFont();
 	},
 	
-	_onPasteWYSIWYGBody : function(e){
+	_onPasteWYSIWYGBody : function(){
 		this._wfOnPasteWYSIWYGBody.detach(this.oApp.getWYSIWYGDocument().body, "paste");
 		this._loadAllBaseFont();
 	},
@@ -270,7 +271,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		if(this.oApp.oNavigator.ie && document.documentMode < 11 && this.oApp.getEditingMode() === "WYSIWYG"){
 			if(this.oApp.getWYSIWYGDocument().body.innerHTML == "<p></p>"){
 				this.oApp.getWYSIWYGDocument().body.innerHTML = '<p><span id="husky_bookmark_start_INIT"></span><span id="husky_bookmark_end_INIT"></span></p>';
-				var oSelection = this.oApp.getSelection();
+				oSelection = this.oApp.getSelection();
 				oSelection.moveToStringBookmark("INIT");
 				oSelection.select();
 				oSelection.removeStringBookmark("INIT");
@@ -354,7 +355,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		
 		var sFontFamily = this._getFontFamilyFromLI(elTmp);
 		// [SMARTEDITORSUS-169] 웹폰트의 경우 fontFamily 에 ' 을 붙여주는 처리를 함
-		var htFontInfo = this.htAllFonts[sFontFamily.replace(/\"/g, nhn.husky.SE2M_FontNameWithLayerUI.CUSTOM_FONT_MARKS)];
+		var htFontInfo = this.htAllFonts[sFontFamily.replace(/"/g, nhn.husky.SE2M_FontNameWithLayerUI.CUSTOM_FONT_MARKS)];
 		var nDefaultFontSize;
 		if(htFontInfo){
 			nDefaultFontSize = htFontInfo.defaultSize+"pt";
@@ -428,7 +429,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		if(!sFontFamily){return;}
 		
 		// [SMARTEDITORSUS-169] 웹폰트의 경우 fontFamily 에 ' 을 붙여주는 처리를 함
-		var oFontInfo = this.htAllFonts[sFontFamily.replace(/\"/g, nhn.husky.SE2M_FontNameWithLayerUI.CUSTOM_FONT_MARKS)];
+		var oFontInfo = this.htAllFonts[sFontFamily.replace(/"/g, nhn.husky.SE2M_FontNameWithLayerUI.CUSTOM_FONT_MARKS)];
 		if(!!oFontInfo){
 			oFontInfo.loadCSS(this.oApp.getWYSIWYGDocument());
 		}
@@ -475,7 +476,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		return elLi.firstChild.firstChild.firstChild.nodeValue;
 	},
 	
-	_clearFontNameSelection : function(elLi){
+	_clearFontNameSelection : function(){
 		for(var i=0; i<this.aLIFontNames.length; i++){
 			jindo.$Element(this.aLIFontNames[i]).removeClass("active");
 		}
@@ -501,7 +502,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		}
 
 		// OS에 해당 폰트가 존재하는지 여부를 확인한다.
-		if(bCheck && !IsInstalledFont(fontId)){
+		if(bCheck && !window.IsInstalledFont(fontId)){
 			return null;
 		}
 

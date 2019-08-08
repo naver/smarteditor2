@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * @fileOverview This file contains Husky plugin that takes care of the operations directly related to the color palette
  * @name hp_SE2M_ColorPalette.js
  */
- nhn.husky.SE2M_ColorPalette = jindo.$Class({
+nhn.husky.SE2M_ColorPalette = jindo.$Class({
 	name : "SE2M_ColorPalette",
 	elAppContainer : null,
 	bUseRecentColor : false, 
@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 	sRecentColorTemp : "<li><button type=\"button\" title=\"{RGB_CODE}\" style=\"background:{RGB_CODE}\"><span><span>{RGB_CODE}</span></span></button></li>",
 	
 	$init : function(elAppContainer){
-	 	this.elAppContainer = elAppContainer;
+		this.elAppContainer = elAppContainer;
 	},
 	
 	$ON_MSG_APP_READY : function(){},

@@ -33,7 +33,7 @@ nhn.husky.SE2M_FontSizeWithLayerUI = jindo.$Class({
 
 		//@ec[
 		this.elFontSizeLabel = jindo.$$.getSingle("SPAN.husky_se2m_current_fontSize", elAppContainer);
-		this.aLIFontSizes = jindo.$A(jindo.$$("LI", this.oDropdownLayer)).filter(function(v,i,a){return (v.firstChild != null);})._array;
+		this.aLIFontSizes = jindo.$A(jindo.$$("LI", this.oDropdownLayer)).filter(function(v){return (v.firstChild != null);})._array;
 		//@ec]
 		
 		this.sDefaultText = this.elFontSizeLabel.innerHTML;
@@ -110,7 +110,7 @@ nhn.husky.SE2M_FontSizeWithLayerUI = jindo.$Class({
 			// [SMARTEDITORSUS-1600]
 			// 산술 계산을 통해 일차적으로 pt로 변환된 값을 0.5pt 구간을 적용하여 보정하되, 보다 가까운 쪽으로 설정한다.
 			if(this._rxPT.test(sAttributeValue)){
-				var num = parseFloat(sAttributeValue.replace(this._rxPT, ""));
+				num = parseFloat(sAttributeValue.replace(this._rxPT, ""));
 				var integerPart = Math.floor(num); // 정수 부분
 				var decimalPart = num - integerPart; // 소수 부분
 				
@@ -167,7 +167,7 @@ nhn.husky.SE2M_FontSizeWithLayerUI = jindo.$Class({
 		return elLi.firstChild.firstChild.style.fontSize;
 	},
 	
-	_clearFontSizeSelection : function(elLi){
+	_clearFontSizeSelection : function(){
 		for(var i=0; i<this.aLIFontSizes.length; i++){
 			jindo.$Element(this.aLIFontSizes[i]).removeClass("active");
 		}

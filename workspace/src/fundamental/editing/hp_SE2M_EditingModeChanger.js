@@ -87,8 +87,8 @@ nhn.husky.SE2M_EditingModeChanger = jindo.$Class({
 	$ON_EVENT_CHANGE_EDITING_MODE_CLICKED : function(sMode, bNoAlertMsg){
 		if (sMode == 'TEXT') {
 			//에디터 영역 내에 모든 내용 가져옴. 
-	    	var sContent = this.oApp.getIR();
-	    	
+			var sContent = this.oApp.getIR();
+
 			// 내용이 있으면 경고창 띄우기
 			if (sContent.length > 0 && !bNoAlertMsg) {
 				if ( !confirm(this.oApp.$MSG("SE2M_EditingModeChanger.confirmTextMode")) ) {

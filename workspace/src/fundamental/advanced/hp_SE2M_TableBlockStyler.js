@@ -36,7 +36,7 @@ nhn.husky.SE2M_TableBlockStyler = jindo.$Class({
 		this.oDocument = this.oApp.getWYSIWYGDocument();
 	},
 	
-	$ON_EVENT_EDITING_AREA_MOUSEUP : function(wevE){
+	$ON_EVENT_EDITING_AREA_MOUSEUP : function(/*wevE*/){
 		if(this.oApp.getEditingMode() != "WYSIWYG") return;
 		this.setTdBlock();
 	},

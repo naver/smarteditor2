@@ -105,7 +105,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 	},
 
 	$BEFORE_EXECCOMMAND : function(sCommand, bUserInterface, vValue, htOptions){
-		var elTmp, oSelection;
+		var oSelection;
 		
 		//본문에 전혀 클릭이 한번도 안 일어난 상태에서 크롬과 IE에서 EXECCOMMAND가 정상적으로 안 먹히는 현상. 
 		this.oApp.exec("FOCUS");
@@ -255,24 +255,24 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			switch(sCommand){
 			case "indent":
 			case "outdent":
-            	this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", [sCommand]);
-            	
+				this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", [sCommand]);
+
 				// bookmark 설정
-				var sBookmark = oSelection.placeStringBookmark();				
+				var sBookmark = oSelection.placeStringBookmark();
 
 				if(sCommand === "indent"){
 					this.oApp.exec("SET_LINE_STYLE", [null, jindo.$Fn(this._indentMargin, this).bind(), {bDoNotSelect : true, bDontAddUndoHistory : true}]);
 				}else{
 					this.oApp.exec("SET_LINE_STYLE", [null, jindo.$Fn(this._outdentMargin, this).bind(), {bDoNotSelect : true, bDontAddUndoHistory : true}]);
 				}
-		
+
 				oSelection.moveToStringBookmark(sBookmark);
 				oSelection.select();
 				oSelection.removeStringBookmark(sBookmark); //bookmark 삭제
-						
-                setTimeout(jindo.$Fn(function(sCommand){
-                	this.oApp.exec("RECORD_UNDO_AFTER_ACTION", [sCommand]);	
-                }, this).bind(sCommand), 25);
+
+				setTimeout(jindo.$Fn(function(sCommand){
+					this.oApp.exec("RECORD_UNDO_AFTER_ACTION", [sCommand]);
+				}, this).bind(sCommand), 25);
 
 				break;
 			
@@ -430,16 +430,6 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			elNode = null,
 			elParentNode = null;
 			
-		var removeTableAlign = !this.oNavigator.ie ? function(){} : function(elNode){
-			if(elNode.tagName && elNode.tagName === "TABLE"){
-				elNode.removeAttribute("align");
-				
-				return true;
-			}
-			
-			return false;
-		};
-		
 		if(oSelection.collapsed){
 			aNodes[0] = oSelection.startContainer;	// collapsed인 경우에는 getNodes의 결과는 []
 		}else{
@@ -868,11 +858,11 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 			return;
 		}
 
-		aChildImg = jindo.$A(oStartContainer.childNodes).filter(function(value, index, array){
+		aChildImg = jindo.$A(oStartContainer.childNodes).filter(function(value){
 			return (value.nodeType === 1 && value.tagName === "IMG");
 		}).$value();
 		
-		aSelectedImg = jindo.$A(oSelection.getNodes()).filter(function(value, index, array){
+		aSelectedImg = jindo.$A(oSelection.getNodes()).filter(function(value){
 			return (value.nodeType === 1 && value.tagName === "IMG");
 		}).$value();
 		

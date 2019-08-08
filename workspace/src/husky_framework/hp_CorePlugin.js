@@ -95,9 +95,6 @@ nhn.husky.CorePlugin = jindo.$Class({
 	},
 	
 	$ON_LOAD_FULL_PLUGIN : function(aFilenames, sClassName, sMsgName, oThisRef, oArguments){
-		var oPluginRef = oThisRef.$this || oThisRef;
-//		var nIdx = _nIdx||0;
-		
 		var sFilename = aFilenames[0];
 		
 		if(!this.htLazyLoadRequest_plugins[sFilename]){
@@ -115,8 +112,6 @@ nhn.husky.CorePlugin = jindo.$Class({
 	_loadFullPlugin : function(aFilenames, sClassName, sMsgName, oThisRef, oArguments, nIdx){
 		jindo.LazyLoading.load(nhn.husky.SE2M_Configuration.LazyLoad.sJsBaseURI+"/"+aFilenames[nIdx], 
 			jindo.$Fn(function(aFilenames, sClassName, sMsgName, oThisRef, oArguments, nIdx){
-				var sCurFilename = aFilenames[nIdx];
-
 				// plugin filename
 				var sFilename = aFilenames[0];
 				if(nIdx == aFilenames.length-1){
@@ -132,13 +127,11 @@ nhn.husky.CorePlugin = jindo.$Class({
 		);
 	},
 	
-	$ON_MSG_FULL_PLUGIN_LOADED : function(aFilenames, sClassName, sMsgName, oThisRef, oArguments, oRes){
+	$ON_MSG_FULL_PLUGIN_LOADED : function(aFilenames, sClassName, sMsgName, oThisRef, oArguments){
 		// oThisRef.$this는 현재 로드되는 플러그인이 parent 인스턴스일 경우 존재 함. oThisRef.$this는 현재 플러그인(oThisRef)를 parent로 삼고 있는 인스턴스
 		// oThisRef에 $this 속성이 없다면 parent가 아닌 일반 인스턴스
 		// oPluginRef는 결과적으로 상속 관계가 있다면 자식 인스턴스를 아니라면 일반적인 인스턴스를 가짐
 		var oPluginRef = oThisRef.$this || oThisRef;
-		
-		var sFilename = aFilenames;
 
 		// now the source code is loaded, remove the loader handlers
 		for(var i=0, nLen=oThisRef._huskyFLT.length; i<nLen; i++){

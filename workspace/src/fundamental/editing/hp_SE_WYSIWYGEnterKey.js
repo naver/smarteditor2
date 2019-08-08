@@ -164,8 +164,7 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		if(elNode.innerHTML == "" && elNode.nodeName.toLowerCase() != "param"){
 			try{
 				elNode.innerHTML = unescape("%uFEFF");
-			}catch(e) {
-			}
+			}catch(e){/**/}
 		}
 		
 		return elNode;
@@ -356,8 +355,8 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 			// [SMARTEDITORSUS-180] 빈 SPAN 태그에 의해 엔터 후 엔터가 되지 않은 것으로 보이는 문제 (브라우저 Enter 처리 후 실행되도록 setTimeout 사용)
 			setTimeout(jindo.$Fn(this._addExtraCursorHolder, this).bind(elParentNode), 0);
 		}else{
-			var elParentNode = elBookmark.parentNode,
-				oNextSibling = this._getValidNextSibling(elBookmark);
+			elParentNode = elBookmark.parentNode;
+			var oNextSibling = this._getValidNextSibling(elBookmark);
 
 			/*
 			 * [SMARTEDITORSUS-2046] 크롬에서 span으로 감싸있고 다음요소가 br 인 경우
@@ -457,9 +456,7 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 
 		// 엔터 후에 비어있는 하단 SPAN 노드에 BOM 추가
 		var oSelection = this.oApp.getSelection(),
-			sBM,
-			elLowerNode,
-			elParent;
+			elLowerNode;
 
 		if(!oSelection.collapsed){
 			return;

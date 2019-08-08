@@ -16,7 +16,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA  
 */
 // Sample plugin. Use CTRL+T to toggle the toolbar
-nhn.husky.SE_ToolbarToggler = $Class({
+nhn.husky.SE_ToolbarToggler = jindo.$Class({
 	name : "SE_ToolbarToggler",
 	bUseToolbar : true,
 	
@@ -27,7 +27,7 @@ nhn.husky.SE_ToolbarToggler = $Class({
 	_assignHTMLObjects : function(oAppContainer, bUseToolbar){
 		oAppContainer = jindo.$(oAppContainer) || document;
 	
-		this.toolbarArea = cssquery.getSingle(".se2_tool", oAppContainer);
+		this.toolbarArea = jindo.cssquery.getSingle(".se2_tool", oAppContainer);
 		
 		//설정이 없거나, 사용하겠다고 표시한 경우 block 처리
 		if( typeof(bUseToolbar) == 'undefined' || bUseToolbar === true){

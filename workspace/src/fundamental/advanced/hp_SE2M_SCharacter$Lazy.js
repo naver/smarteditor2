@@ -35,7 +35,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_SCharacter, {
 		this.aLabel = jindo.$$(">LI", oLabelUL);
 	},
 	
-	$LOCAL_BEFORE_FIRST : function(sFullMsg){
+	$LOCAL_BEFORE_FIRST : function(/* sFullMsg */){
 		this.bIE = jindo.$Agent().navigator().ie;
 
 		this._assignHTMLObjects(this.oApp.htOptions.elAppContainer);
@@ -58,7 +58,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_SCharacter, {
 			jindo.$Fn(func, this).attach(this.aLabel[i].firstChild, "mousedown");
 		}
 
-		for(var i=0; i<this.aCloseButton.length; i++){
+		for(i=0; i<this.aCloseButton.length; i++){
 			this.oApp.registerBrowserEvent(this.aCloseButton[i], "click", "HIDE_ACTIVE_LAYER", []);
 		}
 		

@@ -223,7 +223,7 @@ nhn.W3CDOMRange = jindo.$Class({
 
 	_compareEndPoint : function(oContainerA, iOffsetA, oContainerB, iOffsetB){
 		return this.oBrowserSelection.compareEndPoints(oContainerA, iOffsetA, oContainerB, iOffsetB);
-		
+/*
 		var iIdxA, iIdxB;
 
 		if(!oContainerA || this._findBody(oContainerA) != this._document.body){
@@ -278,6 +278,7 @@ nhn.W3CDOMRange = jindo.$Class({
 		}
 
 		return compareIdx(iIdxA, iIdxB);
+*/
 	},
 
 	_getCommonAncestorContainer : function(oNode1, oNode2){
@@ -810,7 +811,9 @@ nhn.HuskyRange = jindo.$Class({
 	select : function(){
 		try{
 			this.oBrowserSelection.selectRange(this);
-		}catch(e){}
+		}catch(e){
+			// console.warn("[WARNING] 잘못된 범위가 지정 됨!");
+		}
 	},
 
 	setFromSelection : function(iNum){
@@ -925,7 +928,7 @@ nhn.HuskyRange = jindo.$Class({
 		var elNode = oDoc.body;
 
 		for(var i=2; i<aXPath.length && elNode; i++){
-			aXPath[i].match(/([^\[]+)\[(\d+)/i);
+			aXPath[i].match(/([^[]+)\[(\d+)/i);
 			var sTagName = RegExp.$1;
 			var nIdx = RegExp.$2;
 
@@ -989,9 +992,10 @@ nhn.HuskyRange = jindo.$Class({
 		}
 		var sXPathNode1 = this._getXPath(elNode1);
 		var oBookmark1 = {sXPath:sXPathNode1, nTextNodeIdx:nTextNodeIdx1, nOffset: htEndPt1.nOffset};
-		
+		var oBookmark2;
+
 		if(this.collapsed){
-			var oBookmark2 = {sXPath:sXPathNode1, nTextNodeIdx:nTextNodeIdx1, nOffset: htEndPt1.nOffset};
+			oBookmark2 = {sXPath:sXPathNode1, nTextNodeIdx:nTextNodeIdx1, nOffset: htEndPt1.nOffset};
 		}else{
 			var nTextNodeIdx2 = -1;
 			var htEndPt2 = {elContainer: this.endContainer, nOffset: this.endOffset};
@@ -1002,7 +1006,7 @@ nhn.HuskyRange = jindo.$Class({
 				elNode2 = nhn.DOMFix.parentNode(elNode2);
 			}
 			var sXPathNode2 = this._getXPath(elNode2);
-			var oBookmark2 = {sXPath:sXPathNode2, nTextNodeIdx:nTextNodeIdx2, nOffset: htEndPt2.nOffset};
+			oBookmark2 = {sXPath:sXPathNode2, nTextNodeIdx:nTextNodeIdx2, nOffset: htEndPt2.nOffset};
 		}
 		return [oBookmark1, oBookmark2];
 	},
@@ -1058,7 +1062,7 @@ nhn.HuskyRange = jindo.$Class({
 		oEndMarker.id = this.HUSKY_BOOMARK_END_ID_PREFIX+sTmpId;
 		oInsertionPoint.insertNode(oEndMarker);
 
-		var oInsertionPoint = this.cloneRange();
+		oInsertionPoint = this.cloneRange();
 		oInsertionPoint.collapseToStart();
 		var oStartMarker = this._document.createElement("SPAN");
 		oStartMarker.id = this.HUSKY_BOOMARK_START_ID_PREFIX+sTmpId;
@@ -1070,11 +1074,15 @@ nhn.HuskyRange = jindo.$Class({
 			// TD와 TD사이에서는 텍스트 삽입이 필요 없음으로 그냥 try/catch로 처리
 			try{
 				oStartMarker.innerHTML = unescape("%uFEFF");
-			}catch(e){}
+			}catch(e){
+				// console.warn(e);
+			}
 			
 			try{
 				oEndMarker.innerHTML = unescape("%uFEFF");
-			}catch(e){}
+			}catch(e){
+				// console.warn(e);
+			}
 		}
 		this.moveToBookmark(sTmpId);
 
@@ -1101,7 +1109,7 @@ nhn.HuskyRange = jindo.$Class({
 		oEndMarker.id = this.HUSKY_BOOMARK_END_ID_PREFIX+sTmpId;
 		elInsertParent.insertBefore(oEndMarker, elInsertBefore);
 
-		var oInsertionPoint = this.cloneRange();
+		oInsertionPoint = this.cloneRange();
 		oInsertionPoint.collapseToStart();
 		elInsertBefore = this._document.createTextNode("");
 		oInsertionPoint.insertNode(elInsertBefore);
@@ -1532,8 +1540,7 @@ nhn.HuskyRange = jindo.$Class({
 		
 		var bUnderline = false,
 			bLineThrough = false,
-			sTextDecoration = "",
-			oParentNode = null;
+			oParentNode = null,
 			oChildNode = oNode.firstChild;
 		
 		/* check child */
@@ -1589,10 +1596,10 @@ nhn.HuskyRange = jindo.$Class({
 		var aStyleParents = this.aStyleParents = this._getStyleParentNodes(sNewSpanMarker, bIncludeLI);
 		if(aStyleParents.length < 1){return;}
 
-		var sName, sValue;
+		var sName, sValue, x;
 
 		for(var i=0; i<aStyleParents.length; i++){
-			for(var x in oStyle){
+			for(x in oStyle){
 				sName = x;
 				sValue = oStyle[sName];
 
@@ -1608,7 +1615,7 @@ nhn.HuskyRange = jindo.$Class({
 
 			if(!oAttribute){continue;}
 
-			for(var x in oAttribute){
+			for(x in oAttribute){
 				sName = x;
 				sValue = oAttribute[sName];
 
@@ -1674,7 +1681,7 @@ nhn.HuskyRange = jindo.$Class({
 		var aResult = [];
 		var nResult = 0;
 
-		var oNode, oTmpNode, iStartRelPos, iEndRelPos, oSpan;
+		var oNode, oSpan;
 		var nInitialLength = aAllNodes.length;
 		var arAllBottomNodes = jindo.$A(aAllNodes).filter(function(v){return (!v.firstChild || (bIncludeLI && v.tagName=="LI"));});
 
@@ -1979,7 +1986,7 @@ nhn.HuskyRange = jindo.$Class({
 	},
 
 	getLineInfo : function(bAfter){
-		var bAfter = bAfter || false;
+		bAfter = bAfter || false;
 		
 		var oSNode = this.getStartNode();
 		var oENode = this.getEndNode();
@@ -2175,11 +2182,11 @@ nhn.BrowserSelectionImpl_IE = function(){
 	this.getRangeAt = function(iNum){
 		iNum = iNum || 0;
 
-		var oW3CRange, oBrowserRange;
+		var oW3CRange, oBrowserRange, oSelectedNode;
 		if(this._oSelection.type == "Control"){
 			oW3CRange = new nhn.W3CDOMRange(this._window);
 
-			var oSelectedNode = this._oSelection.createRange().item(iNum);
+			oSelectedNode = this._oSelection.createRange().item(iNum);
 
 			// if the selction occurs in a different document, ignore
 			if(!oSelectedNode || oSelectedNode.ownerDocument != this._document){return oW3CRange;}
@@ -2191,7 +2198,7 @@ nhn.BrowserSelectionImpl_IE = function(){
 			//oBrowserRange = this._oSelection.createRangeCollection().item(iNum);
 			oBrowserRange = this._oSelection.createRange();
 
-			var oSelectedNode = oBrowserRange.parentElement();
+			oSelectedNode = oBrowserRange.parentElement();
 
 			// if the selction occurs in a different document, ignore
 			if(!oSelectedNode || oSelectedNode.ownerDocument != this._document){
@@ -2382,7 +2389,7 @@ nhn.BrowserSelectionImpl_IE = function(){
 			oPrevNonTextNode = aChildNodes[i];
 		}
 
-		var pointRangeIdx = i;
+		pointRangeIdx = i;
 
 		if(pointRangeIdx !== 0 && aChildNodes[pointRangeIdx-1].nodeType == 3){
 			var oRgTextStart = this._document.body.createTextRange();
@@ -2408,7 +2415,7 @@ nhn.BrowserSelectionImpl_IE = function(){
 			}
 
 			// this will enforce IE to re-reference oCurTextNode
-			var oTmp = oCurTextNode.nodeValue;
+			oCurTextNode.nodeValue;
 			
 			if(bStartPt && oCurTextNode.nextSibling && oCurTextNode.nextSibling.nodeType == 3 && textCount == oCurTextNode.nodeValue.length){
 				textCount -= oCurTextNode.nodeValue.length;
@@ -2457,7 +2464,7 @@ nhn.DOMFix = new (jindo.$Class({
 		var nCount = 0;
 
 		if(elNode){
-			var aResult = [];
+			aResult = [];
 			elNode = elNode.firstChild;
 			while(elNode){
 				aResult[nCount++] = elNode;

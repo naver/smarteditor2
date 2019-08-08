@@ -48,7 +48,7 @@ nhn.husky.SE_WYSIWYGStyler = jindo.$Class({
 		}
 	},
 	
-	$PRECONDITION : function(sFullCommand, aArgs){
+	$PRECONDITION : function(/*sFullCommand, aArgs*/){
 		return (this.oApp.getEditingMode() == "WYSIWYG");
 	},
 
@@ -188,7 +188,8 @@ nhn.husky.SE_WYSIWYGStyler = jindo.$Class({
 			// [SMARTEDITORSUS-2237] IE11 에서 엑셀을 복사붙여넣기하면 유효하지 않은 위치(tbody, tr, td 사이)에 font 태그가 삽입된다.
 			// oSelection.styleRange 을 실행하면 유효하지 않은 위치의 태그들에 스타일지정용 span 이 삽입되어 테이블이 깨지게 된다.
 			// 때문에 styleRange 실행전에 잘못된 노드들을 제거해준다.
-			for(var i = 0, aNodes = oSelection.getNodes(), oNode;(oNode = aNodes[i]); i++){
+			aNodes = oSelection.getNodes();
+			for(var i = 0, oNode;(oNode = aNodes[i]); i++){
 				nhn.husky.SE2M_Utils.removeInvalidNodeInTable(oNode);
 			}
 
@@ -212,7 +213,8 @@ nhn.husky.SE_WYSIWYGStyler = jindo.$Class({
 			// 	-> Cannot monitor clicks/cursor position real-time so make the contents error-proof instead.
 			if(jindo.$Agent().navigator().firefox){
 				var aStyleParents = oSelection.aStyleParents;
-				for(var i=0, nLen=aStyleParents.length; i<nLen; i++){
+				var nLen=aStyleParents.length;
+				for(i=0; i<nLen; i++){
 					var elNode = aStyleParents[i];
 					if(elNode.nextSibling && elNode.nextSibling.tagName == "BR" && !elNode.nextSibling.nextSibling){
 						elNode.parentNode.removeChild(elNode.nextSibling);

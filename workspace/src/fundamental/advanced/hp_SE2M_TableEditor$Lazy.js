@@ -201,7 +201,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		this.oApp.exec("RECORD_UNDO_ACTION", ["CHANGE_TABLE_STYLE", {elSaveTarget:elSaveTarget, sSaveTarget : sSaveTarget, bDontSaveSelection:true}]); 
 	},
 
-	$BEFORE_CHANGE_EDITING_MODE : function(sMode, bNoFocus){
+	$BEFORE_CHANGE_EDITING_MODE : function(sMode/*, bNoFocus*/){
 		if(sMode !== "WYSIWYG" && this.nStatus !== this.STATUS.S_0){
 			this._changeTableEditorStatus(this.STATUS.S_0);
 		}
@@ -349,7 +349,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		var sImageName = "pattern_";
 
 		if(n === "0"){
-			for(var i = 0, nLen = this.aSelectedCells.length; i < nLen; i++){
+			for(i = 0, nLen = this.aSelectedCells.length; i < nLen; i++){
 				jindo.$Element(this.aSelectedCells[i]).css("backgroundImage", "");
 				this.aSelectedCells[i].removeAttribute(this.TMP_BGC_ATTR);
 				this.aSelectedCells[i].removeAttribute(this.TMP_BGIMG_ATTR);
@@ -362,10 +362,10 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			}
 
 			var sBackgroundImage = nhn.husky.SE2M_Configuration.LinkageDomain.sCommonStatic + "/static/img/" + sImageName;
-			for(var j = 0, nLen = this.aSelectedCells.length; j < nLen ; j++){
-				jindo.$Element(this.aSelectedCells[j]).css("backgroundImage", "url("+sBackgroundImage+")");
-				this.aSelectedCells[j].removeAttribute(this.TMP_BGC_ATTR);
-				this.aSelectedCells[j].setAttribute(this.TMP_BGIMG_ATTR, "url("+sBackgroundImage+")");
+			for(i = 0, nLen = this.aSelectedCells.length; i < nLen ; i++){
+				jindo.$Element(this.aSelectedCells[i]).css("backgroundImage", "url("+sBackgroundImage+")");
+				this.aSelectedCells[i].removeAttribute(this.TMP_BGC_ATTR);
+				this.aSelectedCells[i].setAttribute(this.TMP_BGIMG_ATTR, "url("+sBackgroundImage+")");
 			}
 		} 
 		this.sQEAction = "TABLE_SET_BGIMAGE";
@@ -452,10 +452,10 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		var welBtnBGIMGPalette = jindo.$Element(this.elBtnBGIMGPalette);
 		
 		if(!!sBackgroundImage){
-			var aPattern = sBackgroundImage.match(/\_[0-9]*/);
+			var aPattern = sBackgroundImage.match(/_[0-9]*/);
 			sPatternInfo = (!!aPattern)?aPattern[0] : "_0";
 			nPatternImage = sPatternInfo.substring(1, sPatternInfo.length);
-			for(var i = 1, nLen = this.aSelectedCells.length; i < nLen; i++){
+			for(i = 1, nLen = this.aSelectedCells.length; i < nLen; i++){
 				if(sBackgroundImage != this.aSelectedCells[i].getAttribute(this.TMP_BGIMG_ATTR)){
 					bAllMatchedImage = false;
 					break;
@@ -464,7 +464,8 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		}
 		
 		var aBtnClassNames = welBtnBGIMGPalette.className().split(/\s/);
-		for(var j = 0, nLen = aBtnClassNames.length; j < nLen; j++){
+		nLen = aBtnClassNames.length;
+		for(var j = 0; j < nLen; j++){
 			if(aBtnClassNames[j].indexOf("cellimg") > 0){
 				welBtnBGIMGPalette.removeClass(aBtnClassNames[j]);
 			}
@@ -507,7 +508,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 //			this.elSelectBoxTemplate.style.position = "static";
 
 			//	this.elPanelReviewBtnArea.style.display = "block"; //My리뷰 버튼 레이어
-			var nTpl = this.parseIntOr0(this.elSelectionStartTable.getAttribute(this.ATTR_REVIEW_TEMPLATE));
+			nTpl = this.parseIntOr0(this.elSelectionStartTable.getAttribute(this.ATTR_REVIEW_TEMPLATE));
 			
 			this.elPanelBGImg.style.position = "relative";
 		}else{
@@ -605,10 +606,9 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		var i, elFirstTD, elTD;
 
 		elFirstTD = this.aSelectedCells[0];
-		var elTable = nhn.husky.SE2M_Utils.findAncestorByTagName("TABLE", elFirstTD);
 		
 		var nHeight, nWidth;
-		var elCurTD, elLastTD = this.aSelectedCells[0];
+		var curTD, elLastTD = this.aSelectedCells[0];
 		nHeight = parseInt(elLastTD.style.height || elLastTD.getAttribute("height"), 10);
 		nWidth = parseInt(elLastTD.style.width || elLastTD.getAttribute("width"), 10);
 		//nHeight = elLastTD.offsetHeight;
@@ -796,7 +796,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			}
 		}
 
-		for(var i = 0, nLen = this.aSelectedCells.length; i < nLen; i++){
+		for(i = 0, nLen = this.aSelectedCells.length; i < nLen; i++){
 			elCurCell = this.aSelectedCells[i];
 			nSpan = parseInt(elCurCell.getAttribute("colSpan"), 10) || 1;
 			nNewSpan = (nSpan/2).toFixed(0);
@@ -835,7 +835,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		
 		this.htMap = this._getCellMapping(this.elSelectionStartTable);
 
-		var htPos = this._getBasisCellPosition(elLastCell);
+		htPos = this._getBasisCellPosition(elLastCell);
 		this.htSelectionEPos.x = htPos.x;
 
 		this._selectCells(this.htSelectionSPos, this.htSelectionEPos);
@@ -846,7 +846,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 	},
 	
 	$ON_TE_SPLIT_ROW : function(){
-		var nSpan, nNewSpan, nHeight, nHeight;
+		var nSpan, nNewSpan, nHeight;
 		var elCurCell, elNewTD, htPos, elNewTR;
 		
 		if(this.aSelectedCells.length === 0) {
@@ -888,7 +888,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		aTR = jindo.$$(">TBODY>TR", this.elSelectionStartTable, {oneTimeOffCache:true});
 		
 		var htPos1, htPos2;
-		for(var i = 0, nLen = this.aSelectedCells.length; i < nLen; i++){
+		for(i = 0, nLen = this.aSelectedCells.length; i < nLen; i++){
 			elCurCell = this.aSelectedCells[i];
 			nSpan = parseInt(elCurCell.getAttribute("rowSpan"), 10) || 1;
 			nNewSpan = (nSpan/2).toFixed(0);
@@ -906,7 +906,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			if(nHeight){
 				nHeight = this.parseIntOr0(nHeight);
 				elCurCell.removeAttribute("height");
-				nNewHeight = (nHeight/2).toFixed();
+				var nNewHeight = (nHeight/2).toFixed();
 				elCurCell.style.height = nNewHeight + "px";
 				elNewTD.style.height = (nHeight - nNewHeight) + "px";
 			}
@@ -942,7 +942,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			// [SMARTEDITORSUS-2155] Win10 Spartan
 			var htBrowser = jindo.$Agent().navigator();
 			if((htBrowser.edge && (Math.floor(htBrowser.version) === 12)) || (htBrowser.ie && (htBrowser.nativeVersion >= 9 || htBrowser.nativeVersion <= 11) && (htBrowser.version >= 9 || htBrowser.version <= 11))){
-				elNewTD.style.cssText = elNewTD.style.cssText;
+				elNewTD.style.cssText = elNewTD.style.cssText;	// eslint-disable-line no-self-assign
 			}
 			// --[SMARTEDITORSUS-1745][SMARTEDITORSUS-1842][SMARTEDITORSUS-2155]
 		}
@@ -1080,7 +1080,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 				// show selection
 				// [SMARTEDITORSUS-1672]
 				//var elTD = nhn.husky.SE2M_Utils.findAncestorByTagName("TD", wevE.element);
-				var elTD = nhn.husky.SE2M_Utils.findClosestAncestorAmongTagNames(this._aCellName, wevE.element);
+				elTD = nhn.husky.SE2M_Utils.findClosestAncestorAmongTagNames(this._aCellName, wevE.element);
 				// --[SMARTEDITORSUS-1672]
 				if(!elTD || elTD === this.elLastSelectedTD){return;}
 	
@@ -1117,12 +1117,12 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 					}
 				}else{
 					if(nYPos > this.htEditingAreaPos.bottom){
-						var y = this.htSelectionEPos.y;
+						y = this.htSelectionEPos.y;
 						if(y < this.htMap[0].length - 1){
 							this.htSelectionEPos.y++;
 							this._selectCells(this.htSelectionSPos, this.htSelectionEPos);
 	
-							var oSelection = this.oApp.getSelection();
+							oSelection = this.oApp.getSelection();
 							oSelection.selectNodeContents(this.htMap[this.htSelectionEPos.x][this.htSelectionEPos.y]);
 							oSelection.select();
 							oSelection.oBrowserSelection.selectNone();
@@ -1136,19 +1136,19 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 						this.htSelectionSPos.x--;
 						this._selectCells(this.htSelectionSPos, this.htSelectionEPos);
 	
-						var oSelection = this.oApp.getSelection();
+						oSelection = this.oApp.getSelection();
 						oSelection.selectNodeContents(this.aSelectedCells[0]);
 						oSelection.select();
 						oSelection.oBrowserSelection.selectNone();
 					}
 				}else{
 					if(nXPos > this.htEditingAreaPos.right){
-						var x = this.htSelectionEPos.x;
+						x = this.htSelectionEPos.x;
 						if(x < this.htMap.length - 1){
 							this.htSelectionEPos.x++;
 							this._selectCells(this.htSelectionSPos, this.htSelectionEPos);
 	
-							var oSelection = this.oApp.getSelection();
+							oSelection = this.oApp.getSelection();
 							oSelection.selectNodeContents(this.htMap[this.htSelectionEPos.x][this.htSelectionEPos.y]);
 							oSelection.select();
 							oSelection.oBrowserSelection.selectNone();
@@ -1167,7 +1167,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		this._eventEditingAreaMouseup(wevE);
 	},
 	
-	_eventEditingAreaMouseup : function(wevE){
+	_eventEditingAreaMouseup : function(/*wevE*/){
 		if(this.oApp.getEditingMode() != "WYSIWYG"){return;}
 
 		switch(this.nStatus){
@@ -1224,8 +1224,6 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		var aAllCellsWithSizeInfo = new Array(allCells[0].length + allCells[1].length);
 		var numCells = 0;
 		
-		var nTblBorderPadding = this.parseIntOr0(elTable.border);
-		var nTblCellPadding = this.parseIntOr0(elTable.cellPadding);
 
 		// remember all the dimensions first and then assign later.
 		// this is done this way because if the table/cell size were set in %, setting one cell size would change size of other cells, which are still yet in %.
@@ -1235,7 +1233,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 				var elCell = allCells[n][i];
 				var welCell = jindo.$Element(elCell);
 				
-				var htBrowser = jindo.$Agent().navigator();
+				// var htBrowser = jindo.$Agent().navigator();
 				
 				// [SMARTEDITORSUS-1427][SMARTEDITORSUS-1431][SMARTEDITORSUS-1491][SMARTEDITORSUS-1504] IE9, 10에서 Jindo.$Element#css 가 빈 속성값을 1px로 가져오는 문제점이 있어 대체
 				/*var nPaddingLeft = this.parseIntOr0(welCell.css("paddingLeft"));
@@ -1339,7 +1337,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		}
 		// --[SMARTEDITORSUS-2136]
 		
-		for(var i = 0; i < numCells; i++){
+		for(i = 0; i < numCells; i++){
 			var aCellInfo = aAllCellsWithSizeInfo[i];
 
 			aCellInfo[0].removeAttribute("width");
@@ -1416,10 +1414,8 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		}
 		// --[SMARTEDITORSUS-1504]
 		
-		var nHeightChange = oEvent.pos().clientY - this.nStartHeight;
-		var nWidthChange = oEvent.pos().clientX - this.nStartWidth;
 
-		var oEventPos = oEvent.pos();
+		// var oEventPos = oEvent.pos();
 
 		// [SMARTEDITORSUS-1504] 표 리사이즈용 gripper의 배치를 WYSIWYG 편집 영역 위치 기반으로 개선
 		/*if(this.htResizing.nResizeMode == 1){
@@ -1498,8 +1494,8 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		}
 			
 		var aCellsAfter = this.htAllAffectedCells.aCellsAfter;
-		for(var i = 0; i < aCellsAfter.length; i++){
-			var elCell = aCellsAfter[i];
+		for(i = 0; i < aCellsAfter.length; i++){
+			elCell = aCellsAfter[i];
 
 			// [SMARTEDITORSUS-1655]
 			width = 0, height = 0;
@@ -1686,11 +1682,11 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		var elCellWidth = this.htResizing.elCell.clientWidth,  
 		elCellHeight = this.htResizing.elCell.clientHeight;
 		
-		nRightBorderCriteria = elCellWidth - this.htResizing.htEPos.offsetX,
+		var nRightBorderCriteria = elCellWidth - this.htResizing.htEPos.offsetX,
 		nBottomBorderCriteria = elCellHeight - this.htResizing.htEPos.offsetY;
 		// --[SMARTEDITORSUS-1504]
 		
- 		// top border of the cell is selected
+		// top border of the cell is selected
 		if(this.htResizing.htEPos.offsetY <= nAdjustedDraggableCellEdge1){
 			// [SMARTEDITORSUS-2136] resizeend 이후 표의 상단 테두리에 resize grip이 생성되면 스크립트 오류를 발생시킨다.
 			var _isFirstRow = false,
@@ -1801,7 +1797,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			// 이후 작업들은 오른쪽 경계를 기준으로 일괄처리
 			this.htResizing.nResizeMode = 1;
 		}
-		 // --[SMARTEDITORSUS-1504]
+		// --[SMARTEDITORSUS-1504]
 	},
 	
 	_getAllAffectedCells : function(basis_x, basis_y, iResizeMode, oTable){
@@ -1832,11 +1828,11 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			}
 			
 			if(oTbl.length > basis_x+1){
-				for(var y = 0; y < iTblY; y++){
+				for(y = 0; y < iTblY; y++){
 					if(aCellsAfter.length>0 && aCellsAfter[aCellsAfter.length-1] == oTbl[basis_x+1][y]){continue;}
 					aCellsAfter[aCellsAfter.length] = oTbl[basis_x+1][y];
 
-					var nWidth = parseInt(oTbl[basis_x + 1][y].style.width);
+					nWidth = parseInt(oTbl[basis_x + 1][y].style.width);
 					if(nMinAfter == -1 || nMinAfter > nWidth){
 						nMinAfter = nWidth;
 					}
@@ -1866,7 +1862,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			this.elTmp.innerHTML = '<div style="position:absolute; overflow:hidden; z-index: 99; "><div onmousedown="return false" style="background-color:#000000;filter:alpha(opacity=0);opacity:0.0;-moz-opacity:0.0;-khtml-opacity:0.0;cursor: col-resize; left: 0px; top: 0px; width: 100%; height: 100%;font-size:1px;z-index: 999; "></div></div>';
 			this.elResizeGrid = this.elTmp.firstChild;
 			this.elResizeCover = this.elResizeGrid.firstChild;
-		}catch(e){}
+		}catch(e){/**/}
 		
 		// [SMARTEDITORSUS-1504] gripper를 WYSIWYG 편집 영역 위치 정보에 기반하여 배치하도록 개선
 		//document.body.appendChild(this.elResizeGrid);
@@ -1908,13 +1904,13 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		var nSelectionWidth = this.htSelectionEPos.x - this.htSelectionSPos.x + 1;
 		var nWidth = this.htMap.length;
 		if(nSelectionWidth == nWidth){
-			for(var i = 0, nLen = aTR.length; i < nLen; i++){
+			for(i = 0, nLen = aTR.length; i < nLen; i++){
 				elTmp = aTR[i];
 
 				// There can be empty but necessary TR's because of Rowspan
 				if(!this.htMap[0][i] || !this.htMap[0][i].parentNode || this.htMap[0][i].parentNode.tagName !== "TR"){
 					// [SMARTEDITORSUS-1533] 삭제되는 행 바로 뒤에 인접한 빈 텍스트 노드도 함께 삭제하여 DOM 트리 일관성 유지
-					var htBrowser = jindo.$Agent().navigator();
+					htBrowser = jindo.$Agent().navigator();
 					if(htBrowser.ie && (htBrowser.nativeVersion == 9 || htBrowser.nativeVersion == 10) && (htBrowser.version == 9 || htBrowser.version == 10)){
 						this._removeEmptyTextNode_IE(elTmp);
 					}
@@ -1939,7 +1935,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		this._hideTableTemplate(this.elSelectionStartTable);
 
 		var aTR = jindo.$$(">TBODY>TR", this.elSelectionStartTable, {oneTimeOffCache:true});
-		var sInserted;
+		// var sInserted;
 		var sTmpAttr_Inserted = "_tmp_inserted";
 		var elCell, elCellClone, elCurTR, elInsertionPt;
 		// copy each cells in the following order: top->down, right->left
@@ -1995,7 +1991,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 				// [SMARTEDITORSUS-1742][SMARTEDITORSUS-1842] 배경색이 바로 반영되지 않는 버그로 인해 명시
 				// [SMARTEDITORSUS-2155] Win10 Spartan
 				if((htBrowser.edge && (Math.floor(htBrowser.version) === 12)) || (htBrowser.ie && (htBrowser.nativeVersion >= 9 || htBrowser.nativeVersion <= 11) && (htBrowser.version >= 9 || htBrowser.version <= 11))){
-					elCellClone.style.cssText = elCellClone.style.cssText;
+					elCellClone.style.cssText = elCellClone.style.cssText;	// eslint-disable-line no-self-assign
 				}
 				// --[SMARTEDITORSUS-1742][SMARTEDITORSUS-1842][SMARTEDITORSUS-2155]
 			}
@@ -2006,7 +2002,6 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		}
 
 		var nSelectionWidth = this.htSelectionEPos.x - this.htSelectionSPos.x + 1;
-		var nSelectionHeight = this.htSelectionEPos.y - this.htSelectionSPos.y + 1;
 		this.htSelectionSPos.x += nSelectionWidth;
 		this.htSelectionEPos.x += nSelectionWidth;
 
@@ -2065,7 +2060,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 				// 배경색을 복사하기 위해 준비
 				var aCellClone = elRowClone.childNodes;
 
-				for(var i = 0, len = aCellClone.length; i < len; i++){
+				for(i = 0, len = aCellClone.length; i < len; i++){
 					var elCloneTD = aCellClone[i];
 					
 					var elPreviousTD = aPreviousSibling[i];
@@ -2084,7 +2079,6 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			// --[SMARTEDITORSUS-991]
 		}
 
-		var nSelectionWidth = this.htSelectionEPos.x - this.htSelectionSPos.x + 1;
 		var nSelectionHeight = this.htSelectionEPos.y - this.htSelectionSPos.y + 1;
 		this.htSelectionSPos.y += nSelectionHeight;
 		this.htSelectionEPos.y += nSelectionHeight;
@@ -2202,7 +2196,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			if(!elCell){continue;}
 			if(!elCell.tagName || !elCell.tagName.match(/^TD|TH$/)){elCell = this._getNextCell(elCell);}
 
-			var x = -1;
+			x = -1;
 			while(elCell){
 				x++;
 				if(!aCellMapping[x]){aCellMapping[x] = [];}
@@ -2232,16 +2226,17 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		// (상단 TD의 rowspan만으로 지탱되는) 빈 TR이 있을 경우 IE7 이하에서 랜더링 오류가 발생 할 수 있어 빈 TR을 지워 줌
 		var bRowRemoved = false;
 		var elLastCell = null;
-		for(var y = 0, nRealY = 0, nYLen = aCellMapping[0].length; y < nYLen; y++, nRealY++){
+        var nRealY = 0, nYLen = aCellMapping[0].length, nXLen;
+		for(y = 0; y < nYLen; y++, nRealY++){
 			elLastCell = null;
 			if(!aTR[y].innerHTML.match(/TD|TH/i)){
-				for(var x = 0, nXLen = aCellMapping.length; x < nXLen; x++){
+				for(x = 0, nXLen = aCellMapping.length; x < nXLen; x++){
 					elCell = aCellMapping[x][y];
 					if(!elCell || elCell === elLastCell){
 						continue;
 					}
 					elLastCell = elCell;
-					var rowSpan = parseInt(elCell.getAttribute("rowSpan"), 10) || 1;
+					rowSpan = parseInt(elCell.getAttribute("rowSpan"), 10) || 1;
 
 					if(rowSpan > 1){
 						elCell.setAttribute("rowSpan", rowSpan - 1);
@@ -2352,7 +2347,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 	},
 
 	_expandAndSelect : function(htPos1, htPos2){
-		var x, y, elTD, nTmp, i;
+		var x, y, elTD, nTmp;
 
 		// expand top
 		if(htPos1.y > 0){
@@ -2504,7 +2499,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		}
 		// [SMARTEDITORSUS-1672]
 		var aTH = jindo.$$(">TBODY>TR>TH", elTable, {oneTimeOffCache:true});
-		for(var i = 0, nLen = aTH.length; i < nLen; i++){
+		for(i = 0, nLen = aTH.length; i < nLen; i++){
 			aTH[i].style.padding = "";
 			aTH[i].style.border = "";
 			aTH[i].style.backgroundColor = "";
@@ -2546,8 +2541,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 
 		var nStartRowNum = 0;
 		if(ht1stRowStyle){
-			var nStartRowNum = 1;
-			 
+			nStartRowNum = 1;
 			for(var ii = 0, nNumCells = aTR[0].childNodes.length; ii < nNumCells; ii++){
 				elTmp = aTR[0].childNodes[ii];
 				if(!elTmp.tagName || !elTmp.tagName.match(/^TD|TH$/)){continue;}
@@ -2577,9 +2571,9 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 
 		if(aRowStyle){
 			var nNumStyles = aRowStyle.length;
-			for(var i = nStartRowNum, nLen = aTR.length; i < nLen; i++){
-				for(var ii = 0, nNumCells = aTR[i].childNodes.length; ii < nNumCells; ii++){
-					var elTmp = aTR[i].childNodes[ii];
+			for(i = nStartRowNum, nLen = aTR.length; i < nLen; i++){
+				for(ii = 0, nNumCells = aTR[i].childNodes.length; ii < nNumCells; ii++){
+					elTmp = aTR[i].childNodes[ii];
 					if(!elTmp.tagName || !elTmp.tagName.match(/^TD|TH$/)){continue;}
 					this._copyStylesTo(elTmp, aRowStyle[(i+nStartRowNum)%nNumStyles], bClearStyle);
 				}

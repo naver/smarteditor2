@@ -57,18 +57,18 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 	$ON_MSG_APP_READY : function(){
 		this.htAccessOption = nhn.husky.SE2M_Configuration.SE2M_Accessibility || {};
 		this.oApp.exec("REGISTER_HOTKEY", ["alt+F10", "FOCUS_TOOLBAR_AREA", []]); 
-        this.oApp.exec("REGISTER_HOTKEY", ["alt+COMMA", "FOCUS_BEFORE_ELEMENT", []]);
-        this.oApp.exec("REGISTER_HOTKEY", ["alt+PERIOD", "FOCUS_NEXT_ELEMENT", []]);
+		this.oApp.exec("REGISTER_HOTKEY", ["alt+COMMA", "FOCUS_BEFORE_ELEMENT", []]);
+		this.oApp.exec("REGISTER_HOTKEY", ["alt+PERIOD", "FOCUS_NEXT_ELEMENT", []]);
 
-        if (this.sLang && this.sLang !== 'ko_KR')  {
-        	 	//do nothing
-                return;
-        } else {
-                this.oApp.exec("REGISTER_HOTKEY", ["alt+0", "OPEN_HELP_POPUP", []]);  
-                
-                //[SMARTEDITORSUS-1327] IE 7/8에서 ALT+0으로 팝업 띄우고 esc클릭시 팝업창 닫히게 하려면 아래 부분 꼭 필요함. (target은 document가 되어야 함!)
-                this.oApp.exec("REGISTER_HOTKEY", ["esc", "CLOSE_HELP_POPUP", [], document]);  
-        }   
+		if (this.sLang && this.sLang !== 'ko_KR')  {
+			//do nothing
+			return;
+		} else {
+			this.oApp.exec("REGISTER_HOTKEY", ["alt+0", "OPEN_HELP_POPUP", []]);  
+
+			//[SMARTEDITORSUS-1327] IE 7/8에서 ALT+0으로 팝업 띄우고 esc클릭시 팝업창 닫히게 하려면 아래 부분 꼭 필요함. (target은 document가 되어야 함!)
+			this.oApp.exec("REGISTER_HOTKEY", ["esc", "CLOSE_HELP_POPUP", [], document]);  
+		}
 
 		//[SMARTEDITORSUS-1353]
 		if (this.htAccessOption.sTitleElementId) {
@@ -84,23 +84,22 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 		}
 	},
 	
-	$LOCAL_BEFORE_FIRST : function(sMsg){
+	$LOCAL_BEFORE_FIRST : function(/*sMsg*/){
 		jindo.$Fn(jindo.$Fn(this.oApp.exec, this.oApp).bind("CLOSE_HELP_POPUP", [this.oCloseButton]), this).attach(this.oCloseButton, "click");
 		jindo.$Fn(jindo.$Fn(this.oApp.exec, this.oApp).bind("CLOSE_HELP_POPUP", [this.oCloseButton2]), this).attach(this.oCloseButton2, "click");
 	
 		//레이어의 이동 범위 설정.
 		var elIframe = this.oApp.getWYSIWYGWindow().frameElement;
-        this.htOffsetPos = jindo.$Element(elIframe).offset();
-        this.nEditorWidth = elIframe.offsetWidth;
+		this.htOffsetPos = jindo.$Element(elIframe).offset();
+		this.nEditorWidth = elIframe.offsetWidth;
 
-        this.htInitialPos = this.welHelpPopupLayer.offset();
-        var htScrollXY = this.oApp.oUtils.getScrollXY();
+		this.htInitialPos = this.welHelpPopupLayer.offset();
 
-        this.nLayerWidth = 590;   
-        this.nLayerHeight = 480;   		
+		this.nLayerWidth = 590;
+		this.nLayerHeight = 480;
 
-        this.htTopLeftCorner = {x:parseInt(this.htOffsetPos.left, 10), y:parseInt(this.htOffsetPos.top, 10)};
-        //[css markup] left:11 top:74로 되어 있음
+		this.htTopLeftCorner = {x:parseInt(this.htOffsetPos.left, 10), y:parseInt(this.htOffsetPos.top, 10)};
+		//[css markup] left:11 top:74로 되어 있음
 	},
 
 	/**
@@ -123,7 +122,7 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 			this._currentNextFocusElement.focus();
 		}else if(parent && parent.nhn && parent.nhn.husky && parent.nhn.husky.EZCreator && parent.nhn.husky.EZCreator.elIFrame){
 			parent.focus();
-			if(this._currentNextFocusElement = this._findNextFocusElement(parent.nhn.husky.EZCreator.elIFrame)){
+			if((this._currentNextFocusElement = this._findNextFocusElement(parent.nhn.husky.EZCreator.elIFrame))){
 				this._currentNextFocusElement.focus();
 			}
 		}
@@ -264,7 +263,7 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 					}
 				}
 			}else{
-				for(var i=0, len = node.childNodes.length; i < len; i++){
+				for(i=0, len = node.childNodes.length; i < len; i++){
 					self._recursivePreorderTraversalFilter(node.childNodes[i], filterFunction);
 					if(!!this._bStopFindingNextElement){
 						break;
@@ -316,7 +315,7 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 			this._currentPreviousFocusElement.focus();
 		}else if(parent && parent.nhn && parent.nhn.husky && parent.nhn.husky.EZCreator && parent.nhn.husky.EZCreator.elIFrame){
 			parent.focus();
-			if(this._currentPreviousFocusElement = this._findPreviousFocusElement(parent.nhn.husky.EZCreator.elIFrame)){
+			if((this._currentPreviousFocusElement = this._findPreviousFocusElement(parent.nhn.husky.EZCreator.elIFrame))){
 				this._currentPreviousFocusElement.focus();
 			}
 		}
@@ -376,38 +375,37 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 	},
 	
 	$ON_OPEN_HELP_POPUP : function() {
-        this.oApp.exec("DISABLE_ALL_UI", [{aExceptions: ["se2_accessibility"]}]);
-        this.oApp.exec("SHOW_EDITING_AREA_COVER");
-        this.oApp.exec("SELECT_UI", ["se2_accessibility"]);
+		this.oApp.exec("DISABLE_ALL_UI", [{aExceptions: ["se2_accessibility"]}]);
+		this.oApp.exec("SHOW_EDITING_AREA_COVER");
+		this.oApp.exec("SELECT_UI", ["se2_accessibility"]);
 
-        //아래 코드 없어야 블로그에서도 동일한 위치에 팝업 뜸..
-        //this.elHelpPopupLayer.style.top = this.nDefaultTop+"px";
+		//아래 코드 없어야 블로그에서도 동일한 위치에 팝업 뜸..
+		//this.elHelpPopupLayer.style.top = this.nDefaultTop+"px";
         
-        this.nCalcX = this.htTopLeftCorner.x + this.oApp.getEditingAreaWidth() - this.nLayerWidth;
-        this.nCalcY = this.htTopLeftCorner.y - 30;	// 블로그버전이 아닌 경우 에디터영역을 벗어나는 문제가 있기 때문에 기본툴바(30px) 크기만큼 올려줌 
+		this.nCalcX = this.htTopLeftCorner.x + this.oApp.getEditingAreaWidth() - this.nLayerWidth;
+		this.nCalcY = this.htTopLeftCorner.y - 30;	// 블로그버전이 아닌 경우 에디터영역을 벗어나는 문제가 있기 때문에 기본툴바(30px) 크기만큼 올려줌 
 
-        this.oApp.exec("SHOW_DIALOG_LAYER", [this.elHelpPopupLayer, {
-                elHandle: this.elTitle,
-                nMinX : this.htTopLeftCorner.x + 0,
-                nMinY : this.nDefaultTop + 77,
-                nMaxX : this.nCalcX,
-                nMaxY : this.nCalcY
-        }]);
-	
-        // offset (nTop:Numeric,  nLeft:Numeric)
-        this.welHelpPopupLayer.offset(this.nCalcY, (this.nCalcX)/2); 
-       
-        //[SMARTEDITORSUS-1327] IE에서 포커스 이슈로 IE에 대해서만 window.focus실행함. 
-        if(jindo.$Agent().navigator().ie) {
-        	window.focus();
-        }
+		this.oApp.exec("SHOW_DIALOG_LAYER", [this.elHelpPopupLayer, {
+			elHandle: this.elTitle,
+			nMinX : this.htTopLeftCorner.x + 0,
+			nMinY : this.nDefaultTop + 77,
+			nMaxX : this.nCalcX,
+			nMaxY : this.nCalcY
+		}]);
+
+		// offset (nTop:Numeric,  nLeft:Numeric)
+		this.welHelpPopupLayer.offset(this.nCalcY, (this.nCalcX)/2); 
+
+		//[SMARTEDITORSUS-1327] IE에서 포커스 이슈로 IE에 대해서만 window.focus실행함. 
+		if(jindo.$Agent().navigator().ie) {
+			window.focus();
+		}
         
 		var self = this;
 		setTimeout(function(){
 			try{
 				self.oCloseButton2.focus();
-			}catch(e){
-			}
+			}catch(e){/**/}
 		},200);
 	},
 	

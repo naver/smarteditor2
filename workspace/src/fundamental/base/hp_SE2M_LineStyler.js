@@ -25,7 +25,7 @@ nhn.husky.SE2M_LineStyler = jindo.$Class({
 	
 	$BEFORE_MSG_APP_READY : function() {
 		this.oApp.exec("ADD_APP_PROPERTY", ["getLineStyle", jindo.$Fn(this.getLineStyle, this).bind()]);
-  	},
+	},
 
 	$ON_SET_LINE_STYLE : function(sStyleName, styleValue, htOptions){
 		this.oSelection = this.oApp.getSelection();
@@ -119,7 +119,7 @@ nhn.husky.SE2M_LineStyler = jindo.$Class({
 
 	// height in percentage. For example pass 1 to set the line height to 100% and 1.5 to set it to 150%
 	setLineStyle : function(sStyleName, styleValue, htOptions, nodes){
-		thisRef = this;
+		var thisRef = this;
 		
 		var bWrapperCreated = false;
 		
@@ -315,7 +315,7 @@ nhn.husky.SE2M_LineStyler = jindo.$Class({
 
 		return false;
 	},
- 	_getLineWrapper : function(node){
+	_getLineWrapper : function(node){
 		var oTmpSelection = this.oApp.getEmptySelection();
 		oTmpSelection.selectNode(node);
 		var oLineInfo = oTmpSelection.getLineInfo();
@@ -343,6 +343,6 @@ nhn.husky.SE2M_LineStyler = jindo.$Class({
 		}
 		
 		return div;
- 	}
- });
+	}
+});
 //}

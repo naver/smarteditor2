@@ -57,7 +57,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_FindReplacePlugin, {
 		this.aCloseButtons = jindo.$$("BUTTON.husky_se2m_cancel", this.elDropdownLayer);
 	},
 
-	$LOCAL_BEFORE_FIRST : function(sMsg){
+	$LOCAL_BEFORE_FIRST : function(/* sMsg */){
 		this._assignHTMLElements();
 
 		this.oFindReplace = new nhn.FindReplace(this.oEditingWindow);
@@ -88,8 +88,8 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_FindReplacePlugin, {
 
 		this.elDropdownLayer.style.display = "block";
 		this.htInitialPos = this.welDropdownLayer.offset();
-		var htScrollXY = this.oApp.oUtils.getScrollXY();
-//		this.welDropdownLayer.offset(this.htOffsetPos.top-htScrollXY.y, this.htOffsetPos.left-htScrollXY.x);
+		// var htScrollXY = this.oApp.oUtils.getScrollXY();
+		// this.welDropdownLayer.offset(this.htOffsetPos.top-htScrollXY.y, this.htOffsetPos.left-htScrollXY.x);
 		this.welDropdownLayer.offset(this.htOffsetPos.top, this.htOffsetPos.left);
 		this.htTopLeftCorner = {x:parseInt(this.elDropdownLayer.style.left, 10), y:parseInt(this.elDropdownLayer.style.top, 10)};
 		

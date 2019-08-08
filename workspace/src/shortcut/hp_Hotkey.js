@@ -24,7 +24,7 @@ nhn.husky.Hotkey = jindo.$Class({
 	name : "Hotkey",
 
 	$init : function(){
-		this.oShortcut = shortcut;
+		this.oShortcut = window.shortcut;
 	},
 	
 	$ON_ADD_HOTKEY : function(sHotkey, sCMD, aArgs, elTarget){

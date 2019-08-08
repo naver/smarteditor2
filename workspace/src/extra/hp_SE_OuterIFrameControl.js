@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 /**
  * @pluginDesc 에디터를 싸고 있는 iframe 사이즈 조절을 담당하는 플러그인
  */
-nhn.husky.SE_OuterIFrameControl = $Class({
+nhn.husky.SE_OuterIFrameControl = jindo.$Class({
 	name : "SE_OuterIFrameControl",
 	oResizeGrip : null,
 
@@ -37,17 +37,17 @@ nhn.husky.SE_OuterIFrameControl = $Class({
 		this._assignHTMLObjects(oAppContainer);
 
 		//키보드 이벤트
-		this.$FnKeyDown = $Fn(this._keydown, this);
+		this.$FnKeyDown = jindo.$Fn(this._keydown, this);
 		if(this.oResizeGrip){
 			this.$FnKeyDown.attach(this.oResizeGrip, "keydown");
 		}
 		
 		//마우스 이벤트 
 		if(!!jindo.$Agent().navigator().ie){
-			this.$FnMouseDown = $Fn(this._mousedown, this);
-			this.$FnMouseMove = $Fn(this._mousemove, this);
-			this.$FnMouseMove_Parent = $Fn(this._mousemove_parent, this);
-			this.$FnMouseUp = $Fn(this._mouseup, this);
+			this.$FnMouseDown = jindo.$Fn(this._mousedown, this);
+			this.$FnMouseMove = jindo.$Fn(this._mousemove, this);
+			this.$FnMouseMove_Parent = jindo.$Fn(this._mousemove_parent, this);
+			this.$FnMouseUp = jindo.$Fn(this._mouseup, this);
 			
 			if(this.oResizeGrip){
 				this.$FnMouseDown.attach(this.oResizeGrip, "mousedown");
@@ -58,10 +58,10 @@ nhn.husky.SE_OuterIFrameControl = $Class({
 	_assignHTMLObjects : function(oAppContainer){
 		oAppContainer = jindo.$(oAppContainer) || document;
 
-		this.oResizeGrip = cssquery.getSingle(".husky_seditor_editingArea_verticalResizer", oAppContainer);
+		this.oResizeGrip = jindo.cssquery.getSingle(".husky_seditor_editingArea_verticalResizer", oAppContainer);
 		
 		this.elIFrame = window.frameElement;
-		this.welIFrame = $Element(this.elIFrame);
+		this.welIFrame = jindo.$Element(this.elIFrame);
 	},
 
 	$ON_MSG_APP_READY : function(){
@@ -76,7 +76,7 @@ nhn.husky.SE_OuterIFrameControl = $Class({
 		this.elIFrame.style.height = document.body.offsetHeight+"px";
 	},
 	
-	$AFTER_RESIZE_EDITING_AREA_BY : function(ipWidthChange, ipHeightChange){
+	$AFTER_RESIZE_EDITING_AREA_BY : function(/* ipWidthChange, ipHeightChange */){
 		this.oApp.exec("SE_FIT_IFRAME", []);
 	},
 	
@@ -117,7 +117,7 @@ nhn.husky.SE_OuterIFrameControl = $Class({
 		this.oApp.exec("RESIZE_EDITING_AREA_BY", [0, iHeightChange]);
 	},
 
-	_mouseup : function(oEvent){
+	_mouseup : function(/* oEvent */){
 		this.$FnMouseMove.detach(document, "mousemove");
 		this.$FnMouseMove_Parent.detach(parent.document, "mousemove");
 		this.$FnMouseUp.detach(document, "mouseup");

@@ -77,7 +77,7 @@ nhn.husky.StringConverterManager = jindo.$Class({
 		
 		aConverters = this.oConverters[sRuleName];
 		if(aConverters){
-			for(var i=0; i<aConverters.length; i++){
+			for(i=0; i<aConverters.length; i++){
 				var sTmpContents = aConverters[i](sContents);
 				if(typeof sTmpContents != "undefined"){
 					sContents = sTmpContents;

@@ -56,7 +56,9 @@ nhn.husky.HuskyRangeManager = jindo.$Class({
 		// this may throw an exception if the selected is area is not yet shown
 		try{
 			oHuskyRange.setFromSelection();
-		}catch(e){}
+		}catch(e){
+			// console.warn(e);
+		}
 
 		return oHuskyRange;
 	}

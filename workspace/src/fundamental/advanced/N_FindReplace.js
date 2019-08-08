@@ -58,7 +58,7 @@ nhn.FindReplace = jindo.$Class({
 	// 2: keyword required
 	// 3: browser not supported
 	find : function(sKeyword, bCaseMatch, bBackwards, bWholeWord){
-		var bSearchResult, bFreshSearch;
+		var bSearchResult;
 
 		// [SMARTEDITORSUS-1814] LG브라우저의 경우 focus를 주면 선택영역이 풀리는 문제가 있어서 LG기기가 아닌 경우만 focus를 실행하도록 수정
 		// TODO: this.window.focus() 가 꼭 필요한지 전체적으로 점검해 볼 필요가 있음
@@ -282,8 +282,8 @@ nhn.FindReplace = jindo.$Class({
 	},
 
 	_getNextTextNode : function(elNode, bDisconnected){
-		var htNextNode, elNode;
-		while(true){
+		var htNextNode;
+		while(true){	// eslint-disable-line no-constant-condition
 			htNextNode = this._getNextNode(elNode, bDisconnected);
 			elNode = htNextNode.elNextNode;
 			bDisconnected = htNextNode.bDisconnected;
@@ -354,11 +354,11 @@ nhn.FindReplace = jindo.$Class({
 	
 	replaceAll_js : function(sOriginalWord, Replacement, bCaseMatch, bWholeWord){
 		try{
-			var t0 = new Date();
+			// var t0 = new Date();
 			
 			var htTmp = this._createTextMap();
 			
-			var t1 = new Date();
+			// var t1 = new Date();
 			var aTexts = htTmp.aTexts;
 			var aElTexts = htTmp.aElTexts;
 	

@@ -157,7 +157,7 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
  * @author hooriza
  */
 if (typeof window.TextRange == 'undefined') { window.TextRange = {}; }
-TextRange = function(oEl, oDoc) { 
+TextRange = function(oEl, oDoc) {
 	this._o = oEl;
 	this._oDoc = (oDoc || document);
 };

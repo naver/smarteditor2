@@ -72,7 +72,7 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 			this._bUseConfig = (!!htConfiguration.common && typeof htConfiguration.common.bUseConfig !== "undefined") ? htConfiguration.common.bUseConfig : true;	
 		}
 
-    	if(!this._bUseConfig){	
+		if(!this._bUseConfig){	
 			this.setData("{table:'full',img:'full',review:'full'}");
 		} else {
 			this._sBaseAjaxUrl = htConfiguration.common.sBaseAjaxUrl;
@@ -80,7 +80,7 @@ nhn.husky.SE2M_QuickEditor_Common = jindo.$Class({
 		
 			this.getData();
 		}
-    	this.oApp.registerLazyMessage(["OPEN_QE_LAYER"], ["hp_SE2M_QuickEditor_Common$Lazy.js"]);
+		this.oApp.registerLazyMessage(["OPEN_QE_LAYER"], ["hp_SE2M_QuickEditor_Common$Lazy.js"]);
 	},
 	
 	//삭제 시에 qe layer close

@@ -76,7 +76,7 @@ nhn.DraggableLayer = jindo.$Class({
 		elLayer.style.left = htXY.x + "px";
 	},
 
-	_mouseup : function(elLayer, oEvent){
+	_mouseup : function(elLayer/*, oEvent*/){
 		this.oOptions.fnOnDragEnd();
 
 		this.$FnMouseMove.detach(elLayer.ownerDocument, "mousemove");

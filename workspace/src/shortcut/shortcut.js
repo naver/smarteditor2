@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 function Shortcut(sKey,sId){
-	var sKey = sKey.replace(/\s+/g,"");
+	sKey = sKey.replace(/\s+/g,"");
 	var store = Shortcut.Store;
 	var action = Shortcut.Action;
 	if(typeof sId === "undefined"&&sKey.constructor == String){
@@ -37,7 +37,7 @@ function Shortcut(sKey,sId){
 		return action.init(store.get(fakeId),sKey);
 	}
 	alert(sId+"는 반드시 string이거나  없어야 됩니다.");
-};
+}
 
 
 Shortcut.Store = {
@@ -89,12 +89,12 @@ Shortcut.Store = {
 		}else{
 			return this.datas[sId];
 		}
-	},              
+	}, 
 	reset:function(sId){
 		var data = this.datas[sId];
 		Shortcut.Helper.bind(data.func,data.element,"detach");
 		
-		delete this.datas[sId];		       
+		delete this.datas[sId];
 	},
 	allReset: function(){
 		jindo.$H(this.datas).forEach(jindo.$Fn(function(value,key) {
@@ -156,6 +156,7 @@ Shortcut.Data = jindo.$Class({
 		
 		if(staticFun.notCommonException(weEvent,data.commonExceptions)){
 			jindo.$A(data.events).forEach(function(v){
+				var e;
 				if(data.stopDefalutBehavior){
 					var leng = v.exceptions.length;
 					if(leng){
@@ -168,7 +169,7 @@ Shortcut.Data = jindo.$Class({
 						if(isExcute){
 							v.event(weEvent);
 							if(jindo.$Agent().navigator().ie){
-								var e = weEvent._event;
+								e = weEvent._event;
 								e.keyCode = "";
 								e.charCode = "";
 							}
@@ -179,7 +180,7 @@ Shortcut.Data = jindo.$Class({
 					}else{
 						v.event(weEvent);
 						if(jindo.$Agent().navigator().ie){
-							var e = weEvent._event;
+							e = weEvent._event;
 							e.keyCode = "";
 							e.charCode = "";
 						}
@@ -196,25 +197,27 @@ Shortcut.Data = jindo.$Class({
 				event:fpEvent,
 				exceptions:[]
 			});
-		};
+		}
 	},
 	addException:function(fpException,sRawKey){
 		var commonExceptions = this.keys[sRawKey].commonExceptions;
 		if(!Shortcut.Helper.hasException(fpException,commonExceptions)){
 			commonExceptions.push(fpException);
-		};
+		}
 	},
 	removeException:function(fpException,sRawKey){
+		// TODO: 이게 대체 뭘하는 걸까???
 		var commonExceptions = this.keys[sRawKey].commonExceptions;
-		commonExceptions = jindo.$A(commonExceptions).filter(function(exception){
-								 return exception!=fpException;
-						   }).$value();
+		jindo.$A(commonExceptions).filter(function(exception){
+			return exception!=fpException;
+		}).$value();
 	},
 	removeEvent:function(fpEvent,sRawKey){
+		// TODO: 이게 대체 뭘하는 걸까???
 		var events = this.keys[sRawKey].events;
-		events = jindo.$A(events).filter(function(event) {
-					 return event!=fpEvent;
-				 }).$value();
+		jindo.$A(events).filter(function(event) {
+			return event!=fpEvent;
+		}).$value();
 		this.unRegister(sRawKey);
 	},
 	unRegister:function(sRawKey){
@@ -224,8 +227,8 @@ Shortcut.Data = jindo.$Class({
 			delete this.keys[sRawKey];
 			
 		var hasNotKey = true;
-		for(var i in this.keys){
-			hasNotKey  =false;
+		for(var i in this.keys){	// eslint-disable-line no-unused-vars
+			hasNotKey = false;
 			break;
 		}
 		
@@ -236,10 +239,10 @@ Shortcut.Data = jindo.$Class({
 		
 	},
 	startDefalutBehavior: function(sRawKey){
-		 this._setDefalutBehavior(sRawKey,false);
+		this._setDefalutBehavior(sRawKey,false);
 	},
 	stopDefalutBehavior: function(sRawKey){
-		 this._setDefalutBehavior(sRawKey,true);
+		this._setDefalutBehavior(sRawKey,true);
 	},
 	_setDefalutBehavior: function(sRawKey,bType){
 		this.keys[sRawKey].stopDefalutBehavior = bType;
@@ -258,14 +261,14 @@ Shortcut.Helper = {
 		returnVal += wKeyArray.has("meta")?"1":"0";
 		returnVal += wKeyArray.has("shift")?"1":"0";
 		
-		var wKeyArray = wKeyArray.filter(function(v){
+		wKeyArray = wKeyArray.filter(function(v){
 			return !(v=="alt"||v=="ctrl"||v=="meta"||v=="shift")
 		});
 		var key = wKeyArray.$value()[0];
 		
 		if(key){
 			
-			var sKey  = Shortcut.Store.anthorKeyHash[key.toUpperCase()]||key.toUpperCase().charCodeAt(0);
+			sKey  = Shortcut.Store.anthorKeyHash[key.toUpperCase()]||key.toUpperCase().charCodeAt(0);
 			returnVal += sKey;
 		}
 		
@@ -285,7 +288,7 @@ Shortcut.Helper = {
 			if(aEvents.event==fpEvent){
 				return true;
 			}
-		};
+		}
 		return false;
 	},
 	hasException:function(fpException,commonExceptions){
@@ -294,15 +297,15 @@ Shortcut.Helper = {
 			if(commonExceptions[i]==fpException){
 				return true;
 			}
-		};
+		}
 		return false;
 	},
 	bind:function(wfFunc,oElement,sType){
-	   if(sType=="attach"){
-	   	 domAttach(oElement,"keydown",wfFunc);
-	   }else{
-	   	 domDetach(oElement,"keydown",wfFunc);
-	   }
+		if(sType=="attach"){
+			window.domAttach(oElement,"keydown",wfFunc);
+		}else{
+			window.domDetach(oElement,"keydown",wfFunc);
+		}
 	}
 	
 };
@@ -340,7 +343,7 @@ Shortcut.Action ={
 		return this;
 	},
 	addEvent:function(fpEvent){
-		this.dataInstance.addEvent(fpEvent,this.rawKey);		                                        
+		this.dataInstance.addEvent(fpEvent,this.rawKey);
 		return this;
 	},
 	removeEvent:function(fpEvent){

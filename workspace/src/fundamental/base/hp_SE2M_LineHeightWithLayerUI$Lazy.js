@@ -25,7 +25,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_LineHeightWithLayerUI, {
 	_assignHTMLObjects : function(elAppContainer) {
 		//this.elLineHeightSelect = jindo.$$.getSingle("SELECT.husky_seditor_ui_lineHeight_select", elAppContainer);
 		this.oDropdownLayer = jindo.$$.getSingle("DIV.husky_se2m_lineHeight_layer", elAppContainer);
-		this.aLIOptions = jindo.$A(jindo.$$("LI", this.oDropdownLayer)).filter(function(v,i,a){return (v.firstChild !== null);})._array;
+		this.aLIOptions = jindo.$A(jindo.$$("LI", this.oDropdownLayer)).filter(function(v){return (v.firstChild !== null);})._array;
 		
 		this.oInput = jindo.$$.getSingle("INPUT", this.oDropdownLayer);
 
@@ -142,7 +142,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_LineHeightWithLayerUI, {
 		return elLi.firstChild.firstChild.innerHTML;
 	},
 	
-	_clearOptionSelection : function(elLi){
+	_clearOptionSelection : function(){
 		for(var i=0; i<this.aLIOptions.length; i++){
 			jindo.$Element(this.aLIOptions[i].firstChild).removeClass("active");
 		}

@@ -34,7 +34,7 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 		this._document = this.oHuskyRange._document;
 	},
 	
-	$ON_CHOOSE_REMOVE_STYLE : function(oSelection){
+	$ON_CHOOSE_REMOVE_STYLE : function(/*oSelection*/){
 		var bSelectedBlock = false;
 		var htSelectedTDs = {};
 		this.oApp.exec("IS_SELECTED_TD_BLOCK",['bIsSelectedTd',htSelectedTDs]);
@@ -53,7 +53,7 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 		this.oApp.exec('MSG_NOTIFY_CLICKCR', ['noeffect']);
 	},
 	
-	$ON_REMOVE_STYLE_IN_BLOCK : function(oSelection){
+	$ON_REMOVE_STYLE_IN_BLOCK : function(/*oSelection*/){
 		var htSelectedTDs = {};
 		this.oSelection = this.oApp.getSelection();
 		this.oApp.exec("GET_SELECTED_TD_BLOCK",['aTdCells',htSelectedTDs]);
@@ -81,7 +81,7 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 		this._removeStyle(aNodes);
 		oSelection.moveToBookmark(sBookmarkID);
 
-		var aNodes = oSelection.getNodes(true);
+		aNodes = oSelection.getNodes(true);
 		for(var i=0; i<aNodes.length; i++){
 			var oNode = aNodes[i];
 			
@@ -105,13 +105,14 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 		
 		// use a custom removeStringBookmark here as the string bookmark could've been cloned and there are some additional cases that need to be considered
 
+		var oMarker, oParent, oNextParent;
 		// remove start marker
-		var oMarker = this._document.getElementById(oSelection.HUSKY_BOOMARK_START_ID_PREFIX+sBookmarkID);
+		oMarker = this._document.getElementById(oSelection.HUSKY_BOOMARK_START_ID_PREFIX+sBookmarkID);
 		while(oMarker){
 			oParent = nhn.DOMFix.parentNode(oMarker);
 			oParent.removeChild(oMarker);
 			while(oParent && (!oParent.firstChild || (!oParent.firstChild.nextSibling && oSelection._isBlankTextNode(oParent.firstChild)))){
-				var oNextParent = oParent.parentNode;
+				oNextParent = oParent.parentNode;
 				oParent.parentNode.removeChild(oParent);
 				oParent = oNextParent;
 			}
@@ -119,12 +120,12 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 		}
 
 		// remove end marker
-		var oMarker = this._document.getElementById(oSelection.HUSKY_BOOMARK_END_ID_PREFIX+sBookmarkID);
+		oMarker = this._document.getElementById(oSelection.HUSKY_BOOMARK_END_ID_PREFIX+sBookmarkID);
 		while(oMarker){
 			oParent = nhn.DOMFix.parentNode(oMarker);
 			oParent.removeChild(oMarker);
 			while(oParent && (!oParent.firstChild || (!oParent.firstChild.nextSibling && oSelection._isBlankTextNode(oParent.firstChild)))){
-				var oNextParent = oParent.parentNode;
+				oNextParent = oParent.parentNode;
 				oParent.parentNode.removeChild(oParent);
 				oParent = oNextParent;
 			}
@@ -306,10 +307,10 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 			// bring up selected prev siblings
 			if(arNodes.indexOf(this._getVeryFirst(oNode.parentNode)) != -1){
 				// move
-				var tmp = oNode;
+				tmp = oNode;
 				var lastInserted = parent;
 				while(tmp){
-					var prevNode = tmp.previousSibling;
+					prevNode = tmp.previousSibling;
 					parent.parentNode.insertBefore(tmp, lastInserted);
 					lastInserted = tmp;
 					
@@ -337,10 +338,10 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 				}
 				
 				var oContainer = this._document.createElement("SPAN");
-				var tmp = oNode;
+				tmp = oNode;
 				parent.insertBefore(oContainer, tmp.nextSibling);
 				while(tmp){
-					var prevNode = tmp.previousSibling;
+					prevNode = tmp.previousSibling;
 					oContainer.insertBefore(tmp, oContainer.firstChild);
 
 					if(!prevNode){break;}
@@ -375,7 +376,7 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 			oCopy = oNode;
 		}
 
-		oTop = oTmp.parentNode;
+		var oTop = oTmp.parentNode;
 		oTop.insertBefore(targetNode, oTmp.nextSibling);
 		oTop.insertBefore(oCopy, targetNode.nextSibling);
 	},

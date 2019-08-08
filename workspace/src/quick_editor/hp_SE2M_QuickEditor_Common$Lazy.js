@@ -264,7 +264,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_QuickEditor_Common, {
 	 * 레이어를 숨기는 함수.
 	 * @param {jindo.$Event} weEvent
 	 */
-	layer_hide : function(weEvent){
+	layer_hide : function(/* weEvent */){
 		this.setOpenType(this._currentType,false);
 		
 		jindo.$Element(jindo.$$.getSingle("._"+this._environmentData[this._currentType].type,this.currentEle)).hide();
@@ -420,7 +420,6 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_QuickEditor_Common, {
 			nScrollY = oAppWindow.scrollY;
 		}
 
-		var oEditotOffset = this.woEditor.offset();
 		return {
 			x : oOffset.left - nScrollX + nEleWidth,
 			y : oOffset.top  - nScrollY + nEleHeight

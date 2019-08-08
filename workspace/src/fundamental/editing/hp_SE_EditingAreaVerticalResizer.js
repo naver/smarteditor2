@@ -133,7 +133,7 @@ nhn.husky.SE_EditingAreaVerticalResizer = jindo.$Class({
 		this.oResizeGrip.focus();
 	},
 	
-	_assignHTMLElements : function(elAppContainer, htConversionMode){
+	_assignHTMLElements : function(elAppContainer){
 		//@ec[
 		this.oResizeGrip = jindo.$$.getSingle("BUTTON.husky_seditor_editingArea_verticalResizer", elAppContainer);
 		this.elModeToolbar = jindo.$$.getSingle("DIV.se2_conversion_mode", elAppContainer);
@@ -174,7 +174,7 @@ nhn.husky.SE_EditingAreaVerticalResizer = jindo.$Class({
 		this.oApp.exec("RESIZE_EDITING_AREA_BY", [0, iHeightChange]);
 	},
 
-	_mouseup : function(oEvent){
+	_mouseup : function(){
 		this.$FnMouseMove.detach(document, "mousemove");
 		this.$FnMouseUp.detach(document, "mouseup");
 

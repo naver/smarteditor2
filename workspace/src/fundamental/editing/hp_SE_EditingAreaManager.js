@@ -200,7 +200,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		}
 	},
 
-	$BEFORE_MSG_APP_READY : function(msg){
+	$BEFORE_MSG_APP_READY : function(/*msg*/){
 		this.oApp.exec("ADD_APP_PROPERTY", ["version", nhn.husky.SE_EditingAreaManager.version]);
 		this.oApp.exec("ADD_APP_PROPERTY", ["elEditingAreaContainer", this.elEditingAreaContainer]);
 		this.oApp.exec("ADD_APP_PROPERTY", ["welEditingAreaContainer", jindo.$Element(this.elEditingAreaContainer)]);
@@ -336,7 +336,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		}
 		
 		if(isPopupOpening && this.oApp.bMobile){
-			 return;
+			return;
 		}
 		
 		this.oActivePlugin.focus();
@@ -484,7 +484,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		this.oApp.exec("RESIZE_EDITING_AREA", [iWidth, iHeight]);
 	},
 	
-	$ON_MSG_EDITING_AREA_RESIZE_ENDED : function(FnMouseDown, FnMouseMove, FnMouseUp){
+	$ON_MSG_EDITING_AREA_RESIZE_ENDED : function(/*FnMouseDown, FnMouseMove, FnMouseUp*/){
 		this.oApp.exec("HIDE_EDITING_AREA_COVER");
 		this.elEditingAreaContainer.style.overflow = "";
 		this._setEditingAreaDimension();
@@ -666,7 +666,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 			 * 보장할 수 있기 때문이다.
 			 */
 			elUndesiredContainer = this._findNextSiblingRecursive(elBrContainer);
-			 // <br> container 뒤의 container는 존재해서는 안 된다.
+			// <br> container 뒤의 container는 존재해서는 안 된다.
 			if(elUndesiredContainer){
 				continue;
 			}
@@ -741,9 +741,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	_findNextSiblingRecursive : function(el, htOption){
 		var elTarget = el,
 		elSibling,
-		elParent,
 		isReverse = (htOption && htOption.isReverse) ? true : false,
-		rxParagraph = new RegExp('^(P|DIV)$', 'i'),
 		rxContainer = new RegExp('^(TD|BODY)$', 'i');
 		
 		/*

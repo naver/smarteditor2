@@ -42,7 +42,7 @@ nhn.husky.SE2M_BGColor = jindo.$Class({
 	
 	$BEFORE_MSG_APP_READY : function() {
 		this.oApp.exec("ADD_APP_PROPERTY", ["getLastUsedBackgroundColor", jindo.$Fn(this.getLastUsedBGColor, this).bind()]);
-  	},
+	},
 	
 	$ON_MSG_APP_READY : function(){
 		this.oApp.exec("REGISTER_UI_EVENT", ["BGColorA", "click", "APPLY_LAST_USED_BGCOLOR"]);

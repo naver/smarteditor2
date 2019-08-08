@@ -53,7 +53,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableCreator, {
 		// border style layer contains btn elm's
 		
 		tmp = jindo.$$("SPAN.se2_pre_color>BUTTON", this.elDropdownLayer);
-		 
+
 		this.elBtn_borderColor = tmp[0];
 		this.elBtn_BGColor = tmp[1];
 		
@@ -258,8 +258,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableCreator, {
 		
 		var sTable, 
 			elLinebreak, 
-			elBody, 
-			welBody,
+			elBody,
 			elTmpDiv,
 			elTable,
 			elFirstTD,
@@ -268,7 +267,6 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableCreator, {
 			htBrowser;
 			
 		elBody = this.oApp.getWYSIWYGDocument().body;
-		welBody = jindo.$Element(elBody);
 		htBrowser = jindo.$Agent().navigator();
 		
 		this.nTableWidth = elBody.offsetWidth;
@@ -340,7 +338,6 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableCreator, {
 	_divideParagraph : function(oSelection){
 		var oParentP,
 			welParentP,
-			sNodeVaule,
 			sBM, oSWrapper, oEWrapper;
 			
 		oSelection.fixCommonAncestorContainer();	// [SMARTEDITORSUS-423] 엔터에 의해 생성된 P 가 아닌 이전 P 가 선택되지 않도록 fix 하도록 처리
@@ -645,7 +642,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableCreator, {
 		sRow += "</tr>\n";
 		
 		sTable += "<tbody>";
-		for(var i=0; i<nRows; i++){
+		for(i=0; i<nRows; i++){
 			sTable += sRow;
 		}
 		sTable += "</tbody>\n";
@@ -666,7 +663,6 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableCreator, {
 	
 	_doGetTableString : function(nColumns, nRows, nBorderSize, sBorderColor, sBGColor, nBorderStyleIdx){
 		var nTDWidth = parseInt(this.nTableWidth/nColumns, 10);
-		var nBorderSize = this.nBorderSize;
 		var sTableStyle = this.aTableStyleByBorder[nBorderStyleIdx].replace(/#BorderSize#/g, this.nBorderSize).replace(/#BorderSize\*([0-9]+)#/g, function(sAll, s1){return nBorderSize*parseInt(s1, 10);}).replace(/#BorderSize\+([0-9]+)#/g, function(sAll, s1){return nBorderSize+parseInt(s1, 10);}).replace("#BorderColor#", this.sBorderColor).replace("#BGColor#", this.sBGColor);
 		var sTDStyle = this.aTDStyleByBorder[nBorderStyleIdx].replace(/#BorderSize#/g, this.nBorderSize).replace(/#BorderSize\*([0-9]+)#/g, function(sAll, s1){return nBorderSize*parseInt(s1, 10);}).replace(/#BorderSize\+([0-9]+)#/g, function(sAll, s1){return nBorderSize+parseInt(s1, 10);}).replace("#BorderColor#", this.sBorderColor).replace("#BGColor#", this.sBGColor);
 		if(nTDWidth){
@@ -689,7 +685,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableCreator, {
 		sRow += "</tr>\n";
 		
 		sTable += "<tbody>\n";
-		for(var i=0; i<nRows; i++){
+		for(i=0; i<nRows; i++){
 			sTable += sRow;
 		}
 		sTable += "</tbody>\n";

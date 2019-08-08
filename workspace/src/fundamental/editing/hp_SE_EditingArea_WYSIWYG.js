@@ -102,9 +102,9 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		if(oAgent.ie && jindo.$A(this.aAddtionalEmulateIE7).has(oAgent.nativeVersion)) {
 			this.sIFrameSrc = this.sBlankPageURL_EmulateIE7;
 		}
-		
+
+		iframe = this.iframe;
 		var sIFrameSrc = this.sIFrameSrc,
-			iframe = this.iframe,
 			fHandlerSuccess = jindo.$Fn(this.initIframe, this).bind(),
 			fHandlerFail =jindo.$Fn(function(){this.iframe.src = sIFrameSrc;}, this).bind();
 			
@@ -165,7 +165,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 				}, this
 			).attach(this.iframe.contentWindow.document, "keydown");
 			jindo.$Fn(
-				function(weEvent){
+				function(){
 					this._oIERange = null;
 					this._bIERangeReset = true;
 				}, this
@@ -177,7 +177,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			}
 			
 			jindo.$Fn(
-				function(weEvent){
+				function(){
 					this._bIERangeReset = false;
 				}, this
 			).attach(this.iframe.contentWindow.document.body, "mouseup");
@@ -459,7 +459,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		if(oCurrentStyle){
 			// line-height 값을 배수형으로 보정
 			var nLineHeight = oCurrentStyle.lineHeight;
-			if(nLineHeight && /[^\d\.]/.test(nLineHeight)){ // 배수형이 아닌 경우
+			if(nLineHeight && /[^\d.]/.test(nLineHeight)){ // 배수형이 아닌 경우
 				if(/\d/.test(nLineHeight) && /[A-Za-z]/.test(nLineHeight)){ // 단위형 : 실제 원하는 최종 결과값인 만큼, px 단위형으로 변환만 거친 뒤 return
 					if(/px$/.test(nLineHeight)){ // px 단위형 : 최종 결과값
 						return parseFloat(nLineHeight, 10);
@@ -612,7 +612,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
         }
 	},
 	
-	_onIEBeforeDeactivate : function(wev){
+	_onIEBeforeDeactivate : function(){
 		this.oApp.delayedExec("IE_CHECK_EXCEPTION_FOR_SELECTION_PRESERVATION", null, 0);
 
 		if(this._oIERange){
@@ -628,7 +628,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		this._oIERange = this.oApp.getSelection().cloneRange();
 	},
 	
-	$ON_CHANGE_EDITING_MODE : function(sMode, bNoFocus){
+	$ON_CHANGE_EDITING_MODE : function(sMode/*, bNoFocus*/){
 		if(sMode === this.sMode){
 			// [SMARTEDITORSUS-1213][IE9, 10] 사진 삭제 후 zindex 1000인 div가 잔존하는데, 그 위로 썸네일 drag를 시도하다 보니 drop이 불가능.
 			var htBrowser = jindo.$Agent().navigator();
@@ -679,7 +679,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		}
 	},
 
-	$AFTER_CHANGE_EDITING_MODE : function(sMode, bNoFocus){
+	$AFTER_CHANGE_EDITING_MODE : function(/*sMode, bNoFocus*/){
 		this._oIERange = null;
 	},
 
@@ -703,19 +703,19 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		// 이전 IE와 동일하게 empty 방식을 사용하도록 하였으나 doc.selection.type이 None인 경우 에러
 		// Range를 재설정 해주어 selectNone 으로 처리되도록 예외처리
 		var oSelection = this.oApp.getWYSIWYGDocument().selection;
-        if(oSelection && oSelection.createRange){
-        	try{
-        		oSelection.empty();
-        	}catch(e){
-        		// [SMARTEDITORSUS-1003] IE9 / doc.selection.type === "None"
-        		oSelection = this.oApp.getSelection();
-        		oSelection.select();
-        		oSelection.oBrowserSelection.selectNone();
-        	}
-        }else{
-            this.oApp.getEmptySelection().oBrowserSelection.selectNone();
-        	this.getDocument().body.blur();	// [SMARTEDITORSUS-2149] win10_edge 에서 커서가 보이지 않도록 하려면 blur 해줘야 한다.
-        }
+		if(oSelection && oSelection.createRange){
+			try{
+				oSelection.empty();
+			}catch(e){
+				// [SMARTEDITORSUS-1003] IE9 / doc.selection.type === "None"
+				oSelection = this.oApp.getSelection();
+				oSelection.select();
+				oSelection.oBrowserSelection.selectNone();
+			}
+		}else{
+			this.oApp.getEmptySelection().oBrowserSelection.selectNone();
+			this.getDocument().body.blur();	// [SMARTEDITORSUS-2149] win10_edge 에서 커서가 보이지 않도록 하려면 blur 해줘야 한다.
+		}
 	},
 	
 	$AFTER_SHOW_ACTIVE_LAYER : function(){
@@ -723,7 +723,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		this.bActiveLayerShown = true;
 	},
 	
-	$BEFORE_EVENT_EDITING_AREA_KEYDOWN : function(oEvent){
+	$BEFORE_EVENT_EDITING_AREA_KEYDOWN : function(/*oEvent*/){
 		this._bKeyDown = true;
 	},
 	
@@ -898,7 +898,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		}
 	},
 	
-	$BEFORE_EVENT_EDITING_AREA_KEYUP : function(oEvent){
+	$BEFORE_EVENT_EDITING_AREA_KEYUP : function(/*oEvent*/){
 		// IE(6) sometimes fires keyup events when it should not and when it happens the keyup event gets fired without a keydown event
 		if(!this._bKeyDown){
 			return false;
@@ -906,7 +906,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		this._bKeyDown = false;
 	},
 	
-	$ON_EVENT_EDITING_AREA_MOUSEUP : function(oEvent){
+	$ON_EVENT_EDITING_AREA_MOUSEUP : function(/*oEvent*/){
 		this.oApp.saveSnapShot();
 	},
 
@@ -939,7 +939,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		if(!htOption.bNoUndo){
 			this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", ["PASTE HTML"]);
 		}
-		 
+
 		oNavigator = jindo.$Agent().navigator();
 		oSelection = oPSelection || this.oApp.getSelection();
 
@@ -1057,28 +1057,28 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	 * 엘리먼트의 top, bottom 값을 반환
 	 */
 	_getElementVerticalPosition : function(el){
-	    var nTop = 0,
+		var nTop = 0,
 			elParent = el,
 			htPos = {nTop : 0, nBottom : 0};
-	    
-	    if(!el){
+
+		if(!el){
 			return htPos;
-	    }
+		}
 
 		// 테스트코드를 실행하면 IE8 이하에서 offsetParent 접근시 다음과 같이 알 수 없는 exception 이 발생함
 		// "SCRIPT16389: 지정되지 않은 오류입니다."
 		// TODO: 해결방법이 없어서 일단 try/catch 처리했지만 추후 정확한 이유를 파악할 필요가 있음
-	    try{
-	    	while(elParent) {
-	    		nTop += elParent.offsetTop;
-    			elParent = elParent.offsetParent;
-	    	}
-	    }catch(e){}
+		try{
+			while(elParent) {
+				nTop += elParent.offsetTop;
+				elParent = elParent.offsetParent;
+			}
+		}catch(e){/**/}
 
-	    htPos.nTop = nTop;
-	    htPos.nBottom = nTop + jindo.$Element(el).height();
-	    
-	    return htPos;
+		htPos.nTop = nTop;
+		htPos.nBottom = nTop + jindo.$Element(el).height();
+
+		return htPos;
 	},
 	
 	/* 
@@ -1135,7 +1135,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		}
 	},
 	
-	$AFTER_MSG_EDITING_AREA_RESIZE_ENDED : function(FnMouseDown, FnMouseMove, FnMouseUp){
+	$AFTER_MSG_EDITING_AREA_RESIZE_ENDED : function(/*FnMouseDown, FnMouseMove, FnMouseUp*/){
 		if(this.oApp.getEditingMode() !== this.sMode){
 			return;
 		}
@@ -1162,7 +1162,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 
 				this._oPrevIERange = this._oIERange;
 				this._oIERange = null;
-			}catch(e){}
+			}catch(e){/**/}
 		}
 	},
 	
@@ -1201,7 +1201,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		
 		var aEl = jindo.$$("p:empty()", this.oApp.getWYSIWYGDocument().body, { oneTimeOffCache:true });
 		
-		jindo.$A(aEl).forEach(function(value, index, array) {
+		jindo.$A(aEl).forEach(function(value) {
 			value.innerHTML = "&nbsp;";
 		});
 	},
