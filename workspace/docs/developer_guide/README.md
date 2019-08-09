@@ -74,23 +74,36 @@ npm run docs:serve
 ```bash
 npm run deploy
 ```
-- `predeploy` 가 `deploy` 이전에 자동으로 실행됩니다.
-- `postdeploy` 가 `deploy` 이후에 자동으로 실행됩니다.
-- `github` 및 `npm` 에 대한 권한이 모두 필요합니다.
+- `npm version patch` 를 실행시킵니다.
+- npm 스크립트 라이프사이클을 이용해 릴리즈 배포 시나리오가 순서대로 실행됩니다.
+  - https://docs.npmjs.com/misc/scripts
+  - https://blog.npmjs.org/post/184553141742/easy-automatic-npm-publishes
+- 스크립트 실행 과정중에 `github` 및 `npm` 에 대한 권한이 모두 필요합니다.
 
-각각의 단계에서 다음과 같은 작업이 수행되며 중간에 실패하면 이후 작업은 중단됩니다.
+릴리즈 배포 시나리오는 다음과 같으며 중간에 실패하면 이후 작업은 중단됩니다.
 
-1. `predeploy`
-  - 테스트 : `npm test` 가 실행됩니다.
-  - 빌드 : `npm run build` 가 실행됩니다.
-2. deploy
-  - [버전업](https://docs.npmjs.com/cli/version) : `package.json` 의 `version` 이 자동으로 갱신되어 커밋된 후 버전태그가 생성됩니다.
-  - [npm 게시](https://docs.npmjs.com/cli/publish) : 이때 `npm` 권한이 있어야 합니다.
-3. postdeploy
-  - `github` 푸시 : 현재 브랜치와 버전태그를 모두 리모트에 푸시하므로 이때 `github` 권한이 있어야 합니다.
-  - [패키지파일 생성](https://docs.npmjs.com/cli/pack) : `smarteditor2-<version>.tgz` 파일이 생성됩니다.
+1. 테스트
+  - `"preversion": "npm test"` 를 통해 실행됩니다.
+  - 버전업전에 자동으로 테스트를 수행합니다.
+2. [버전업](https://docs.npmjs.com/cli/version)
+  - `"deploy": "npm version patch"` 를 통해 실행됩니다.
+  - `package.json` 의 `version` 이 자동으로 갱신되어 커밋된 후 버전태그가 생성됩니다.
+3.  원격저장소싱크
+  - `"postversion": "git push --follow-tags && npm publish"` 를 통해 실행됩니다.
+  - 버전업시 커밋된 브랜치와 버전태그가 github 으로 푸시됩니다.
+4. 빌드/발행
+  - `"prepublishOnly": "npm run build"` 를 통해 실행됩니다.
+  - `postversion` 에서 `npm publish` 가 실행되면 `prepublishOnly` 에 의해 빌드가 먼저 수행됩니다.
+  - 빌드결과물(`dist`)이 npm 으로 발행됩니다.
+5. [패키지파일 생성](https://docs.npmjs.com/cli/pack)
+  - `"postpublish": "npm pack"` 를 통해 실행됩니다.
+  - 발행 후 릴리즈노트 작성을 위한 패키지파일(`smarteditor2-<version>.tgz`)을 생성합니다.
+6. 데모 발행
+  - `"postdeploy": "gh-pages -d ./dist -e ./demo -m 'update demo'"` 를 통해 실행됩니다.
+  - 릴리즈 배포의 모든 과정이 끝나면 마지막에 [데모페이지](http://naver.github.io/smarteditor2/demo/)도 발행하여 반영해줍니다.
 
-이후 [릴리즈태그페이지](https://github.com/naver/smarteditor2/tags) 에서 릴리즈노트를 작성합니다. 이때 앞서 생성된 패키지파일을 첨부합니다.
+모든 릴리즈 배포 시나리오가 정상적으로 수행되면 [릴리즈태그페이지](https://github.com/naver/smarteditor2/tags) 에서 릴리즈노트를 작성합니다. 
+이때 앞서 생성된 패키지파일을 첨부합니다.
 
 ## 사용자가이드 배포하기
 사용자가이드는 현재 따로 버전관리를 하지 않고 서버에 적시에 배포합니다.
