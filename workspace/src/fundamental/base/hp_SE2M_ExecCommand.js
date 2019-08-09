@@ -284,7 +284,7 @@ nhn.husky.SE2M_ExecCommand = jindo.$Class({
 
 				this.oEditingArea.execCommand(sCommand, bUserInterface, vValue);
 				
-				if(!!oSelectionClone){
+				if(oSelectionClone){
 					oSelectionClone.select();
 				}
 				

@@ -130,7 +130,7 @@ nhn.husky.SE_WYSIWYGStyler = jindo.$Class({
 			}
 
 			// [SMARTEDITORSUS-229] 새로 생성되는 SPAN 에도 취소선/밑줄 처리 추가
-			if(!!oStyles.color){
+			if(oStyles.color){
 				oSelection._checkTextDecoration(oSpan);
 			}
 			

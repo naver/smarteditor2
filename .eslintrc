@@ -23,7 +23,5 @@
     "jest"
   ],
   "rules": {
-    "no-extra-boolean-cast": "off",
-    "no-prototype-builtins": "warn"
   }
 }

@@ -58,7 +58,7 @@ nhn.husky.SE2M_BGColor = jindo.$Class({
 	},
 	
 	getLastUsedBGColor : function(){
-		return (!!this.sLastUsedColor) ? this.sLastUsedColor : '#777777';
+		return (this.sLastUsedColor) ? this.sLastUsedColor : '#777777';
 	}
 });
 //}

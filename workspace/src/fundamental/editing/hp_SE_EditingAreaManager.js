@@ -224,7 +224,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 
 		// [SMARTEDITORSUS-2089] fOnBeforeUnload === false 인 경우, 아예 window.onbeforeunload 를 등록하지 않도록 수정
 		if(this.fOnBeforeUnload !== false){
-			if(!!this.fOnBeforeUnload){
+			if(this.fOnBeforeUnload){
 				window.onbeforeunload = this.fOnBeforeUnload;
 			}else{
 				window.onbeforeunload = jindo.$Fn(function(){
@@ -568,7 +568,7 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 	},
 	
 	$ON_GET_COVER_DIV : function(sAttr,oReturn){
-		if(!!this.elEditingAreaCover) {
+		if(this.elEditingAreaCover) {
 			oReturn[sAttr] = this.elEditingAreaCover;
 		}
 	},

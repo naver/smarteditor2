@@ -37,7 +37,7 @@ nhn.husky.SE_EditingArea_HTMLSrc = jindo.$Class({
 	},
 	
 	$ON_MSG_APP_READY : function() {
-		if(!!this.oApp.getEditingAreaHeight){
+		if(this.oApp.getEditingAreaHeight){
 			this.nMinHeight = this.oApp.getEditingAreaHeight();	// [SMARTEDITORSUS-677] 편집 영역의 최소 높이를 가져와 자동 확장 처리를 할 때 사용
 		}
 	},

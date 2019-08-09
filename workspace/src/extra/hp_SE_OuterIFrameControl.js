@@ -43,7 +43,7 @@ nhn.husky.SE_OuterIFrameControl = jindo.$Class({
 		}
 		
 		//마우스 이벤트 
-		if(!!jindo.$Agent().navigator().ie){
+		if(jindo.$Agent().navigator().ie){
 			this.$FnMouseDown = jindo.$Fn(this._mousedown, this);
 			this.$FnMouseMove = jindo.$Fn(this._mousemove, this);
 			this.$FnMouseMove_Parent = jindo.$Fn(this._mousemove_parent, this);

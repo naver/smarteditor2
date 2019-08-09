@@ -413,7 +413,7 @@ if (!nhn.husky){nhn.husky = {};}
 						oPlugin.oApp.acceptLocalBeforeFirstAgain(oPlugin, true);
 					}
 					for(k in htMixin){
-						if(bOverride || !oPlugin.hasOwnProperty(k)){
+						if(bOverride || !Object.prototype.hasOwnProperty.call(oPlugin, k)){
 							oPlugin[k] = htMixin[k];
 							if(_rxMsgHandler.test(k)){
 								oPlugin.oApp.addToMessageMap(k, oPlugin);
@@ -426,7 +426,7 @@ if (!nhn.husky){nhn.husky = {};}
 
 		// mixin 처리
 		for(k in htMixin){
-			if(bOverride || !oClass.prototype.hasOwnProperty(k)){
+			if(bOverride || !Object.prototype.hasOwnProperty.call(oClass.prototype, k)){
 				oClass.prototype[k] = htMixin[k];
 				// 새로 추가되는 함수가 메시지 핸들러라면 메시지 매핑에 추가 해준다.
 				if(_rxMsgHandler.test(k)){

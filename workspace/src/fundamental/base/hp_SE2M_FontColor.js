@@ -54,6 +54,6 @@ nhn.husky.SE2M_FontColor = jindo.$Class({
 	},
 	
 	getLastUsedFontColor : function(){
-		return (!!this.sLastUsedColor) ? this.sLastUsedColor : '#000000';
+		return (this.sLastUsedColor) ? this.sLastUsedColor : '#000000';
 	}
 });

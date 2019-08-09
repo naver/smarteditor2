@@ -2081,7 +2081,7 @@ nhn.BrowserSelection = function(win){
 		nhn.BrowserSelectionImpl_FF.apply(this);
 	}*/
 
-	if(!!this._document.createRange){
+	if(this._document.createRange){
 		nhn.BrowserSelectionImpl_FF.apply(this);
 	}else{
 		nhn.BrowserSelectionImpl_IE.apply(this);

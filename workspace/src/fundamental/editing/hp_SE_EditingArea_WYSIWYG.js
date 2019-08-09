@@ -128,7 +128,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 		this.oApp.exec("ADD_APP_PROPERTY", ["getRawHTMLContents", jindo.$Fn(this.getRawHTMLContents, this).bind()]);
 		this.oApp.exec("ADD_APP_PROPERTY", ["setRawHTMLContents", jindo.$Fn(this.setRawHTMLContents, this).bind()]);
 		
-		if (!!this.isWYSIWYGEnabled()) {
+		if (this.isWYSIWYGEnabled()) {
 			this.oApp.exec('ENABLE_WYSIWYG_RULER');
 		}
 		
@@ -137,7 +137,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 	},
 
 	$ON_MSG_APP_READY : function(){
-		if(!this.oApp.hasOwnProperty("saveSnapShot")){
+		if(!Object.prototype.hasOwnProperty.call(this.oApp, "saveSnapShot")){
 			this.$ON_EVENT_EDITING_AREA_MOUSEUP = function(){};
 			this._recordUndo = function(){};
 		}
@@ -974,7 +974,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			//원인 : parameter로 넘겨 받은 oPSelecion에 변경된 값을 복사해 주지 않아서 발생
 			//해결 : parameter로 넘겨 받은 oPSelecion에 변경된 값을 복사해준다
 			//       call by reference로 넘겨 받았으므로 직접 객체 안의 인자 값을 바꿔주는 setRange 함수 사용
-			if(!!oPSelection){
+			if(oPSelection){
 				oPSelection.setRange(oSelection);
 			}
 		}else{
@@ -1252,7 +1252,7 @@ nhn.husky.SE_EditingArea_WYSIWYG = jindo.$Class({
 			var sCSSBaseURI = (!!nhn.husky.SE2M_Configuration.SE2M_CSSLoader && nhn.husky.SE2M_Configuration.SE2M_CSSLoader.sCSSBaseURI) ? 
 					nhn.husky.SE2M_Configuration.SE2M_CSSLoader.sCSSBaseURI : "";
 
-			if(!!nhn.husky.SE2M_Configuration.SE_EditingAreaManager.sCSSBaseURI){
+			if(nhn.husky.SE2M_Configuration.SE_EditingAreaManager.sCSSBaseURI){
 				sCSSBaseURI = nhn.husky.SE2M_Configuration.SE_EditingAreaManager.sCSSBaseURI;
 			}
 

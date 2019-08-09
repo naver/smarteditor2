@@ -244,7 +244,7 @@ nhn.ColorPicker = jindo.$Class({
 		var elDiv = null;
 
 		var nPanelBorderWidth = parseInt(this.huePanel.css('borderWidth'), 10);
-		if (!!isNaN(nPanelBorderWidth)) { nPanelBorderWidth = 0; }		
+		if (isNaN(nPanelBorderWidth)) { nPanelBorderWidth = 0; }		
 		w -= nPanelBorderWidth * 2; // borderWidth를 제외한 내측 폭을 구함  
 		
 		for(var i=1; i < 7; i++) {

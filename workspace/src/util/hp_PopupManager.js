@@ -115,7 +115,7 @@ nhn.husky.PopUpManager.getInstance = function(oApp) {
 				var sProperties = op.sProperties != null ? op.sProperties : 
 					"top="+ top +",left="+ left +",width="+op.nWidth+",height="+op.nHeight+",scrollbars="+(op.bScroll?"yes":"no")+",status=yes";
 				var win = window.open(op.sUrl, op.sName,sProperties);
-				if (!!win) {
+				if (win) {
 					setTimeout( function(){ 
 						try{win.focus();}catch(e){/**/}
 					}, 100);

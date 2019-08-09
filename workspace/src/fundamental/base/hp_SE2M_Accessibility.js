@@ -30,11 +30,11 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 	$init: function(elAppContainer, sLocale, sEditorType) {
 		this._assignHTMLElements(elAppContainer);
 		
-        if(!!sLocale){
+        if(sLocale){
            this.sLang = sLocale;
         }   
             
-        if(!!sEditorType){
+        if(sEditorType){
             this.sType = sEditorType;
         }
 	},          
@@ -258,14 +258,14 @@ nhn.husky.SE2M_Accessibility = jindo.$Class({
 			if(isReversed){
 				for(var len = node.childNodes.length, i = len - 1; i >= 0; i--){
 					self._recursivePreorderTraversalFilter(node.childNodes[i], filterFunction, true);
-					if(!!this._bStopFindingNextElement){
+					if(this._bStopFindingNextElement){
 						break;
 					}
 				}
 			}else{
 				for(i=0, len = node.childNodes.length; i < len; i++){
 					self._recursivePreorderTraversalFilter(node.childNodes[i], filterFunction);
-					if(!!this._bStopFindingNextElement){
+					if(this._bStopFindingNextElement){
 						break;
 					}
 				}

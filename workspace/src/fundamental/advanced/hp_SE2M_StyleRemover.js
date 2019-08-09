@@ -164,7 +164,7 @@ nhn.husky.SE2M_StyleRemover = jindo.$Class({
 		elDivHolder = this.oApp.getWYSIWYGDocument().createElement("DIV");
 		oSelection.insertNode(elDivHolder);
 		
-		if (!!htBrowser.webkit) {
+		if (htBrowser.webkit) {
 			elDivHolder.innerHTML = "&nbsp;"; // for browser bug! - summary reiteration
 		}
 		

@@ -259,7 +259,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Quote, {
 				aQuoteCloneChild[i] = aQuoteChild[i];
 			}
 			for(i = 0, nLen = aQuoteCloneChild.length; i < nLen; i++){
-				if(!!elNextNode){
+				if(elNextNode){
 					jindo.$Element(elNextNode).before(aQuoteCloneChild[i]);
 				}else{
 					jindo.$Element(elParentNode).append(aQuoteCloneChild[i]);

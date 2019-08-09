@@ -83,7 +83,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 	},
 	
 	$LOCAL_BEFORE_FIRST : function(sMsg){
-		if(!!sMsg.match(/(REGISTER_CONVERTERS)/)){
+		if(sMsg.match(/(REGISTER_CONVERTERS)/)){
 			this.oApp.acceptLocalBeforeFirstAgain(this, true);
 			return true;
 		}

@@ -430,7 +430,7 @@ nhn.husky.SE2M_FontNameWithLayerUI = jindo.$Class({
 		
 		// [SMARTEDITORSUS-169] 웹폰트의 경우 fontFamily 에 ' 을 붙여주는 처리를 함
 		var oFontInfo = this.htAllFonts[sFontFamily.replace(/"/g, nhn.husky.SE2M_FontNameWithLayerUI.CUSTOM_FONT_MARKS)];
-		if(!!oFontInfo){
+		if(oFontInfo){
 			oFontInfo.loadCSS(this.oApp.getWYSIWYGDocument());
 		}
 		

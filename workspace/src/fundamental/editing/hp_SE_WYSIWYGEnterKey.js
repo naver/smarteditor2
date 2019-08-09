@@ -432,7 +432,7 @@ nhn.husky.SE_WYSIWYGEnterKey = jindo.$Class({
 		if(!!elUpperNode && elUpperNode.tagName === "SPAN"){ // SPAN 인 경우에만 발생함
 			oNodeChild = elUpperNode.lastChild;
 
-			while(!!oNodeChild){	// 빈 Text 제거
+			while(oNodeChild){	// 빈 Text 제거
 				oPrevChild = oNodeChild.previousSibling;
 				
 				if(oNodeChild.nodeType !== 3){

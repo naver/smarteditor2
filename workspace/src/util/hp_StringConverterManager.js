@@ -62,7 +62,7 @@ nhn.husky.StringConverterManager = jindo.$Class({
 			sContents = elContentsHolder.innerHTML; 
 			// 내용물에 EMBED등이 있을 경우 IE에서 페이지 나갈 때 권한 오류 발생 할 수 있어 명시적으로 노드 삭제.
 			
-			if(!!elContentsHolder.parentNode){
+			if(elContentsHolder.parentNode){
 				elContentsHolder.parentNode.removeChild(elContentsHolder);
 			}
 			elContentsHolder = null;

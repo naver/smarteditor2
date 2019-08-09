@@ -74,7 +74,7 @@ nhn.husky.SE_EditingAreaVerticalResizer = jindo.$Class({
 		
 		this.oApp.exec("ADD_APP_PROPERTY", ["checkResizeGripPosition", jindo.$Fn(this.checkResizeGripPosition, this).bind()]);	// [SMARTEDITORSUS-677]
 		
-		if(!!this.oApp.getEditingAreaHeight){
+		if(this.oApp.getEditingAreaHeight){
 			this.nEditingAreaMinHeight = this.oApp.getEditingAreaHeight();	// [SMARTEDITORSUS-677] 편집 영역의 최소 높이를 가져와 Gap 처리 시 사용
 		}
 	},

@@ -898,7 +898,7 @@ getFilteredHashTable({
 		}
 		
 		var sAttrTmp = (aResult[1] || aResult[2] || aResult[3]); // for chrome 5.x bug!
-		if (!!sAttrTmp) {
+		if (sAttrTmp) {
 			sAttrTmp = sAttrTmp.replace(/["]/g, '');
 		}
 		
@@ -965,7 +965,7 @@ getFilteredHashTable({
 		
 		var em = function(o) {
 			for(var x in o){
-				if (o.hasOwnProperty(x)) {
+				if (Object.prototype.hasOwnProperty.call(o, x)) {
 					if(Object.prototype[x]) {
 						continue;
 					}	

@@ -451,9 +451,9 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 		var sPatternInfo, nPatternImage = 0;
 		var welBtnBGIMGPalette = jindo.$Element(this.elBtnBGIMGPalette);
 		
-		if(!!sBackgroundImage){
+		if(sBackgroundImage){
 			var aPattern = sBackgroundImage.match(/_[0-9]*/);
-			sPatternInfo = (!!aPattern)?aPattern[0] : "_0";
+			sPatternInfo = (aPattern)?aPattern[0] : "_0";
 			nPatternImage = sPatternInfo.substring(1, sPatternInfo.length);
 			for(i = 1, nLen = this.aSelectedCells.length; i < nLen; i++){
 				if(sBackgroundImage != this.aSelectedCells[i].getAttribute(this.TMP_BGIMG_ATTR)){
@@ -1189,7 +1189,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 	 * @see hp_SE2M_TableBlockStyler.js
 	 */
 	$ON_GET_SELECTED_CELLS : function(sAttr,oReturn){
-		if(!!this.aSelectedCells){
+		if(this.aSelectedCells){
 			oReturn[sAttr] = this.aSelectedCells;
 		}
 	},
@@ -1603,7 +1603,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 				this._deselectCells();
 				
 				// 히스토리 저장 (선택 위치는 저장하지 않음)
-				if(!!this.sQEAction){
+				if(this.sQEAction){
 					this.oApp.exec("RECORD_UNDO_ACTION", [this.sQEAction, {elSaveTarget:this.elSelectionStartTable, bDontSaveSelection:true}]); 
 					this.sQEAction = "";
 				}
@@ -2584,7 +2584,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 	_copyAttributesTo : function(oTarget, htProperties, bClearStyle){
 		var elTmp;
 		for(var x in htProperties){
-			if(htProperties.hasOwnProperty(x)){
+			if(Object.prototype.hasOwnProperty.call(htProperties, x)){
 				if(bClearStyle){
 					if(oTarget[x]){
 						elTmp = document.createElement(oTarget.tagName);
@@ -2605,7 +2605,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 	_copyStylesTo : function(oTarget, htProperties, bClearStyle){
 		var elTmp;
 		for(var x in htProperties){
-			if(htProperties.hasOwnProperty(x)){
+			if(Object.prototype.hasOwnProperty.call(htProperties, x)){
 				if(bClearStyle){
 					if(oTarget.style[x]){
 						elTmp = document.createElement(oTarget.tagName);
