@@ -4471,11 +4471,11 @@ nhn.husky.SE_EditingAreaManager = jindo.$Class({
 		return this.elEditingAreaContainer.offsetHeight;
 	}
 });
-var nSE2Version = "5caeebb";
+var nSE2Version = "20b2fc0";
 nhn.husky.SE_EditingAreaManager.version = {
-	revision : "5caeebb",
+	revision : "20b2fc0",
 	type : "open",
-	number : "2.9.1"
+	number : "2.9.2"
 };
 /*[
  * ENABLE_WYSIWYG
@@ -9565,10 +9565,12 @@ nhn.husky.SE2M_LineHeightWithLayerUI = jindo.$Class({
 	_assignHTMLElements : function(oAppContainer){
 		var htConfiguration = nhn.husky.SE2M_Configuration.SE2M_ColorPalette;
 		if(htConfiguration){
+			var LinkageDomain = nhn.husky.SE2M_Configuration.LinkageDomain || {};
+			var sDomainCommonAPI = LinkageDomain.sCommonAPI || "";
 			this.bUseRecentColor = htConfiguration.bUseRecentColor || false;
-			this.URL_COLOR_ADD = htConfiguration.addColorURL || "http://api.se2.naver.com/1/colortable/TextAdd.nhn";
-			this.URL_COLOR_UPDATE = htConfiguration.updateColorURL || "http://api.se2.naver.com/1/colortable/TextUpdate.nhn";
-			this.URL_COLOR_LIST = htConfiguration.colorListURL || "http://api.se2.naver.com/1/colortable/TextList.nhn";
+			this.URL_COLOR_ADD = htConfiguration.addColorURL || sDomainCommonAPI + "/1/colortable/TextAdd.nhn";
+			this.URL_COLOR_UPDATE = htConfiguration.updateColorURL || sDomainCommonAPI + "/1/colortable/TextUpdate.nhn";
+			this.URL_COLOR_LIST = htConfiguration.colorListURL || sDomainCommonAPI + "/1/colortable/TextList.nhn";
 		}
 		
 		this.elColorPaletteLayer = jindo.$$.getSingle("DIV.husky_se2m_color_palette", oAppContainer);
@@ -17984,11 +17986,12 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_TableEditor, {
 			}else{
 				sImageName = sImageName + n + ".gif";
 			}
-			
+
+			var sBackgroundImage = nhn.husky.SE2M_Configuration.LinkageDomain.sCommonStatic + "/static/img/" + sImageName;
 			for(var j = 0, nLen = this.aSelectedCells.length; j < nLen ; j++){
-				jindo.$Element(this.aSelectedCells[j]).css("backgroundImage", "url("+"http://static.se2.naver.com/static/img/"+sImageName+")");
+				jindo.$Element(this.aSelectedCells[j]).css("backgroundImage", "url("+sBackgroundImage+")");
 				this.aSelectedCells[j].removeAttribute(this.TMP_BGC_ATTR);
-				this.aSelectedCells[j].setAttribute(this.TMP_BGIMG_ATTR, "url("+"http://static.se2.naver.com/static/img/"+sImageName+")");
+				this.aSelectedCells[j].setAttribute(this.TMP_BGIMG_ATTR, "url("+sBackgroundImage+")");
 			}
 		} 
 		this.sQEAction = "TABLE_SET_BGIMAGE";
@@ -20607,7 +20610,7 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 			
 			var sBM;
 			if(this.oSelection.collapsed){
-				var str = "<a href='" + sURL + "' target="+sTarget+">" + sURL + "</a>" + sBlank;
+				var str = "<a href='" + sURL + "' target="+sTarget+">" + nhn.husky.SE2M_Utils.replaceSpecialChar(sURL) + "</a>" + sBlank;
 				this.oSelection.pasteHTML(str);
 				sBM = this.oSelection.placeStringBookmark();
 			}else{
