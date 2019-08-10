@@ -36,13 +36,13 @@ nhn.husky.EZCreator = new (function(){
 			var htParams = htOptions.htParams || null;
 		}else{
 			// for backward compatibility only
-			var oAppRef = arguments[0];
-			var elPlaceHolder = arguments[1];
-			var sSkinURI = arguments[2];
-			var fCreator = arguments[3];
-			var fOnAppLoad = arguments[4];
-			var bUseBlocker = arguments[5];
-			var htParams = arguments[6];
+			oAppRef = arguments[0];
+			elPlaceHolder = arguments[1];
+			sSkinURI = arguments[2];
+			fCreator = arguments[3];
+			fOnAppLoad = arguments[4];
+			bUseBlocker = arguments[5];
+			htParams = arguments[6];
 		}
 
 		if(bUseBlocker) nhn.husky.EZCreator.showBlocker();
@@ -63,8 +63,7 @@ nhn.husky.EZCreator = new (function(){
 		if(typeof(elPlaceHolder) != "object")
 			elPlaceHolder = document.getElementById(elPlaceHolder);
 
-		var elIFrame, nEditorWidth, nEditorHeight;
-		 
+		var elIFrame, nEditorHeight;
 
 		try{
 			elIFrame = document.createElement("<IFRAME frameborder=0 scrolling=no>");
@@ -85,8 +84,6 @@ nhn.husky.EZCreator = new (function(){
 //			window.STime = new Date();
 			
 			try{
-			
-				nEditorWidth = elIFrame.contentWindow.document.body.scrollWidth || "500px";
 				nEditorHeight = elIFrame.contentWindow.document.body.scrollHeight + 12;
 				elIFrame.style.width =  "100%";
 				elIFrame.style.height = nEditorHeight+ "px";
