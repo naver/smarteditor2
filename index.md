@@ -24,7 +24,7 @@ WYSIWYG 모드 및 HTML 편집 모드와 TEXT 모드를 제공하고, 자유로�
  * Safari 4.0 이상
 
 ## License
- * [SmartEditor2 is released under the LGPL v2.1](LICENSE.md).
+ * [SmartEditor2 is released under the LGPL v2.1](https://github.com/naver/smarteditor2/blob/master/LICENSE.md).
  * [LGPL v2.1](http://www.gnu.org/licenses/lgpl-2.1.html) [(한국어)](http://korea.gnu.org/people/chsong/copyleft/lgpl.ko.html)
 
 ## Third-party libraries
@@ -39,7 +39,3 @@ The following third-party libraries are used :
  * [CHANGELOG](https://github.com/naver/smarteditor2/blob/master/CHANGELOG.md)
  * [TODO List](https://github.com/naver/smarteditor2/blob/master/TODO.md)
  * 설치시 발생하는 버그 또는 질문은 "[이슈](https://github.com/naver/smarteditor2/issues)" 게시판을 이용해주세요.
-
-## SmartEditorBasic 0.3.X 버전이 궁금하시다면...
-
- * [구 SmartEditorBasic 0.3.X 버전 도움말 보기](http://dev.naver.com/projects/smarteditor/wiki/old_user_guide)
