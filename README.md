@@ -1,4 +1,7 @@
 ﻿# SmartEditor2
+[![npm](https://img.shields.io/npm/v/smarteditor2)](https://npmjs.com/package/smarteditor2)
+[![Build Status](https://travis-ci.org/naver/smarteditor2.svg?branch=master)](https://travis-ci.org/naver/smarteditor2)
+[![codecov](https://codecov.io/gh/naver/smarteditor2/branch/master/graph/badge.svg)](https://codecov.io/gh/naver/smarteditor2)
 
 ## Overview
 SmartEdtitor™ 는 JavaScript로 구현된 웹 기반의 WYSIWYG 편집기입니다.
