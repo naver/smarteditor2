@@ -5,6 +5,7 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage",
+    "codecov": "jest --coverage && codecov",
     "lint": "eslint -f table ./workspace",
     "docs:clean": "rm -rf build/docs",
     "docs:serve": "gitbook --port 3000 serve ./workspace/docs/user_guide ./build/docs/user_guide",
