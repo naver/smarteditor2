@@ -1,6 +1,6 @@
 {
   "name": "smarteditor2",
-  "version": "2.10.0-alpha.9",
+  "version": "2.10.0",
   "description": "WYSIWYG HTML text editor",
   "scripts": {
     "test": "jest",
