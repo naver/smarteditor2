@@ -1,0 +1,27 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "jest/globals": true
+  },
+  "extends": "eslint:recommended",
+  "globals": {
+    "__VERSION__": true,
+    "__HASH__": true,
+    "jindo": true,
+    "nhn": true,
+    "StringBuffer": true,
+    "TextRange": true,
+    "oMessageMap": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "jest"
+  ],
+  "rules": {
+  }
+}

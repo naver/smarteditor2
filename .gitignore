@@ -1,7 +1,10 @@
 node_modules
 build
+dist
 report
+*.tgz
 
 .idea
 *.iml
-*lock*
+package-lock.json
+yarn.lock

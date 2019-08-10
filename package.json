@@ -1,7 +1,26 @@
 {
   "name": "smarteditor2",
-  "version": "2.9.2",
+  "version": "2.10.0-alpha.9",
   "description": "WYSIWYG HTML text editor",
+  "scripts": {
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "lint": "eslint -f table ./workspace",
+    "docs:clean": "rm -rf build/docs",
+    "docs:serve": "gitbook --port 3000 serve ./workspace/docs/user_guide ./build/docs/user_guide",
+    "docs:build": "gitbook build ./workspace/docs/user_guide ./build/docs/user_guide",
+    "docs:publish": "gh-pages -d ./build/docs/user_guide -e ./user_guide -m 'update user_guide'",
+    "docs:deploy": "npm run docs:build && npm run docs:publish",
+    "start": "webpack-dev-server --open --hot",
+    "build": "webpack --env.production",
+    "preversion": "npm test",
+    "postversion": "git push --follow-tags && npm publish",
+    "prepublishOnly": "npm run build",
+    "postpublish": "npm pack",
+    "deploy": "npm version patch",
+    "postdeploy": "gh-pages -d ./dist -e ./demo -m 'update demo'",
+    "deploy:dev": "npm publish --tag dev"
+  },
   "keywords": [
     "javascript",
     "WYSIWYG",
@@ -17,15 +36,30 @@
     "name": "NAVER corp.",
     "email": "dl_smarteditor2open@navercorp.com"
   },
-  "ignore": [
-    "**/.*",
-    "**/_*",
-    "node_modules",
-    "bower_components"
+  "main": "dist/js/smarteditor2.js",
+  "files": [
+    "dist"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/naver/smarteditor2.git"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-transform-es3-member-expression-literals": "^6.22.0",
+    "babel-plugin-transform-es3-property-literals": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.0.4",
+    "eslint": "^6.1.0",
+    "eslint-plugin-jest": "^22.13.7",
+    "gh-pages": "^2.0.1",
+    "gitbook-cli": "^2.3.2",
+    "jest": "^24.8.0",
+    "uglifyjs-webpack-plugin": "^2.1.3",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
+  }
 }
