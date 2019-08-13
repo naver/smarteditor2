@@ -7,6 +7,7 @@ module.exports = {
     ], 
     coverageDirectory: "report/coverage",
     browser: true,
+    resetMocks: true,
     moduleNameMapper: {
         "^@static(.*)$": "<rootDir>/workspace/static$1",
         "^@src(.*)$": "<rootDir>/workspace/src$1"

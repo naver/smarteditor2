@@ -36,12 +36,6 @@ if (!nhn.husky){nhn.husky = {};}
 			this.htOptions = htOptions||{};
 	
 			_aHuskyCores.push(this);
-			if( this.htOptions.oDebugger ){
-				nhn.husky.HuskyCore.getCore = function() { 
-					return _aHuskyCores; 
-				};
-				this.htOptions.oDebugger.setApp(this);
-			}
 	
 			// To prevent processing a Husky message before all the plugins are registered and ready,
 			// Queue up all the messages here until the application's status is changed to READY
@@ -62,11 +56,6 @@ if (!nhn.husky){nhn.husky = {};}
 			this.registerPlugin(this);
 		},
 		
-		setDebugger: function(oDebugger) {
-			this.htOptions.oDebugger = oDebugger;
-			oDebugger.setApp(this);
-		},
-		
 		exec : function(msg, args, oEvent){
 			// If the application is not yet ready just queue the message
 			if(this.appStatus == nhn.husky.APP_STATUS.NOT_READY){
@@ -74,7 +63,7 @@ if (!nhn.husky){nhn.husky = {};}
 				return true;
 			}
 	
-			this.exec = this._exec;
+			this.exec = this._doExec;
 			this.exec(msg, args, oEvent);
 		},
 	
@@ -83,18 +72,6 @@ if (!nhn.husky){nhn.husky = {};}
 			setTimeout(fExec, nDelay);
 		},
 	
-		_exec : function(msg, args, oEvent){
-			return (this._exec = this.htOptions.oDebugger?this._execWithDebugger:this._execWithoutDebugger).call(this, msg, args, oEvent);
-		},
-		_execWithDebugger : function(msg, args, oEvent){
-			this.htOptions.oDebugger.log_MessageStart(msg, args);
-			var bResult = this._doExec(msg, args, oEvent);
-			this.htOptions.oDebugger.log_MessageEnd(msg, args);
-			return bResult;
-		},
-		_execWithoutDebugger : function(msg, args, oEvent){
-			return this._doExec(msg, args, oEvent);
-		},
 		_doExec : function(msg, args, oEvent){
 			var bContinue = false;
 	
@@ -200,15 +177,6 @@ if (!nhn.husky){nhn.husky = {};}
 	
 		
 		_execMsgStep : function(sMsgStep, sMsg, args){
-			return (this._execMsgStep = this.htOptions.oDebugger?this._execMsgStepWithDebugger:this._execMsgStepWithoutDebugger).call(this, sMsgStep, sMsg, args);
-		},
-		_execMsgStepWithDebugger : function(sMsgStep, sMsg, args){
-			this.htOptions.oDebugger.log_MessageStepStart(sMsgStep, sMsg, args);
-			var bStatus = this._execMsgHandler("$"+sMsgStep+"_"+sMsg, args);
-			this.htOptions.oDebugger.log_MessageStepEnd(sMsgStep, sMsg, args);
-			return bStatus;
-		},
-		_execMsgStepWithoutDebugger : function(sMsgStep, sMsg, args){
 			return this._execMsgHandler ("$"+sMsgStep+"_"+sMsg, args);
 		},
 		_execMsgHandler : function(sMsgHandler, args){
@@ -255,30 +223,12 @@ if (!nhn.husky){nhn.husky = {};}
 	
 		
 		_execHandler : function(oPlugin, sHandler, args){
-			return	(this._execHandler = this.htOptions.oDebugger?this._execHandlerWithDebugger:this._execHandlerWithoutDebugger).call(this, oPlugin, sHandler, args);
-		},
-		_execHandlerWithDebugger : function(oPlugin, sHandler, args){
-			this.htOptions.oDebugger.log_CallHandlerStart(oPlugin, sHandler, args);
-			var bResult;
-			try{
-				this.aCallerStack.push(oPlugin);
-				bResult = oPlugin[sHandler].apply(oPlugin, args);
-				this.aCallerStack.pop();
-			}catch(e){
-				this.htOptions.oDebugger.handleException(e);
-				bResult = false;
-			}
-			this.htOptions.oDebugger.log_CallHandlerEnd(oPlugin, sHandler, args);
-			return bResult;
-		},
-		_execHandlerWithoutDebugger : function(oPlugin, sHandler, args){
 			this.aCallerStack.push(oPlugin);
 			var bResult = oPlugin[sHandler].apply(oPlugin, args);
 			this.aCallerStack.pop();
-	
+
 			return bResult;
 		},
-	
 	
 		_doAddToMessageMap : function(sMsgHandler, oPlugin){
 			if(typeof oPlugin[sMsgHandler] != "function"){return;}
@@ -370,9 +320,12 @@ if (!nhn.husky){nhn.husky = {};}
 	});
 	
 	/**
-	 * Lazy로딩완료된 파일목록
+	 * 로컬변수를 리셋한다. 
 	 */
-	nhn.husky.HuskyCore._htLoadedFile = {};
+	nhn.husky.HuskyCore.reset = function(){
+		_aHuskyCores = [];
+		_htLoadedFile = {};
+	};
 	/**
 	 * Lazy로딩완료된 파일목록에 파일명을 추가한다.
 	 * @param {String} sFilename Lazy로딩완료될 경우 마킹할 파일명
