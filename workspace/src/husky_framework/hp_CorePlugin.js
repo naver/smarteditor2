@@ -67,13 +67,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 nhn.husky.CorePlugin = jindo.$Class({
 	name : "CorePlugin",
 
-	// nStatus = 0(request not sent), 1(request sent), 2(response received)
-	// sContents = response
-	htLazyLoadRequest_plugins : {},
-	htLazyLoadRequest_allFiles : {},
-	
-	htHTMLLoaded : {},
-	
 	$AFTER_MSG_APP_READY : function(){
 		this.oApp.exec("EXEC_ON_READY_FUNCTION", []);
 	},
@@ -92,107 +85,6 @@ nhn.husky.CorePlugin = jindo.$Class({
 
 	$ON_ENABLE_MESSAGE : function(sMsg){
 		this.oApp.disableMessage(sMsg, false);
-	},
-	
-	$ON_LOAD_FULL_PLUGIN : function(aFilenames, sClassName, sMsgName, oThisRef, oArguments){
-		var sFilename = aFilenames[0];
-		
-		if(!this.htLazyLoadRequest_plugins[sFilename]){
-			this.htLazyLoadRequest_plugins[sFilename] = {nStatus:1, sContents:""};
-		}
-		
-		if(this.htLazyLoadRequest_plugins[sFilename].nStatus === 2){
-			//this.oApp.delayedExec("MSG_FULL_PLUGIN_LOADED", [sFilename, sClassName, sMsgName, oThisRef, oArguments, false], 0);
-			this.oApp.exec("MSG_FULL_PLUGIN_LOADED", [sFilename, sClassName, sMsgName, oThisRef, oArguments, false]);
-		}else{
-			this._loadFullPlugin(aFilenames, sClassName, sMsgName, oThisRef, oArguments, 0);
-		}
-	},
-	
-	_loadFullPlugin : function(aFilenames, sClassName, sMsgName, oThisRef, oArguments, nIdx){
-		jindo.LazyLoading.load(nhn.husky.SE2M_Configuration.LazyLoad.sJsBaseURI+"/"+aFilenames[nIdx], 
-			jindo.$Fn(function(aFilenames, sClassName, sMsgName, oThisRef, oArguments, nIdx){
-				// plugin filename
-				var sFilename = aFilenames[0];
-				if(nIdx == aFilenames.length-1){
-					this.htLazyLoadRequest_plugins[sFilename].nStatus=2;
-					this.oApp.exec("MSG_FULL_PLUGIN_LOADED", [aFilenames, sClassName, sMsgName, oThisRef, oArguments]);
-					return;
-				}
-				//this.oApp.exec("LOAD_FULL_PLUGIN", [aFilenames, sClassName, sMsgName, oThisRef, oArguments, nIdx+1]);
-				this._loadFullPlugin(aFilenames, sClassName, sMsgName, oThisRef, oArguments, nIdx+1);
-			}, this).bind(aFilenames, sClassName, sMsgName, oThisRef, oArguments, nIdx),
-			
-			"utf-8"
-		);
-	},
-	
-	$ON_MSG_FULL_PLUGIN_LOADED : function(aFilenames, sClassName, sMsgName, oThisRef, oArguments){
-		// oThisRef.$this는 현재 로드되는 플러그인이 parent 인스턴스일 경우 존재 함. oThisRef.$this는 현재 플러그인(oThisRef)를 parent로 삼고 있는 인스턴스
-		// oThisRef에 $this 속성이 없다면 parent가 아닌 일반 인스턴스
-		// oPluginRef는 결과적으로 상속 관계가 있다면 자식 인스턴스를 아니라면 일반적인 인스턴스를 가짐
-		var oPluginRef = oThisRef.$this || oThisRef;
-
-		// now the source code is loaded, remove the loader handlers
-		for(var i=0, nLen=oThisRef._huskyFLT.length; i<nLen; i++){
-			var sLoaderHandlerName = "$BEFORE_"+oThisRef._huskyFLT[i];
-			
-			// if child class has its own loader function, remove the loader from current instance(parent) only
-			var oRemoveFrom = (oThisRef.$this && oThisRef[sLoaderHandlerName])?oThisRef:oPluginRef;
-			oRemoveFrom[sLoaderHandlerName] = null;
-			this.oApp.createMessageMap(sLoaderHandlerName);
-		}
-
-		var oPlugin = eval(sClassName+".prototype");
-		//var oPlugin = eval("new "+sClassName+"()");
-
-		var bAcceptLocalBeforeFirstAgain = false;
-		// if there were no $LOCAL_BEFORE_FIRST in already-loaded script, set to accept $LOCAL_BEFORE_FIRST next time as the function could be included in the lazy-loaded script.
-		if(typeof oPluginRef["$LOCAL_BEFORE_FIRST"] !== "function"){
-			this.oApp.acceptLocalBeforeFirstAgain(oPluginRef, true);
-		}
-		
-		for(var x in oPlugin){
-			// 자식 인스턴스에 parent를 override하는 함수가 없다면 parent 인스턴스에 함수 복사 해 줌. 이때 함수만 복사하고, 나머지 속성들은 현재 인스턴스에 존재 하지 않을 경우에만 복사.
-			if(oThisRef.$this && (!oThisRef[x] || (typeof oPlugin[x] === "function" && x != "constructor"))){
-				oThisRef[x] = jindo.$Fn(oPlugin[x], oPluginRef).bind();
-			}
-
-			// 현재 인스턴스에 함수 복사 해 줌. 이때 함수만 복사하고, 나머지 속성들은 현재 인스턴스에 존재 하지 않을 경우에만 복사
-			if(oPlugin[x] && (!oPluginRef[x] || (typeof oPlugin[x] === "function" && x != "constructor"))){
-				oPluginRef[x] = oPlugin[x];
-
-				// 새로 추가되는 함수가 메시지 핸들러라면 메시지 매핑에 추가 해 줌
-				if(x.match(/^\$(LOCAL|BEFORE|ON|AFTER)_/)){
-					this.oApp.addToMessageMap(x, oPluginRef);
-				}
-			}
-		}
-		
-		if(bAcceptLocalBeforeFirstAgain){
-			this.oApp.acceptLocalBeforeFirstAgain(oPluginRef, true);
-		}
-		
-		// re-send the message after all the jindo.$super handlers are executed
-		if(!oThisRef.$this){
-			this.oApp.exec(sMsgName, oArguments);
-		}
-	},
-	
-	$ON_LOAD_HTML : function(sId){
-		if(this.htHTMLLoaded[sId]) return;
-		
-		var elTextarea = jindo.$("_llh_"+sId);
-		if(!elTextarea) return;
-
-		this.htHTMLLoaded[sId] = true;
-		
-		var elTmp = document.createElement("DIV");
-		elTmp.innerHTML = elTextarea.value;
-
-		while(elTmp.firstChild){
-			elTextarea.parentNode.insertBefore(elTmp.firstChild, elTextarea);
-		}
 	},
 
 	$ON_EXEC_ON_READY_FUNCTION : function(){
