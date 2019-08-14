@@ -1,12 +1,7 @@
 require("@static/js/lib/jindo2.all");
 require("@static/js/lib/jindo_component");
 require("@src/husky_framework/HuskyCore");
-
-const simulateEvent = function(element, eventName) {
-    const event = document.createEvent("Event");
-    event.initEvent(eventName, true, true);
-    element.dispatchEvent(event);
-};
+const { simulateEvent } = require("@test/__helpers__/event");
 
 describe("HuskyCore", () => {
     afterEach(() => {

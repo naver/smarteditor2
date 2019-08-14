@@ -10,7 +10,8 @@ module.exports = {
     resetMocks: true,
     moduleNameMapper: {
         "^@static(.*)$": "<rootDir>/workspace/static$1",
-        "^@src(.*)$": "<rootDir>/workspace/src$1"
+        "^@src(.*)$": "<rootDir>/workspace/src$1",
+        "^@test(.*)$": "<rootDir>/workspace/test$1"
     },
     transformIgnorePatterns: [
         "/node_modules/",
