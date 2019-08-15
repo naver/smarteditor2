@@ -46,8 +46,10 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 			this.oSelection.selectNode(oAnchor);
 			this.oSelection.select();
 			
-			// var sTarget = oAnchor.target;
-			//if(sTarget && sTarget == "_blank"){this.oCbNewWin.checked = true;}
+			if(this.oCbNewWin){
+				var sTarget = oAnchor.target;
+				this.oCbNewWin.checked = !!sTarget && sTarget === "_blank";
+			}
 
 			// href속성에 문제가 있을 경우, 예: href="http://na&nbsp;&nbsp; ver.com", IE에서 oAnchor.href 접근 시에 알수 없는 오류를 발생시킴
 			try{
@@ -114,12 +116,10 @@ nhn.husky.HuskyCore.mixin(nhn.husky.SE2M_Hyperlink, {
 		if(oAgent.ie){sBlank = "<span style=\"text-decoration:none;\">&nbsp;</span>";}
 
 		if(this._validateURL(sURL)){
-			//if(this.oCbNewWin.checked){
-			// if(false){
-				// sTarget = "_blank";
-			// }else{
-				var sTarget = "_self";
-			//}
+			var sTarget = "_self"; // default behavior @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#attr-target
+			if (this.oCbNewWin && this.oCbNewWin.checked) {
+				sTarget = "_blank";
+			}
 			
 			this.oApp.exec("RECORD_UNDO_BEFORE_ACTION", ["HYPERLINK", {sSaveTarget:(this.bModify ? "A" : null)}]);
 			

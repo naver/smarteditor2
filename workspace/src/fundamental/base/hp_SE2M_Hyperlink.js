@@ -31,7 +31,7 @@ nhn.husky.SE2M_Hyperlink = jindo.$Class({
 		this.oBtnConfirm = jindo.$$.getSingle("button.se2_apply", this.oHyperlinkLayer);
 		this.oBtnCancel = jindo.$$.getSingle("button.se2_cancel", this.oHyperlinkLayer);
 		
-		//this.oCbNewWin = jindo.$$.getSingle("INPUT[type=checkbox]", this.oHyperlinkLayer) || null;
+		this.oCbNewWin = jindo.$$.getSingle("INPUT[type=checkbox]", this.oHyperlinkLayer) || null;
 	},
 
 	_generateAutoLink : function(sAll, sBreaker, sURL, sWWWURL, sHTTPURL) {
