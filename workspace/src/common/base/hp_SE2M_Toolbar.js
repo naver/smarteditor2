@@ -124,7 +124,7 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 		}
 	},
 
-	$LOCAL_BEFORE_FIRST : function(/* sMsg */) {
+	_registerNavigateToolbar : function() {
 		var aToolItems = jindo.$$(">ul>li[class*=" + this.sUIClassPrefix + "]>button", this.elTextTool);
 		var nItemLength = aToolItems.length;
 
@@ -164,6 +164,8 @@ nhn.husky.SE2M_Toolbar = jindo.$Class({
 			this._htOptions._sDisabled = "," + this._htOptions.aDisabled.toString() + ",";	// 버튼을 활성화할때 비교하기 위한 문자열구성 
 			this.oApp.exec("DISABLE_UI", [this._htOptions.aDisabled]);
 		}
+
+		this._registerNavigateToolbar();
 	},
 	
 
