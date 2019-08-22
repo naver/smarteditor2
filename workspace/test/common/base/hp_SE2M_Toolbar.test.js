@@ -1,9 +1,9 @@
-require("@static/js/lib/jindo2.all");
-require("@src/husky_framework/HuskyCore");
-require("@src/husky_framework/hp_CorePlugin");
-require("@src/common/base/hp_SE2M_Toolbar");
-const MARKUP = require("@test/__helpers__/markup");
-const { simulateEvent } = require("@test/__helpers__/event");
+import "@static/js/lib/jindo2.all";
+import "@src/husky_framework/HuskyCore";
+import "@src/husky_framework/hp_CorePlugin";
+import "@src/common/base/hp_SE2M_Toolbar";
+import MARKUP from "@test/__helpers__/markup";
+import { simulateEvent } from "@test/__helpers__/event";
 
 describe("SE2M_Toolbar", () => {
     describe("생성자", () => {

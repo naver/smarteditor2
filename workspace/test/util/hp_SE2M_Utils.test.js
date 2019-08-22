@@ -1,5 +1,5 @@
-require("@static/js/lib/jindo2.all");
-require("@src/util/hp_SE2M_Utils");
+import "@static/js/lib/jindo2.all";
+import "@src/util/hp_SE2M_Utils";
 
 describe("StringBuffer", () => {
     it("toString > 저장된 문자열을 반환한다.", () => {

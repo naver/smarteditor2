@@ -6,7 +6,7 @@ const matches = html.match(/<!-- SE2 Markup Start -->((?:.|\r|\n)*?)<!-- SE2 Mar
 const div = document.createElement("div");
 div.innerHTML = matches[1];
 
-module.exports = {
+export default {
     FULL: matches[1],
     TOOLBAR: div.querySelector("#se2_tool").outerHTML
 };

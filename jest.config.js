@@ -8,6 +8,10 @@ module.exports = {
     coverageDirectory: "report/coverage",
     browser: true,
     resetMocks: true,
+    globals: {
+        "__VERSION__": "test",
+        "__HASH__": "0"
+    },
     moduleNameMapper: {
         "^@static(.*)$": "<rootDir>/workspace/static$1",
         "^@src(.*)$": "<rootDir>/workspace/src$1",

@@ -1,9 +1,9 @@
-const simulateEvent = function(element, eventName) {
+export const simulateEvent = function(element, eventName) {
     const event = document.createEvent("Event");
     event.initEvent(eventName, true, true);
     element.dispatchEvent(event);
 };
 
-module.exports = {
+export default {
     simulateEvent
 };

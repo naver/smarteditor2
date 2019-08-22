@@ -1,7 +1,7 @@
-require("@static/js/lib/jindo2.all");
-require("@static/js/lib/jindo_component");
-require("@src/husky_framework/HuskyCore");
-const { simulateEvent } = require("@test/__helpers__/event");
+import "@static/js/lib/jindo2.all";
+import "@static/js/lib/jindo_component";
+import "@src/husky_framework/HuskyCore";
+import { simulateEvent } from "@test/__helpers__/event";
 
 describe("HuskyCore", () => {
     afterEach(() => {
