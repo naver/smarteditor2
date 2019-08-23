@@ -1,8 +1,8 @@
-require("@static/js/lib/jindo2.all");
-require("@src/husky_framework/HuskyCore");
-require("@src/husky_framework/HuskyRange");
-require("@src/husky_framework/hp_CorePlugin");
-require("@src/husky_framework/hp_HuskyRangeManager");
+import "@static/js/lib/jindo2.all";
+import "@src/husky_framework/HuskyCore";
+import "@src/husky_framework/HuskyRange";
+import "@src/husky_framework/hp_CorePlugin";
+import "@src/husky_framework/hp_HuskyRangeManager";
 
 describe("HuskyRangeManager", () => {
     afterEach(() => {

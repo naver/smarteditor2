@@ -1,6 +1,6 @@
-require("@static/js/lib/jindo2.all");
-require("@src/husky_framework/HuskyCore");
-require("@src/husky_framework/hp_CorePlugin");
+import "@static/js/lib/jindo2.all";
+import "@src/husky_framework/HuskyCore";
+import "@src/husky_framework/hp_CorePlugin";
 
 describe("CorePlugin", () => {
     afterEach(() => {
