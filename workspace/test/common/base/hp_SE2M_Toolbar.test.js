@@ -5,6 +5,10 @@ import "@src/common/base/hp_SE2M_Toolbar";
 import MARKUP from "@test/__helpers__/markup";
 import { simulateEvent } from "@test/__helpers__/event";
 
+afterEach(() => {
+    document.body.innerHTML = "";
+});
+
 describe("SE2M_Toolbar", () => {
     describe("생성자", () => {
         it("인스턴스를 생성할 수 있다.", () => {

@@ -15,9 +15,8 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software  
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA  
 */
-if(typeof window.nhn=='undefined'){window.nhn = {};}
 /**
- * @fileOverview This file contains a message mapping(Korean), which is used to map the message code to the actual message
+ * @fileOverview This file contains a message mapping(Japanese), which is used to map the message code to the actual message
  * @name husky_SE2B_Lang_ja_JP.js
  * @ unescape
  */
