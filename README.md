@@ -4,11 +4,11 @@
 [![codecov](https://codecov.io/gh/naver/smarteditor2/branch/master/graph/badge.svg)](https://codecov.io/gh/naver/smarteditor2)
 
 ## Overview
-SmartEdtitor™ 는 JavaScript로 구현된 웹 기반의 WYSIWYG 편집기입니다.
+SmartEditor™ 는 JavaScript로 구현된 웹 기반의 WYSIWYG 편집기입니다.
 
-WYSIWYG 모드 및 HTML 편집 모드와 TEXT 모드를 제공하고, 자유로운 폰트 크기 설정 기능, 줄 간격 설정 기능, 단어 찾기/바꾸기 기능 등 편집에 필요한 다양한 기능을 제공하므로 사용자들은 SmartEdtitor™를 사용하여 쉽고 편리하게 원하는 형태의 글을 작성할 수 있습니다.
+WYSIWYG 모드 및 HTML 편집 모드와 TEXT 모드를 제공하고, 자유로운 폰트 크기 설정 기능, 줄 간격 설정 기능, 단어 찾기/바꾸기 기능 등 편집에 필요한 다양한 기능을 제공하므로 사용자들은 SmartEditor™를 사용하여 쉽고 편리하게 원하는 형태의 글을 작성할 수 있습니다.
 
-또한, SmartEdtitor™의 구조는 기능을 쉽게 추가할 수 있는 플러그인 구조로 되어 있어 정해진 규칙에 따라 플러그인을 만들기만 하면 됩니다.
+또한, SmartEditor™의 구조는 기능을 쉽게 추가할 수 있는 플러그인 구조로 되어 있어 정해진 규칙에 따라 플러그인을 만들기만 하면 됩니다.
 
 ## User Guide
 사용자 가이드에서는 SmartEditor2 의 특징과 기능을 소개합니다.
